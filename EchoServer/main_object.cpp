@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "main_object.h"
+﻿#include "main_object.h"
 #include "openssl/ssl.h"
 #include <iomanip>
 

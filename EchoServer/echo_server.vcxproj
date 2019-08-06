@@ -24,7 +24,6 @@
     <ClCompile Include="common\thread_timer.cpp" />
     <ClCompile Include="echo_server.cpp" />
     <ClCompile Include="main_object.cpp" />
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="stream_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -45,7 +44,6 @@
     <ClInclude Include="common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="stream_manager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

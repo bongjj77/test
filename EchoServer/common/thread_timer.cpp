@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "thread_timer.h"
+﻿#include "thread_timer.h"
 
 #define _MIN_(X,Y) ((X) < (Y) ? (X) : (Y))   
 #define _MAX_(X,Y) ((X) > (Y) ? (X) : (Y))  
@@ -202,7 +201,7 @@ uint32_t ThreadTimer::TimerProcess( )
 }
 
 #ifdef WIN32
-uint32_t __stdcall ThreadTimer::TimerThread(LPVOID pParameter)
+uint32_t __stdcall ThreadTimer::TimerThread(void *pParameter)
 {
 	return ((ThreadTimer*)pParameter)->TimerProcess();
 }

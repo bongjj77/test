@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "stream_manager.h"
+﻿#include "stream_manager.h"
 #include "main_object.h" 
 
 //====================================================================================================

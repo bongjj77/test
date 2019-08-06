@@ -1,6 +1,22 @@
 ﻿#pragma once 
 
+#ifdef WIN32
+	#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+	#define NOMINMAX
+	#include <windows.h>
+	#include <winsock2.h>
+#else
+	#include <stdarg.h>
+#endif
+
 #include <mutex>
+#include <map>
+
+#ifdef WIN32
+	typedef void* THREAD_HANDLE;	 
+#else
+	typedef pthread_t THREAD_HANDLE;
+#endif
 
 //====================================================================================================
 // ThreadTimer Interface
@@ -39,7 +55,7 @@ public:
 private:
 
 #ifdef WIN32
-	static uint32_t __stdcall 	TimerThread(LPVOID pParameter);
+	static uint32_t __stdcall 	TimerThread(void *pParameter);
 #else
 	static void * TimerThread(void* pParameter);
 #endif

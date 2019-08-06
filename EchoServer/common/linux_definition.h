@@ -24,15 +24,7 @@
 //====================================================================================================
 // 리눅스를 위한 타입설정
 //====================================================================================================
-typedef void						VOID, *PVOID, *LPVOID, *LPCVOID;
-typedef char						*PSTR;
-typedef char						CHAR, *PCHAR;
-typedef unsigned char				BYTE, *PBYTE, UCHAR, *PUCHAR;
-typedef short						SHORT, *PSHORT;
-typedef unsigned short				USHORT, *PUSHORT;
-typedef int							LONG, *PLONG;
 typedef unsigned int				uint32_t, *PUINT, ULONG, *PULONG, DWORD, *PDWORD;
-
 typedef signed char					INT8, *PINT8;
 typedef signed short				INT16, *PINT16;
 typedef signed int					INT32, *PINT32;
@@ -73,9 +65,7 @@ typedef int     SOCKET;
 #define SD_BOTH						2
 
 // 함수재정의
-#define CopyMemory					memcpy
 #define closesocket					close
-#define stricmp						strcasecmp
 
 //
 #ifndef FIRST_IPADDRESS
@@ -85,33 +75,7 @@ typedef int     SOCKET;
 #define FOURTH_IPADDRESS(x)			(x & 0xff)
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// 해쉬맵 관련 선언
-//////////////////////////////////////////////////////////////////////////
-namespace __gnu_cxx
-{
-	template<> 
-	struct hash<long long int> 
-	{ 
-		size_t 
-			operator()(long long int __x) const 
-		{ return __x; } 
-	}; 
-
-
-	template<> 
-	struct hash<long long unsigned int> 
-	{ 
-		size_t 
-			operator()(long long unsigned int __x) const 
-		{ return __x; } 
-	}; 
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// 함수선언
-//////////////////////////////////////////////////////////////////////////
+//
 static inline DWORD GetTickCount( )
 {
 	struct timeval tv;
@@ -142,52 +106,6 @@ static inline void Sleep(unsigned long msec)
 	{
 		usleep(msec*1000);
 	}
-}
-
-static inline void InterlockedIncrement(void volatile *v)
-{
-	__asm__ __volatile__(
-		"lock incl %0"
-		:"+m" (((int*)v)[0]));
-}
-
-static inline void InterlockedDecrement(void volatile *v)
-{
-	__asm__ __volatile__(
-		"lock decl %0"
-		:"+m" (((int*)v)[0]));
-}
-
-static inline void Lx_InitRecursiveMutex(pthread_mutex_t *pMutex)
-{
-	pthread_mutexattr_t	mta;
-
-	// 뮤텍스 속성 설정
-	pthread_mutexattr_init(&mta);
-	pthread_mutexattr_settype(&mta, PTHREAD_MUTEX_RECURSIVE);
-
-	// 생성
-	pthread_mutex_init(pMutex, &mta);
-}
-
-static inline bool QueryPerformanceFrequency(LARGE_INTEGER* lpFrequency)
-{
-	// 해상도는 msec 단위까지만
-	lpFrequency->QuadPart = 1000;
-	return true;	
-}
-
-static inline bool QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount)
-{
-	struct timeval	tval;
-	struct timezone	tzone;
-	
-	// 주파수 계산
-	// 해상도는 msec 단위까지만
-	gettimeofday(&tval, &tzone);
-	lpPerformanceCount->QuadPart = ((LONGLONG)tval.tv_sec * 1000) + (LONGLONG)(tval.tv_usec/1000);
-	
-	return true;
 }
 
 

@@ -1,7 +1,5 @@
-﻿#include "stdafx.h"
-#include "config_parser.h"
+﻿#include "config_parser.h"
 
-//
 #pragma pack(push, 1)
 typedef struct _CFG_ITEM 
 {

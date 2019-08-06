@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <list>
+#include <string>
 
 #define CONFIG_PARSER ConfigParser::GetInstance()
 #define GET_CONFIG_VALUE(n) (CONFIG_PARSER.GetValue(n)) ? (CONFIG_PARSER.GetValue(n)) : n##_VALUE

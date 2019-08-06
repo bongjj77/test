@@ -29,15 +29,8 @@
 #define MAX_LOG_TEXT_SIZE	(4096)
 extern bool LogInit(const char * file_name, int nBackupHour); 
 extern void LogPrint(const char *str, ...);
+ 
 
-
-//------------------------------linux/windows------------------------------ 
-#ifdef WIN32
-	typedef int socklen_t;
-	#define THREAD_HANDLE HANDLE
-#else
-	#define THREAD_HANDLE pthread_t
-#endif
 
 extern void 		InitNetwork();
 extern void 		ReleaseNetwork();

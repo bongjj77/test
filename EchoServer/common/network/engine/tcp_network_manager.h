@@ -1,14 +1,14 @@
 ﻿#pragma once
-#include "stdafx.h"
 #include "network_manager.h" 
 #include "tcp_network_object.h" 
 #include "network_context_pool.h"
-typedef std::map<int, std::shared_ptr<TcpNetworkObject>> 	TcpNetworkInfoMap; //Key : 자체 구분 IndexKey 
 
-#define LOCK_NETWORK_INFO  					std::lock_guard<std::mutex> network_info_map_lock(_network_info_map_mutex);
+typedef std::map<int, std::shared_ptr<TcpNetworkObject>> 	TcpNetworkInfoMap; //Key : IndexKey 
 
-#define DEFAULT_NETWORK_TIMEOUT				(3000) 
-#define DEFAULT_NETWORK_RECONNECT_COUNT		(3) 
+#define LOCK_NETWORK_INFO std::lock_guard<std::mutex> network_info_map_lock(_network_info_map_mutex);
+
+#define DEFAULT_NETWORK_TIMEOUT (3000) 
+#define DEFAULT_NETWORK_RECONNECT_COUNT (3) 
 
 //====================================================================================================
 // NetworkManager
