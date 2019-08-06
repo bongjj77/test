@@ -10,30 +10,30 @@ public:
 	//인스턴스 생성 및 초기화 
 	static T* InitInstance()
 	{
-		if (m_pInstance == nullptr)
+		if (_instance == nullptr)
 		{
-			m_pInstance = new T();
+			_instance = new T();
 		}
-		return m_pInstance;
+		return _instance;
 	}
 
 	//인스턴스 반환
 	static T* GetInstance()
 	{
-		if (m_pInstance == nullptr)
+		if (_instance == nullptr)
 		{
-			m_pInstance = new T();
+			_instance = new T();
 		}
-		return m_pInstance;
+		return _instance;
 	}
 
 	//인스턴스 제거
 	static void CloseInstance()
 	{
-		if (m_pInstance != nullptr)
+		if (_instance != nullptr)
 		{
-			delete m_pInstance;
-			m_pInstance = nullptr;
+			delete _instance;
+			_instance = nullptr;
 		}
 	}
 
@@ -45,7 +45,7 @@ public:
 
 private:
 	// 싱글톤 인스턴스
-	static T* m_pInstance;
+	static T* _instance;
 };
 
-template<typename T> T* Singleton<T>::m_pInstance = nullptr;
+template<typename T> T* Singleton<T>::_instance = nullptr;
