@@ -37,17 +37,6 @@ typedef uint64_t					UINT64, *PUINT64;
 typedef int64_t						LONGLONG;
 typedef uint64_t					ULONGLONG;
 
-// 구조체 변수 정의
-typedef struct _LARGE_INTEGER
-{
-	LONGLONG	QuadPart;
-} LARGE_INTEGER;
-
-typedef struct _ULARGE_INTEGER
-{
-	ULONGLONG	QuadPart;
-} ULARGE_INTEGER;
-
 // 기타정의
 #define WINAPI
 #ifndef _SOCKET_TYPE_
@@ -74,15 +63,6 @@ typedef int     SOCKET;
 #define THIRD_IPADDRESS(x)			((x>>8) & 0xff)
 #define FOURTH_IPADDRESS(x)			(x & 0xff)
 #endif
-
-//
-static inline DWORD GetTickCount( )
-{
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday (&tv, &tz);
-	return (DWORD)(tv.tv_sec*1000 + tv.tv_usec/1000); // Overflow does not matter.
-}
 
 static inline void Sleep(unsigned long msec)
 {

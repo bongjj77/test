@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 //===============================================================================================
-//CSingleton
+//Singleton
 //===============================================================================================
-template<typename T> class CSingleton
+template<typename T> class Singleton
 {
 public:
 
@@ -48,4 +48,4 @@ private:
 	static T* m_pInstance;
 };
 
-template<typename T> T* CSingleton<T>::m_pInstance = nullptr;
+template<typename T> T* Singleton<T>::m_pInstance = nullptr;

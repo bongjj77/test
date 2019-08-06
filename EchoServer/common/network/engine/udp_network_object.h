@@ -9,9 +9,6 @@ class UdpNetworkObject;
 typedef bool (UdpNetworkObject::*UdpKeepaliveSendCallback)(void);
 typedef bool (UdpNetworkObject::*UdpKeepaliveCheckCallback)(void);
 
-
-
-
 //====================================================================================================
 // 생성 Param
 //====================================================================================================
