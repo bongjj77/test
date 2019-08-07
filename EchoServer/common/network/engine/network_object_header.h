@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
+#include "../../common_header.h"
 
 #define DEAUULT_SOCKET_BUFFER_SZIE						(8192)
 #define DEFAULT_MAX_SEND_QUEUE_SIZE						(5000) // 
@@ -52,6 +53,9 @@ typedef boost::asio::ip::udp::socket 	NetUdpSocket;
 typedef boost::asio::ip::udp::endpoint	NetUdpEndPoint;
 
 typedef boost::asio::io_context NetIoContext;
+
+#define net_type_cast boost::static_pointer_cast
+
 
 //====================================================================================================
 // 데이터  정의 

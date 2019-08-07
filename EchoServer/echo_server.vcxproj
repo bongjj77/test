@@ -25,6 +25,8 @@
     <ClCompile Include="echo_server.cpp" />
     <ClCompile Include="main_object.cpp" />
     <ClCompile Include="stream_manager.cpp" />
+    <ClCompile Include="test_tcp_client\test_tcp_client_manager.cpp" />
+    <ClCompile Include="test_tcp_client\test_tcp_client_object.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\bit_writer.h" />
@@ -45,6 +47,9 @@
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
     <ClInclude Include="stream_manager.h" />
+    <ClInclude Include="test_tcp_client\test_protocol.h" />
+    <ClInclude Include="test_tcp_client\test_tcp_client_manager.h" />
+    <ClInclude Include="test_tcp_client\test_tcp_client_object.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{074244B7-CBDB-49BA-ADFD-D9CDE768F319}</ProjectGuid>

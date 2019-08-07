@@ -1,5 +1,4 @@
-﻿#include "../../common_header.h"
-#include "udp_network_object.h"
+﻿#include "udp_network_object.h"
 
 //====================================================================================================
 // Constructor 

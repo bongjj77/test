@@ -22,7 +22,6 @@
 #include "log_writer.h" 
 
 //------------------------------log define------------------------------ 
-// SYSLOG V1
 #define LOG_INIT(file_name, nBackupHour) LogInit(file_name, nBackupHour)
 #define LOG_WRITE(pFormat) LogPrint pFormat
 

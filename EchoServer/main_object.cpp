@@ -11,8 +11,8 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 
 	switch (object_key)
 	{
-		case NetworkObjectKey::EchoTcpClient:
-			object_key_string = "TcpClient";
+		case NetworkObjectKey::TestTcpClient:
+			object_key_string = "TestTcpClient";
 			break;	
 
 		default:

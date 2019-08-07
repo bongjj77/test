@@ -7,7 +7,7 @@
 
 enum class NetworkObjectKey
 {
-	EchoTcpClient,
+	TestTcpClient,
 	Max,
 };
 

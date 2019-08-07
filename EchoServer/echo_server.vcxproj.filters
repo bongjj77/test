@@ -37,6 +37,12 @@
     <ClCompile Include="common\log_writer.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="test_tcp_client\test_tcp_client_object.cpp">
+      <Filter>test_tcp_client</Filter>
+    </ClCompile>
+    <ClCompile Include="test_tcp_client\test_tcp_client_manager.cpp">
+      <Filter>test_tcp_client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -44,6 +50,9 @@
     </Filter>
     <Filter Include="network">
       <UniqueIdentifier>{23c8e849-9d92-4b6e-9203-e5767ba241c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test_tcp_client">
+      <UniqueIdentifier>{f7581348-dc2d-49d1-8d4e-f9920cc61775}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +103,15 @@
     </ClInclude>
     <ClInclude Include="common\log_writer.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="test_tcp_client\test_tcp_client_object.h">
+      <Filter>test_tcp_client</Filter>
+    </ClInclude>
+    <ClInclude Include="test_tcp_client\test_protocol.h">
+      <Filter>test_tcp_client</Filter>
+    </ClInclude>
+    <ClInclude Include="test_tcp_client\test_tcp_client_manager.h">
+      <Filter>test_tcp_client</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
