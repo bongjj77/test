@@ -37,17 +37,14 @@
 
 #else 
 	#include <io.h>
-	#include <Rpc.h>
-
-	
-	
+	#include <Rpc.h>	
 #endif
 
 #include <random>
 #include <algorithm>
 
 
-LogWriter gLogWriter("Q");
+LogWriter g_log_writer("Q");
 
 //====================================================================================================
 // 로그 초기화
@@ -56,9 +53,9 @@ bool LogInit(const char * file_name, int nBackupHour)
 {
 	//MakeDirectory(file_name);
 
-	bool result = 	gLogWriter.Open((char *)file_name);
+	bool result = 	g_log_writer.Open((char *)file_name);
 	
-	gLogWriter.SetDailyBackupTime(nBackupHour); 
+	g_log_writer.SetDailyBackupTime(nBackupHour); 
 	
 	return result;
 }
@@ -97,11 +94,11 @@ void LogPrint(const char * pFormat, ...)
 	fflush(stdout);
 
 	//파일 출력 
-	gLogWriter.LogWrite(log);
+	g_log_writer.LogWrite(log);
 }
 
 //====================================================================================================
-// 네트워크 초기화 
+// Network Init
 //====================================================================================================
 void InitNetwork()
 {
@@ -132,8 +129,6 @@ void ReleaseNetwork()
 #endif
 
 }
-
-
 
 //====================================================================================================
 // string 파싱 
@@ -315,16 +310,16 @@ std::string GetStringIP(uint32_t ip)
 //====================================================================================================
 // Replace std::string
 //====================================================================================================
-void ReplaceString( std::string & strText, const char * pszBefore, const char * pszAfter )
+void ReplaceString( std::string & text, const char * before, const char * after )
 {
-	std::string::size_type current_pos = strText.find( pszBefore );
-	std::string::size_type nBeforeLen 	= strlen( pszBefore );
-	std::string::size_type nAfterLen 	= strlen( pszAfter );
+	std::string::size_type current_pos = text.find(before);
+	std::string::size_type before_length = strlen(before);
+	std::string::size_type after_length = strlen(after);
 
 	while(current_pos < std::string::npos )
 	{
-		strText.replace(current_pos, nBeforeLen, pszAfter );
-		current_pos = strText.find( pszBefore, current_pos + nAfterLen );
+		text.replace(current_pos, before_length, after);
+		current_pos = text.find(before, current_pos + after_length );
 	}
 }
 
@@ -982,21 +977,22 @@ int GetLocalAddress(char *pAddress)
 {
 #ifdef _WIN32
     char ac[80] = {0, };
-    if( gethostname(ac, sizeof(ac)) == SOCKET_ERROR ) {
-        LOG_WRITE(( "ERR: %d when getting local host name. %s(%d)", 
-WSAGetLastError(), __FUNCTION__, __LINE__ ));
+    if( gethostname(ac, sizeof(ac)) == SOCKET_ERROR ) 
+	{
+        LOG_WRITE(( "ERR: %d when getting local host name. %s(%d)", WSAGetLastError(), __FUNCTION__, __LINE__ ));
         return -1;
     }
     LOG_WRITE( ("Host name is %s.", ac ));
 
     struct hostent *phe = gethostbyname(ac);
-    if (phe == 0) {
-        LOG_WRITE(( "ERR: Yow! Bad host lookup. %s(%d)", __FUNCTION__, 
-__LINE__ ));
+    if (phe == 0) 
+	{
+        LOG_WRITE(( "ERR: Yow! Bad host lookup. %s(%d)", __FUNCTION__, __LINE__ ));
         return 1;
     }
 
-    for( int i = 0; phe->h_addr_list[i] != 0; ++i ) {
+    for( int i = 0; phe->h_addr_list[i] != 0; ++i ) 
+	{
         struct in_addr addr;
         memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
         strcpy(pAddress, inet_ntoa(addr));
@@ -1009,7 +1005,8 @@ __LINE__ ));
     struct ifreq *ifr; /* points to one interface returned from ioctl */
     
     fd = socket (PF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) {
+    if (fd < 0) 
+	{
         return -1;
     }
     
@@ -1022,7 +1019,8 @@ __LINE__ ));
        it keeps trying the ioctl until it comes back OK and the size
        returned is less than the size we sent it.
      */
-    for( ; ;) {
+    for( ; ;) 
+	{
         ifc.ifc_len = sizeof(struct ifreq) * numreqs;
         ifc.ifc_buf = (char *)realloc(ifc.ifc_buf, ifc.ifc_len);
         
@@ -1038,15 +1036,18 @@ __LINE__ ));
         break;
     }
     
-    if (return_val < 0) {
+    if (return_val < 0) 
+	{
         return -1;
     }
 
     // loop through interfaces returned from SIOCGIFCONF
     ifr=ifc.ifc_req;
-    for(n=0; n < ifc.ifc_len; n+=sizeof(struct ifreq)) {
+    for(n=0; n < ifc.ifc_len; n+=sizeof(struct ifreq)) 
+	{
         // skip loopback address
-        if(strcasecmp(ifr->ifr_name, "lo") == 0) {
+        if(strcasecmp(ifr->ifr_name, "lo") == 0) 
+		{
             ifr++;
             continue;
         }
@@ -1055,7 +1056,8 @@ __LINE__ ));
         // Get the Destination Address for this interface
         return_val = ioctl(fd,SIOCGIFDSTADDR, ifr);
         if(return_val == 0 ) {
-            if(ifr->ifr_broadaddr.sa_family == AF_INET) {
+            if(ifr->ifr_broadaddr.sa_family == AF_INET) 
+			{
                 struct sockaddr_in
                     *sin = (struct sockaddr_in *)
                     &ifr->ifr_dstaddr;
