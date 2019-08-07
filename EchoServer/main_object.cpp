@@ -2,11 +2,6 @@
 #include "openssl/ssl.h"
 #include <iomanip>
 
-enum
-{
-	
-};
-
 //===============================================================================================
 // GetNetworkObjectName
 //===============================================================================================
@@ -16,10 +11,13 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 
 	switch (object_key)
 	{
-	
-	default:
-		object_key_string = "unknown";
-		break;
+		case NetworkObjectKey::EchoTcpClient:
+			object_key_string = "TcpClient";
+			break;	
+
+		default:
+			object_key_string = "unknown";
+			break;
 	}
 
 	return object_key_string;
@@ -30,7 +28,6 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 //====================================================================================================
 MainObject::MainObject( ) 
 {
-	_start_time = time(nullptr);
 
 }
 
@@ -49,50 +46,31 @@ void MainObject::Destroy( )
 {
 	_thread_timer.Destroy();
 
-	//종료 
+	// network close
 	for(int index = 0; index < (int)NetworkObjectKey::Max ; index++)
 	{
-		_network_table[index]->PostRelease(); 
+		_network_table[index]->PostRelease(); 		
 	}
-	
-	//서비스 종료
+	LOG_WRITE(("INFO : Network Object Close Completed"));
+
+	// network service close
 	if(_network_service_pool != nullptr)
 	{
 		_network_service_pool->Stop(); 
 
-		LOG_WRITE(("INFO : Network Service Pool Stop Completed"));
+		LOG_WRITE(("INFO : Network Service Pool Close Completed"));
 	}
 }
 
 //====================================================================================================
-// 생성
+// Create
 //====================================================================================================
-bool MainObject::Create(CreateParam *param)
+bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 {  
-	if(param == nullptr)
-    {
-		LOG_WRITE(("ERROR : Create Param Fail"));
-		return false;
-    }
-
-	// Real Host  설정 
-	std::string host_name; 
-
-	if(GetLocalHostName(host_name) == true)
-	{
-		strcpy(param->real_host_name, host_name.c_str());
-	}
-	else
-	{
-		strcpy(param->real_host_name, param->host_name);
-	}
-
-	LOG_WRITE(("INFO : Host Name - %s(%s) ", param->host_name, param->real_host_name));
-	
-	memcpy(&_create_param, param, sizeof(CreateParam));
-
+	_create_param = std::move(create_param);
+	 
 	// IoService 실행 
-	_network_service_pool = std::make_shared<NetworkContextPool>(param->thread_pool_count);
+	_network_service_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
 	_network_service_pool->Run();  	
 		
 	// Timer 생성 	
@@ -106,7 +84,7 @@ bool MainObject::Create(CreateParam *param)
 }
 
 //====================================================================================================
-// Network Accepted 콜백
+// Network Accepted Callback
 //====================================================================================================
 bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, uint32_t ip, int port)
 {
@@ -133,7 +111,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, u
 }
 
 //====================================================================================================
-// Network Connected 콜백
+// Network Connected Callback
 //====================================================================================================
 bool MainObject::OnTcpNetworkConnected(int object_key, 
 									NetConnectedResult result, 
@@ -148,30 +126,18 @@ bool MainObject::OnTcpNetworkConnected(int object_key,
 		return false; 
 	}
 	
-	/*
-	if (object_key == (int)NetworkObjectKey::SignallingServer)
-		SignallingServerConnectedProc(result, (SignallingServerConnectedParam*)connected_param->data(), socket, ip, port);
-	else
-		LOG_WRITE(("INFO : [%s] OnTcpNetworkConnected - Unknown Connect Object -IP(%s) Port(%d)", 
-			GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
-			GetStringIP(ip).c_str(), 
-			port));
-	
-	*/
-	
-
 	return true;
 }
 
 //====================================================================================================
-// Network ConnectedSSL 콜백
+// Network ConnectedSSL Callback
 //====================================================================================================
 bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
-	NetConnectedResult result,
-	std::shared_ptr<std::vector<uint8_t>> connected_param,
-	NetSocketSSL * socket,
-	unsigned ip,
-	int port)
+										NetConnectedResult result,
+										std::shared_ptr<std::vector<uint8_t>> connected_param,
+										NetSocketSSL * socket,
+										unsigned ip,
+										int port)
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
@@ -179,22 +145,11 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 		return false;
 	}
 
-	/*
-	if (object_key == (int)NetworkObjectKey::WowzaSignallingServer)
-	WowzaSignallingServerConnectedProc(result, (SignallingServerConnectedParam*)connected_param->data(), socket, ip, port);
-	else
-	LOG_WRITE(("INFO : [%s] OnTcpNetworkConnectedSSL - Unknown Connect Object -IP(%s) Port(%d)",
-	GetNetworkObjectName((NetworkObjectKey)object_key).c_str(),
-	GetStringIP(ip).c_str(),
-	port));
-	*/
-	
-
 	return true;
 }
 
 //====================================================================================================
-// Network 연결 종료 콜백(연결 종료)  
+// Network Connection Close Callback
 //====================================================================================================
 int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int port)
 {
@@ -212,22 +167,14 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 		GetStringIP(ip).c_str(), 
 		port));
 	
-	/*
-	// TODO : 정보 처러 완료 상태에서는 스트림 제거 필요 없음 steream_manager 객체에서 상태갑 확인 절차 차후 구현 
-	if (object_key == (int)NetworkObjectKey::SignallingServer) 
-		xxx.GetStreamKey(index_key, stream_key);
-	*/
-	
-	
-	//삭제 
+	// remove session 
 	_network_table[object_key]->Remove(index_key); 
 		
 	return 0;
 }
 
 //====================================================================================================
-// 소켓 연결 삭제 
-// - 스트림 제거시 호출 
+// Delete Session 
 //====================================================================================================
 bool MainObject::RemoveNetwork(int object_key, int index_key) 
 {
@@ -245,9 +192,7 @@ bool MainObject::RemoveNetwork(int object_key, int index_key)
 }
 
 //====================================================================================================
-// 소켓 연결 삭제 
-// - 스트림 제거시 호출 
-// - 인덱스키 배열 
+// Delete Sessions 
 //====================================================================================================
 bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys) 
 {
@@ -257,14 +202,14 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 		return false; 
 	}
 
-	//삭제 
+	// Remove
 	_network_table[object_key]->Remove(IndexKeys); 
 
 	return true; 
 }
 
 //====================================================================================================
-// 기본 타이머 Callback
+// Timerr Callback
 //====================================================================================================
 void MainObject::OnThreadTimer(uint32_t timer_id, bool &delete_timer/* = false */)
 {

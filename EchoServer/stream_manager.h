@@ -14,13 +14,13 @@ class MainObject;
 class StreamManager 
 {
 public:
-	StreamManager(MainObject * pMainObject);
+	StreamManager(std::shared_ptr<MainObject> &main_object);
 	virtual ~StreamManager();
 	
 public :
 
 
 private :	
-	MainObject									*_main_object;
+	std::shared_ptr<MainObject> _main_object;
 }; 
 

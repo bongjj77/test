@@ -8,28 +8,30 @@
 enum class NetworkObjectKey
 {
 	EchoTcpClient,
-
 	Max,
 };
 
 //====================================================================================================
-// Param
+// Create Param
 //====================================================================================================
 struct CreateParam
 {
-	char 	version[MAX_PATH];
-	bool	debug_mode;
-	char 	host_name[MAX_PATH];
-	char 	real_host_name[MAX_PATH];
-	int		network_bandwidth; //Kbps
+	std::string version;
+	bool		debug_mode;
+	std::string host_name;
+	std::string real_host_name;
+	int			network_bandwidth; //Kbps
 	uint32_t	local_ip;
-	int		thread_pool_count;
+	int			thread_pool_count;
+	time_t		start_time;
 };
 
 //====================================================================================================
 // MainObject
 //====================================================================================================
-class MainObject : 	public ITimerCallback, public INetworkCallback
+class MainObject : public std::enable_shared_from_this<MainObject>,
+				public ITimerCallback, 
+				public INetworkCallback
 {
 public:
 	MainObject(void);
@@ -37,7 +39,7 @@ public:
 
 public:
 	std::string GetCurrentDateTime();
-	bool Create(CreateParam *param);
+	bool Create(std::unique_ptr<CreateParam> create_param);
 	void Destroy(void);
 	bool RemoveNetwork(int object_key, int index_key); 
 	bool RemoveNetwork(int object_key, std::vector<int> & index_keys); 
@@ -66,18 +68,10 @@ private:
 								unsigned ip,
 								int port);
 
-
-
-
 	int  OnNetworkClose(int object_key, int index_key, uint32_t ip, int port); 	
+
+	bool OnUdpNetworkConnected(int object_key, NetConnectedResult result, char * connected_param, NetUdpSocket * socket, unsigned ip, int port) { return true;  }	 
 	
-	// INetworkCallback 구현 
-	bool OnUdpNetworkConnected(int object_key, 
-								NetConnectedResult result,
-								char * connected_param, 
-								NetUdpSocket * socket, 
-								unsigned ip, 
-								int port) { return true;  }	 
 	int OnUdpNetworkClose(int object_key, int index_key, uint32_t ip, int port) { return 0;  }
 	
 	
@@ -85,11 +79,8 @@ private:
 	void OnThreadTimer(uint32_t timer_id, bool &delete_timer);
 		
 private:
-	ThreadTimer			_thread_timer;
-	CreateParam			_create_param;
+	ThreadTimer							_thread_timer;
+	std::unique_ptr<CreateParam>		_create_param;
 	std::shared_ptr<NetworkContextPool> _network_service_pool = nullptr;	
-	NetworkManager		*_network_table[(int)NetworkObjectKey::Max];
-	time_t				_start_time;
-
-
+	NetworkManager						*_network_table[(int)NetworkObjectKey::Max];	 
 };

@@ -1,71 +1,71 @@
 ﻿#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN		// Windows 헤더에서 거의 사용되지 않는 내용을 제외시킵니다.
+	#define VC_EXTRALEAN		// Windows 헤더에서 거의 사용되지 않는 내용을 제외시킵니다.
 #endif
 
 #include <stdio.h>
 #include <iostream>
 
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#include <windows.h>
-#include <winsock2.h>
+	#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+	#include <windows.h>
+	#include <winsock2.h>
 #else
-#include <stdarg.h>
+	#include <stdarg.h>
 #endif
 
 //====================================================================================================
 // 메모리 릭 관련(Windows 디버깅 모드 정의) 
 //====================================================================================================
 #ifdef WIN32
-#ifdef _DEBUG 
-#define _CRTDBG_MAP_ALLOC
-#define _CRTDBG_MAP_ALLOC_NEW
-#include <crtdbg.h>
-#define CHECK_MEMORY_LEAK		_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF|_CRTDBG_ALLOC_MEM_DF);
-#define CHECK_BREAK_POINT(a)	_CrtSetBreakAlloc( a );
+	#ifdef _DEBUG 
+		#define _CRTDBG_MAP_ALLOC
+		#define _CRTDBG_MAP_ALLOC_NEW
+		#include <crtdbg.h>
+		#define CHECK_MEMORY_LEAK		_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF|_CRTDBG_ALLOC_MEM_DF);
+		#define CHECK_BREAK_POINT(a)	_CrtSetBreakAlloc( a );
+	#else
+		#define CHECK_MEMORY_LEAK
+		#define CHECK_BREAK_POINT(a)
+	#endif  
 #else
-#define CHECK_MEMORY_LEAK
-#define CHECK_BREAK_POINT(a)
-#endif  
-#else
-#define CHECK_MEMORY_LEAK7
-#define CHECK_BREAK_POINT(a)
+	#define CHECK_MEMORY_LEAK7
+	#define CHECK_BREAK_POINT(a)
 #endif 
 
 #ifndef MAX_PATH
-#define MAX_PATH (256)
+	#define MAX_PATH (256)
 #endif 
 
 #ifdef WIN32
-#define _STDINT_H
-#pragma warning(disable:4200)	// zero-sized array warning
-#pragma warning(disable:4996)	// ( vsprintf, strcpy, fopen ) function unsafe
-#pragma warning(disable:4715)	// return value not exist
-#pragma warning(disable:4244)
-#pragma warning(disable:4717)
-#pragma warning(disable:4018)	// signed/unsigned mismatch
-#pragma warning(disable:4005)	// macro redefinition
-#pragma warning(disable:94)		// the size of an array must be greater than zero
+	#define _STDINT_H
+	#pragma warning(disable:4200)	// zero-sized array warning
+	#pragma warning(disable:4996)	// ( vsprintf, strcpy, fopen ) function unsafe
+	#pragma warning(disable:4715)	// return value not exist
+	#pragma warning(disable:4244)
+	#pragma warning(disable:4717)
+	#pragma warning(disable:4018)	// signed/unsigned mismatch
+	#pragma warning(disable:4005)	// macro redefinition
+	#pragma warning(disable:94)		// the size of an array must be greater than zero
 
 #else	
-#include <errno.h>
-extern int errno;
-#include "linux_definition.h"
+	#include <errno.h>
+	extern int errno;
+	#include "linux_definition.h"
 #endif
 
 #include "config_define.h"
 #include "./common/common_header.h" 
 
 #ifndef _WIN32
-#include <fcntl.h>
-#include <iostream>
-#include <string>
-#include <log_writer.h>
-#include <unistd.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
+	#include <fcntl.h>
+	#include <iostream>
+	#include <string>
+	#include <log_writer.h>
+	#include <unistd.h>
+	#include <sys/resource.h>
+	#include <sys/stat.h>
+	#include <sys/time.h>
+	#include <sys/types.h>
 #endif
 #include <signal.h>
 #include "main_object.h"
@@ -151,40 +151,48 @@ int main(int argc, char* argv[])
 	
 	signal(SIGINT, SignalHandler);
 	signal(SIGTERM, SignalHandler);
-	
-	//리눅스 데몬 처리 및 로그 초기화 
+ 
 #ifndef _WIN32
     signal(SIGCLD,SIG_IGN);
 #endif
  
-	//로그 파일 초기화 
+	// Log file init
 	if(LOG_INIT(GET_CONFIG_VALUE(CONFIG_LOG_FILE_PATH), atoi(GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR))) == false)
 	{	
 		fprintf(stderr,"%s Log System Error \n", _PROGREAM_NAME_ );  
 		return -1; 
 	}
 	 
-	//네트워크 초기화 
+	// network init
     InitNetwork();
 
-	//기본 설정 정보 출력 
+	// setting info out
 	SettingPrint( );
 
-	//생성 파라메터 설정 
-	CreateParam param;
-	strcpy(param.version, 				GET_CONFIG_VALUE(CONFIG_VERSION));
-	param.thread_pool_count				= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
-	param.debug_mode					= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
-	strcpy(param.host_name, 			GET_CONFIG_VALUE(CONFIG_HOST_NAME)); 
-	param.network_bandwidth				= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH)); 
-	param.local_ip						= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
-		
-	//MainObject 생성 
+	// setting crate param
+	auto create_param = std::make_unique<CreateParam>();
+	 
+	create_param->version			= GET_CONFIG_VALUE(CONFIG_VERSION);
+	create_param->thread_pool_count	= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
+	create_param->debug_mode		= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
+	create_param->host_name			= GET_CONFIG_VALUE(CONFIG_HOST_NAME);
+	create_param->network_bandwidth	= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH));
+	create_param->local_ip			= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
+	create_param->start_time = time(nullptr);
+
+	// Real Host Setting 
+	std::string host_name;
+	if (GetLocalHostName(host_name) == true)	create_param->real_host_name = host_name;
+	else										create_param->real_host_name = create_param->host_name;
+
+	LOG_WRITE(("INFO : Host Name - %s(%s) ", create_param->host_name, create_param->real_host_name));
+ 
+	// Main object create
 	MainObject main_object;
 
-   	if(main_object.Create(&param) == false)
+   	if(main_object.Create(std::move(create_param)) == false)
 	{
-		LOG_WRITE(("[ %s ] MainObject Create Error\r\n", _PROGREAM_NAME_));
+		LOG_WRITE(("[ %s ] MainObject Create Error", _PROGREAM_NAME_));
 		return -1;
 	}
  
@@ -193,7 +201,7 @@ int main(int argc, char* argv[])
 	GetStringTime(time_string, 0);
 	LOG_WRITE(("===== [ %s Start(%s)] =====", _PROGREAM_NAME_, time_string.c_str()));
 
-	//프로세스 대기 루프 및 종료 처리  
+	// process main loop
 	while(gRun == true)
 	{
 #ifndef _WIN32

@@ -4,9 +4,9 @@
 //====================================================================================================
 // Constructor 
 //====================================================================================================
-StreamManager::StreamManager(MainObject * pMainObject)
+StreamManager::StreamManager(std::shared_ptr<MainObject>& main_object)
 {
-	_main_object = pMainObject;	
+	_main_object = main_object;
 }
 
 //====================================================================================================
