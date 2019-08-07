@@ -1,4 +1,9 @@
-﻿#include "../../common_header.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "../../common_header.h"
 #include "network_context_pool.h" 
 #include <stdexcept>
 

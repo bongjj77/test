@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include "./common/thread_timer.h"
 #include "./common/network/engine/network_manager.h"
 #include "stream_manager.h" 

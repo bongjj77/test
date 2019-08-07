@@ -1,5 +1,8 @@
-﻿#ifndef __H_CONFIG_DEFINE_H__
-#define __H_CONFIG_DEFINE_H__
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+#pragma once
  
 #define DEFAULT_CONFIG_FILE									"echo_server.conf"
  
@@ -32,4 +35,3 @@
 #define CONFIG_LOCAL_IP_VALUE						"127.0.0.1"
 #define CONFIG_ETHERNET_VALUE						"eth0" //사용 안함 
 
-#endif // __H_CONFIG_DEFINE_H__

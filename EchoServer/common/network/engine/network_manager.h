@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include "tcp_network_object.h" 
 #include "network_context_pool.h"
 

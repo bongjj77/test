@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include "network_object_header.h"
 
 #define UDP_NETWORK_BUFFER_SIZE			(8192)

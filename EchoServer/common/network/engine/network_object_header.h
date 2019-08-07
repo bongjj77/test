@@ -8,6 +8,11 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
 #include <vector>
+//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
 #include <deque>
 #include <mutex>
 #include <boost/asio/ssl.hpp>

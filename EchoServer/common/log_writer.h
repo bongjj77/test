@@ -1,5 +1,8 @@
-﻿#ifndef	_SYSLOG_H_
-#define	_SYSLOG_H_
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+#pragma once
 
 #include <stdio.h>
 #include <list>
@@ -86,7 +89,5 @@ private:
     pthread_mutex_t m_csLock;
 #endif	// defined(_WIN32) || defined(_WIN64)
 };
-
-#endif	// _SYSLOG_H_
 
 

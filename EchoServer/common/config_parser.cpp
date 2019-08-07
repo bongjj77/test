@@ -1,4 +1,9 @@
-﻿#include "config_parser.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "config_parser.h"
 
 #pragma pack(push, 1)
 typedef struct _CFG_ITEM 

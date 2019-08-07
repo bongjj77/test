@@ -1,4 +1,9 @@
-﻿#include "log_writer.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "log_writer.h"
 #include <stdarg.h>
 #if defined(_WIN32) || defined(_WIN64)
 #include <process.h>

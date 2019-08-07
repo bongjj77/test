@@ -1,4 +1,9 @@
-﻿#include "../../common_header.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "../../common_header.h"
 #include "tcp_network_object.h"
 #include "network_manager.h" 
 #include <iostream>
