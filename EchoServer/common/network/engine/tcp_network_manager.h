@@ -28,30 +28,30 @@ public :
 	virtual bool Create(INetworkCallback * callback, 
 						std::shared_ptr<NetworkContextPool>service_pool, 
 						int listen_port, 
-						char * object_name = nullptr, bool 
-						private_accepter_service = false);
+						std::string object_name, 
+						bool private_accepter_service = false);
 
 	virtual bool Create(INetworkCallback * callback, 
 						std::shared_ptr<NetworkContextPool> service_pool, 
-						char * object_name = nullptr)
+						std::string object_name)
 	{ 
 		return Create(callback, service_pool, 0, object_name); 
 	}
 
-	virtual bool CreateSSL(INetworkCallback * 		callback,
+	virtual bool CreateSSL(INetworkCallback		*callback,
 						std::shared_ptr<NetworkContextPool> service_pool,
 						std::string 			cert_file,
 						std::string				key_file,
 						std::string				verify_file,	
 						int 					listen_port, 
-						char * 					object_name 			= nullptr, 
+						std::string 			object_name, 
 						bool 					private_accepter_service = false,
 						int						timeout_request			= 5, 
 						long 					timeout_content			= 300);
 
 	virtual bool CreateSSL(INetworkCallback * callback,
 							std::shared_ptr<NetworkContextPool> service_pool,
-							char * object_name = nullptr)
+							std::string object_name)
 	{
 		std::string cert_file;
 		std::string key_file;

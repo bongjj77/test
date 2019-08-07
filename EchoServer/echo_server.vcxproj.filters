@@ -114,4 +114,7 @@
       <Filter>test_tcp_client</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
 </Project>

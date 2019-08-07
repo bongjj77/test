@@ -51,6 +51,9 @@
     <ClInclude Include="test_tcp_client\test_tcp_client_manager.h" />
     <ClInclude Include="test_tcp_client\test_tcp_client_object.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{074244B7-CBDB-49BA-ADFD-D9CDE768F319}</ProjectGuid>
     <RootNamespace>Agent_router</RootNamespace>

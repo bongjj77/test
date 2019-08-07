@@ -47,7 +47,7 @@ void UdpNetworkManager::Release()
 // 생성 
 // - udp
 //====================================================================================================
-bool UdpNetworkManager::Create(INetworkCallback * callback, std::shared_ptr<NetworkContextPool> service_pool, int listen_port, char * object_name/* = nullptr*/)
+bool UdpNetworkManager::Create(INetworkCallback * callback, std::shared_ptr<NetworkContextPool> service_pool, int listen_port, std::string object_name)
 {
 	//Object 이름 저장 
 	_object_name = object_name;

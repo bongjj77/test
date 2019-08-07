@@ -31,9 +31,9 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 //====================================================================================================
 // Constructor
 //====================================================================================================
-MainObject::MainObject( ) 
+MainObject::MainObject( ) : _test_tcp_client_manager((int)NetworkObjectKey::TestTcpClient)
 {
-
+	_network_table[(int)NetworkObjectKey::TestTcpClient] = &_test_tcp_client_manager;
 }
 
 //====================================================================================================
@@ -78,6 +78,14 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_service_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
 	_network_service_pool->Run();  	
 		
+	// test tcp cliet 생성
+	if (!_test_tcp_client_manager.Create(this, _network_service_pool, GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
+	{
+		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
+		return false;
+	}
+
+
 	// Timer 생성 	
 	if(	_thread_timer.Create(this) == false)
 	{
@@ -101,7 +109,8 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, u
 		
 	int index_key = -1; 
 		
-	// if (object_key == xxx)		_xxx.AcceptedAdd(socket, ip, port, this, _create_param.debug_mode, index_key);
+	if (object_key == (int)NetworkObjectKey::TestTcpClient)
+		_test_tcp_client_manager.AcceptedAdd(socket, ip, port, this, index_key);
 
 	if(index_key == -1)
 	{

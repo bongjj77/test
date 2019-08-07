@@ -7,8 +7,7 @@
 #include "./common/thread_timer.h"
 #include "./common/network/engine/network_manager.h"
 #include "stream_manager.h" 
-#include <iostream>
-#include <fstream>
+#include "./test_tcp_client/test_tcp_client_manager.h"
 
 enum class NetworkObjectKey
 {
@@ -22,12 +21,13 @@ enum class NetworkObjectKey
 struct CreateParam
 {
 	std::string version;
+	int			thread_pool_count;
 	bool		debug_mode;
 	std::string host_name;
 	std::string real_host_name;
 	int			network_bandwidth; //Kbps
 	uint32_t	local_ip;
-	int			thread_pool_count;
+	int			test_tcp_client_listen_port;
 	time_t		start_time;
 };
 
@@ -36,7 +36,8 @@ struct CreateParam
 //====================================================================================================
 class MainObject : public std::enable_shared_from_this<MainObject>,
 				public ITimerCallback, 
-				public INetworkCallback
+				public INetworkCallback,
+				public ITestTcpClientCallback
 {
 public:
 	MainObject(void);
@@ -87,5 +88,6 @@ private:
 	ThreadTimer							_thread_timer;
 	std::unique_ptr<CreateParam>		_create_param;
 	std::shared_ptr<NetworkContextPool> _network_service_pool = nullptr;	
-	NetworkManager						*_network_table[(int)NetworkObjectKey::Max];	 
+	NetworkManager						*_network_table[(int)NetworkObjectKey::Max];
+	TestTcpClintManager					_test_tcp_client_manager;
 };

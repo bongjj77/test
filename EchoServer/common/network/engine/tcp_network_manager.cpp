@@ -160,7 +160,7 @@ void TcpNetworkManager::Release()
 bool TcpNetworkManager::Create(INetworkCallback * callback, 
 								std::shared_ptr<NetworkContextPool> service_pool, 
 								int listen_port, 
-								char * object_name/* = nullptr*/, 
+								std::string object_name, 
 								bool private_accepter_service/*=false*/)
 {
 	_object_name = object_name; 	
@@ -185,16 +185,16 @@ bool TcpNetworkManager::Create(INetworkCallback * callback,
 // SSL 생성 
 // - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
 //====================================================================================================
-bool TcpNetworkManager::CreateSSL(	INetworkCallback * 		callback,
+bool TcpNetworkManager::CreateSSL(	INetworkCallback	*callback,
 									std::shared_ptr<NetworkContextPool>service_pool,
-									std::string 			cert_file,
-									std::string				key_file,
-									std::string				verify_file,	
-									int 					listen_port, 
-									char * 					object_name, 
-									bool 					private_accepter_service,
-									int						timeout_request, 
-									long 					timeout_content) 
+									std::string 		cert_file,
+									std::string			key_file,
+									std::string			verify_file,	
+									int 				listen_port, 
+									std::string			object_name, 
+									bool 				private_accepter_service,
+									int					timeout_request, 
+									long 				timeout_content) 
 {
 	bool result = false;
 	
