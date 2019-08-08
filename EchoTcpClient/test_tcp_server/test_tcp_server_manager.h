@@ -4,28 +4,20 @@
 //====================================================================================================
 
 #pragma once
-#include "common/common_function.h"
-#include <mutex>
-#include <memory>
-#pragma pack(1)
-
-class MainObject; 
-
-#pragma pack()
+#include "common/network/engine/tcp_network_manager.h"  
+#include "test_tcp_server_object.h" 
 
 //====================================================================================================
-// StreamManager
+// TestTcpServerManager
 //====================================================================================================
-class StreamManager 
+class TestTcpServerManager : public TcpNetworkManager
 {
 public:
-	StreamManager(std::shared_ptr<MainObject> &main_object);
-	virtual ~StreamManager();
-	
-public :
+	TestTcpServerManager(int object_key);
 
+public : 
+	bool ConnectedAdd(NetTcpSocket *socket, ITestTcpServerCallback *callback, int &index_key);
+	bool SendEchoData(int index_key, int data_size, uint8_t * data);
+private :
 
-private :	
-	std::shared_ptr<MainObject> _main_object;
 }; 
-

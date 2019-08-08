@@ -10,7 +10,7 @@
 //====================================================================================================
 // Interface
 //====================================================================================================
-class ITestTcpClientCallback
+class ITestTcpServerCallback
 {
 	
 public:
@@ -19,27 +19,26 @@ public:
 };
 
 //====================================================================================================
-// TestTcpClientObject
+// TestTcpServerObject
 //================================================================================================on====
-class TestTcpClientObject : public TcpNetworkObject 
+class TestTcpServerObject : public TcpNetworkObject 
 {
 public:
-					TestTcpClientObject();
-	virtual			~TestTcpClientObject();
+					TestTcpServerObject();
+	virtual			~TestTcpServerObject();
 	
 public:
-	bool			Create(TcpNetworkObjectParam *param);
+	bool			Create(TcpNetworkObjectParam * param);
 	virtual void	Destroy();
-	
+
 	bool			SendPackt(PacketType type_code, int data_size, uint8_t *data);
+	bool			SendEchoData(int data_size, uint8_t *data);
 
 	int				RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data);
 	bool			RecvPacketProcess(PacketType type_code, int data_size, uint8_t *data);
-	bool			RecvEchoRequest(int data_size, uint8_t *data);
-	bool			RecvStreamRequest(int data_size, uint8_t *data);
+	bool			RecvEchoResponse(int data_size, uint8_t *data);
+	bool			RecvStreamResponse(int data_size, uint8_t *data);
+
 private:
-
-	
-
 
 };

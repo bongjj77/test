@@ -261,9 +261,7 @@ bool UdpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if (_is_closeing == true)
 	{
 		LOG_WRITE(("INFO : [%s] UdpNetworkObject::PostSend - Closeing Return - IndexKey(%d) IP(%s)",
-			_object_name.c_str(),
-			_index_key,
-			_remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false;
 	}
 					
@@ -346,9 +344,7 @@ void UdpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	if (_is_closeing == true)
 	{
 			LOG_WRITE(("INFO : [%s] UdpNetworkObject::OnReceive Closeing Return - IndexKey(%d) IP(%s)",
-						_object_name.c_str(),
-						_index_key,
-						_remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		
 
 		return;
@@ -358,11 +354,11 @@ void UdpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	if (data_size > UDP_NETWORK_BUFFER_SIZE)
 	{
 		LOG_WRITE(("ERROR : [%s] OnReceive - error - remote(%s:%d) Error(%d) Message(%s)",
-			_object_name.c_str(),
-			_remote_ip_string.c_str(),
-			_remote_port,
-			error.value(),
-			error.message().c_str()));
+				_object_name.c_str(),
+				_remote_ip_string.c_str(),
+				_remote_port,
+				error.value(),
+				error.message().c_str()));
 		return;
 	}
   

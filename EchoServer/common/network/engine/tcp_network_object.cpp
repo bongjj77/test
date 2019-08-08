@@ -257,9 +257,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(data == nullptr || data->size() == 0)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::PostSend - Param Fail - IndexKey(%d) IP(%s)", 
-			_object_name.c_str(), 
-			_index_key, 
-			_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
 
@@ -268,9 +266,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(_is_closeing == true)
 	{
 		LOG_WRITE(("INFO : [%s] TcpNetworkObject::PostSend - Closeing Return - IndexKey(%d) IP(%s)", 
-			_object_name.c_str(), 
-			_index_key, 
-			_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
 
@@ -398,9 +394,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		if(_log_lock == false)
 		{
 			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnReceive Closeing Return - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), 
-				_index_key, 
-				_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
 		return; 
@@ -431,10 +425,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	if(process_size < 0 || process_size > _recv_data->size())
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnReceive - RecvHandler - IndexKey(%d) IP(%s) Result(%d)", 
-			_object_name.c_str(), 
-			_index_key, 
-			_remote_ip_string.c_str(), 
-			process_size));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), process_size));
 
 		//종료 콜백 호출 
 		if(_is_closeing == false)
@@ -535,9 +526,7 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 		if(_log_lock == false)
 		{
 			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnSend Closeing Return - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), 
-				_index_key, 
-				_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
 		return;

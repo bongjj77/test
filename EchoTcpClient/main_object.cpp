@@ -16,8 +16,8 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 
 	switch (object_key)
 	{
-		case NetworkObjectKey::TestTcpClient:
-			object_key_string = "TestTcpClient";
+		case NetworkObjectKey::TestTcpServer:
+			object_key_string = "TestTcpServer";
 			break;	
 
 		default:
@@ -31,9 +31,9 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 //====================================================================================================
 // Constructor
 //====================================================================================================
-MainObject::MainObject( ) : _test_tcp_client_manager((int)NetworkObjectKey::TestTcpClient)
+MainObject::MainObject( ) : _test_tcp_server_manager((int)NetworkObjectKey::TestTcpServer)
 {
-	_network_table[(int)NetworkObjectKey::TestTcpClient] = &_test_tcp_client_manager;
+	_network_table[(int)NetworkObjectKey::TestTcpServer] = &_test_tcp_server_manager;
 }
 
 //====================================================================================================
@@ -79,12 +79,12 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_service_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_client_manager.Create(this, 
+	if (!_test_tcp_server_manager.Create(this, 
 		_network_service_pool, 
-		_create_param->test_tcp_client_listen_port, 
-		GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
+		_create_param->test_tcp_server_port, 
+		GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
 	{
-		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
+		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpServer).c_str()));
 		return false;
 	}
 	 
@@ -103,28 +103,6 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 //====================================================================================================
 bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, uint32_t ip, int port)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
-	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkAccepted - Unkown ObjectKey - Key(%d)", object_key));
-		return false; 
-	}
-		
-	int index_key = -1; 
-		
-	if (object_key == (int)NetworkObjectKey::TestTcpClient)
-	{
-		_test_tcp_client_manager.AcceptedAdd(socket, ip, port, this, index_key);
-	}
-	
-	if(index_key == -1)
-	{
-		LOG_WRITE(("ERRRO : [%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)", 
-					GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
-					index_key, 
-					GetStringIP(ip).c_str()));
-		return false; 
-	}
-	
 	return true; 
 }
 
@@ -138,12 +116,20 @@ bool MainObject::OnTcpNetworkConnected(int object_key,
 									unsigned ip, 
 									int port)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
+	if (object_key >= (int)NetworkObjectKey::Max)
 	{
 		LOG_WRITE(("ERRRO : OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
-		return false; 
+		return false;
 	}
-	
+
+	if (object_key == (int)NetworkObjectKey::TestTcpServer)
+		TestTcpServerConnectedProc(result, (TestTcpServerConnectedParam *)connected_param->data(), socket, ip, port);
+	else
+		LOG_WRITE(("INFO : [%s] OnTcpNetworkConnected - Unknown Connect Object -IP(%s) Port(%d)",
+			GetNetworkObjectName((NetworkObjectKey)object_key).c_str(),
+			GetStringIP(ip).c_str(),
+			port));
+
 	return true;
 }
 
@@ -225,6 +211,44 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 
 	return true; 
 }
+
+
+//====================================================================================================
+// SignallingServer 연결 이후 처리 
+//====================================================================================================
+bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
+											TestTcpServerConnectedParam* onnected_param,
+											NetTcpSocket *socket,
+											uint32_t ip,
+											int port)
+{
+	int index_key = -1;
+
+	if (result_code != NetConnectedResult::Success || socket == nullptr)
+	{
+		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - Connected Result Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+
+		return false;
+	}
+
+	// Session add
+	if (_test_tcp_server_manager.ConnectedAdd(socket, this, index_key) == false)
+	{
+		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - ConnectAdd Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+		return false;
+	}
+
+	// data send
+	std::string data = "Echo Test";
+	if (_test_tcp_server_manager.SendEchoData(index_key, data.size() + 1, (uint8_t*)data.c_str()) == false)
+	{
+		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - SendEchoData Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+		return false;
+	}
+
+	return true;
+}
+
 
 //====================================================================================================
 // Timerr Callback

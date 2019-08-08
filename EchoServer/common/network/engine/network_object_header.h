@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -8,10 +13,6 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
 #include <vector>
-//====================================================================================================
-//  Created by Bong Jaejong
-//  Email : bongjj77@gmail.com
-//====================================================================================================
 
 #include <deque>
 #include <mutex>

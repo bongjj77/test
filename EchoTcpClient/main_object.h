@@ -7,11 +7,11 @@
 #include "common/thread_timer.h"
 #include "common/network/engine/network_manager.h"
 #include "stream_manager.h" 
-#include "./test_tcp_client/test_tcp_client_manager.h"
+#include "./test_tcp_server/test_tcp_server_manager.h"
 
 enum class NetworkObjectKey
 {
-	TestTcpClient,
+	TestTcpServer,
 	Max,
 };
 
@@ -27,8 +27,17 @@ struct CreateParam
 	std::string real_host_name;
 	int			network_bandwidth; //Kbps
 	uint32_t	local_ip;
-	int			test_tcp_client_listen_port;
+	uint32_t	test_tcp_server_ip;
+	int			test_tcp_server_port;
 	time_t		start_time;
+};
+
+//====================================================================================================
+// TestTcpServer Connected Param
+//====================================================================================================
+struct TestTcpServerConnectedParam
+{
+	int index;
 };
 
 //====================================================================================================
@@ -37,7 +46,7 @@ struct CreateParam
 class MainObject : public std::enable_shared_from_this<MainObject>,
 				public ITimerCallback, 
 				public INetworkCallback,
-				public ITestTcpClientCallback
+				public ITestTcpServerCallback
 {
 public:
 	MainObject(void);
@@ -81,6 +90,13 @@ private:
 	int OnUdpNetworkClose(int object_key, int index_key, uint32_t ip, int port) { return 0;  }
 	
 	
+	// Connect Proc
+	bool TestTcpServerConnectedProc(NetConnectedResult result_code,
+									TestTcpServerConnectedParam *onnected_param, 
+									NetTcpSocket *socket, 
+									uint32_t ip, 
+									int port);
+
 	// Timer 
 	void OnThreadTimer(uint32_t timer_id, bool &delete_timer);
 		
@@ -89,5 +105,5 @@ private:
 	std::unique_ptr<CreateParam>		_create_param;
 	std::shared_ptr<NetworkContextPool> _network_service_pool = nullptr;	
 	NetworkManager						*_network_table[(int)NetworkObjectKey::Max];
-	TestTcpClintManager					_test_tcp_client_manager;
+	TestTcpServerManager				_test_tcp_server_manager;
 };

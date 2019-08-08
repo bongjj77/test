@@ -3,29 +3,21 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#pragma once
-#include "common/common_function.h"
-#include <mutex>
-#include <memory>
-#pragma pack(1)
-
-class MainObject; 
-
-#pragma pack()
+#include "stream_manager.h"
+#include "main_object.h" 
 
 //====================================================================================================
-// StreamManager
+// Constructor 
 //====================================================================================================
-class StreamManager 
+StreamManager::StreamManager(std::shared_ptr<MainObject>& main_object)
 {
-public:
-	StreamManager(std::shared_ptr<MainObject> &main_object);
-	virtual ~StreamManager();
+	_main_object = main_object;
+}
+
+//====================================================================================================
+// Destructor 
+//====================================================================================================
+StreamManager::~StreamManager( )
+{
 	
-public :
-
-
-private :	
-	std::shared_ptr<MainObject> _main_object;
-}; 
-
+}

@@ -78,7 +78,7 @@
 #include "main_object.h"
 
 #define _VERSION_ 		"1.0.000"
-#define _PROGREAM_NAME_ "echo_server"
+#define _PROGREAM_NAME_ "echo_client"
 
 bool gRun = true;
 
@@ -107,7 +107,8 @@ void SettingPrint( )
 	LOG_WRITE(("	- %s : %s", CONFIG_DEBUG_MODE, 					GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
 	LOG_WRITE(("	- %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, 		GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
 	LOG_WRITE(("	- %s : %s", CONFIG_HOST_NAME,					GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
-	LOG_WRITE(("	- %s : %s", CONFIG_TEST_TCP_CLIENT_LISTEN_PORT,	GET_CONFIG_VALUE(CONFIG_TEST_TCP_CLIENT_LISTEN_PORT)));
+	LOG_WRITE(("	- %s : %s", CONFIG_TEST_TCP_SERVER_IP,			GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_IP)));
+	LOG_WRITE(("	- %s : %s", CONFIG_TEST_TCP_SERVER_PORT,		GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_PORT)));
 	LOG_WRITE(("===================================================================================================="));
 }
 
@@ -180,13 +181,14 @@ int main(int argc, char* argv[])
 	// setting crate param
 	auto create_param = std::make_unique<CreateParam>();
 	 
-	create_param->version						= GET_CONFIG_VALUE(CONFIG_VERSION);
-	create_param->thread_pool_count				= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
-	create_param->debug_mode					= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
-	create_param->host_name						= GET_CONFIG_VALUE(CONFIG_HOST_NAME);
-	create_param->network_bandwidth				= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH));
-	create_param->local_ip						= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
-	create_param->test_tcp_client_listen_port	= atoi(GET_CONFIG_VALUE(CONFIG_TEST_TCP_CLIENT_LISTEN_PORT));
+	create_param->version				= GET_CONFIG_VALUE(CONFIG_VERSION);
+	create_param->thread_pool_count		= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
+	create_param->debug_mode			= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
+	create_param->host_name				= GET_CONFIG_VALUE(CONFIG_HOST_NAME);
+	create_param->network_bandwidth		= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH));
+	create_param->local_ip				= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
+	create_param->test_tcp_server_ip	= inet_addr(GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_IP));
+	create_param->test_tcp_server_port	= atoi(GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_PORT));
 
 	create_param->start_time = time(nullptr);
 
