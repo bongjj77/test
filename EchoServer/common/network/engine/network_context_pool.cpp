@@ -15,7 +15,7 @@ NetworkContextPool::NetworkContextPool(int pool_count)
 	if(pool_count <= 0) _pool_count = std::thread::hardware_concurrency();
 	else _pool_count = pool_count; 
 	
-	LOG_WRITE(("serverice thread pool count %d", _pool_count ));
+	LOG_WRITE(("Network pool count %d", _pool_count ));
 		
 	_is_run = false; 
 	_io_context_index = 0;

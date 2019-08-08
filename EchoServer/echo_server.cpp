@@ -102,12 +102,12 @@ void SettingPrint( )
 
 	LOG_WRITE(("===================================================================================================="));
 	LOG_WRITE(("[ %s Config]", 		_PROGREAM_NAME_));
-	LOG_WRITE(("	- %s : %s", CONFIG_VERSION, 					GET_CONFIG_VALUE(CONFIG_VERSION)));
-	LOG_WRITE(("	- %s : %s",	CONFIG_THREAD_POOL_COUNT,			GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
-	LOG_WRITE(("	- %s : %s", CONFIG_DEBUG_MODE, 					GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
-	LOG_WRITE(("	- %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, 		GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
-	LOG_WRITE(("	- %s : %s", CONFIG_HOST_NAME,					GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
-	LOG_WRITE(("	- %s : %s", CONFIG_TEST_TCP_CLIENT_LISTEN_PORT,	GET_CONFIG_VALUE(CONFIG_TEST_TCP_CLIENT_LISTEN_PORT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, 					GET_CONFIG_VALUE(CONFIG_VERSION)));
+	LOG_WRITE(("    - %s : %s",	CONFIG_THREAD_POOL_COUNT,			GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, 					GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
+	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, 		GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME,					GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
+	LOG_WRITE(("    - %s : %s", CONFIG_TEST_TCP_CLIENT_LISTEN_PORT,	GET_CONFIG_VALUE(CONFIG_TEST_TCP_CLIENT_LISTEN_PORT)));
 	LOG_WRITE(("===================================================================================================="));
 }
 
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
 	if (LoadConfigFile(argv[0]) == false) 
 	{
 		fprintf(stderr, "Config file not found \r\n");
-		return -1; 
+		//return -1; 
 	}
 	
 	signal(SIGINT, SignalHandler);
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
 	if (GetLocalHostName(host_name) == true)	create_param->real_host_name = host_name;
 	else										create_param->real_host_name = create_param->host_name;
 
-	LOG_WRITE(("INFO : Host Name - %s(%s) ", create_param->host_name, create_param->real_host_name));
+	LOG_WRITE(("INFO : Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
 	MainObject main_object;

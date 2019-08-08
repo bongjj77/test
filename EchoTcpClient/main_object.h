@@ -99,7 +99,9 @@ private:
 
 	// Timer 
 	void OnThreadTimer(uint32_t timer_id, bool &delete_timer);
-		
+	void StartTestTimeProc();
+
+
 private:
 	ThreadTimer							_thread_timer;
 	std::unique_ptr<CreateParam>		_create_param;

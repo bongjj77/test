@@ -7,6 +7,14 @@
 #include "openssl/ssl.h"
 #include <iomanip>
 
+enum class Timer
+{
+	StartTest,
+	 
+};
+
+#define START_TEST_TIMER_INTERVAL	(5)
+
 //===============================================================================================
 // GetNetworkObjectName
 //===============================================================================================
@@ -45,7 +53,7 @@ MainObject::~MainObject( )
 }
 
 //====================================================================================================
-// 종료 
+// Destroy 
 //====================================================================================================
 void MainObject::Destroy( )
 {
@@ -79,17 +87,15 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_service_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_server_manager.Create(this, 
-		_network_service_pool, 
-		_create_param->test_tcp_server_port, 
-		GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
+	if (!_test_tcp_server_manager.Create(this, _network_service_pool, GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
 	{
 		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpServer).c_str()));
 		return false;
 	}
 	 
 	// create timer 	
-	if(	_thread_timer.Create(this) == false)
+	if(_thread_timer.Create(this) == false || 
+		_thread_timer.SetTimer((uint32_t)Timer::StartTest, START_TEST_TIMER_INTERVAL) == false)
 	{
 		LOG_WRITE(("ERROR : Init Timer Fail"));
 	    return false;   
@@ -257,6 +263,27 @@ void MainObject::OnThreadTimer(uint32_t timer_id, bool &delete_timer/* = false *
 {
 	switch(timer_id)
 	{
-	
+		case (uint32_t)Timer::StartTest :
+		{
+			StartTestTimeProc();
+
+			delete_timer = true; 
+
+			break;
+		}
 	}
+}
+
+//====================================================================================================
+// 시작 테스트 처리 
+// - 1회 실행
+//====================================================================================================
+void MainObject::StartTestTimeProc()
+{
+	auto connected_param = std::make_shared<std::vector<uint8_t>>(sizeof(TestTcpServerConnectedParam));
+	
+	TestTcpServerConnectedParam *test_tcp_server_param = (TestTcpServerConnectedParam *)connected_param->data();
+	test_tcp_server_param->index = 0;
+
+	_test_tcp_server_manager.PostConnect(_create_param->test_tcp_server_ip, _create_param->test_tcp_server_port, connected_param);
 }

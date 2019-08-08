@@ -112,8 +112,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		catch (std::exception& error)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s)", 
-				param->object_name, 
-				_remote_ip_string.c_str())); 
+				param->object_name, _remote_ip_string.c_str())); 
 
 			return false;
 		}
@@ -139,8 +138,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		catch (const std::exception& e)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s) Error(%s)", 
-				param->object_name, 
-				_remote_ip_string.c_str(), e.what())); 
+				param->object_name, _remote_ip_string.c_str(), e.what())); 
 
 			return false;
 		}
@@ -181,9 +179,7 @@ bool TcpNetworkObject::Start()
 		if(_socket_ssl->lowest_layer().is_open() == false)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), 
-				_index_key, 
-				_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
 		
@@ -198,9 +194,7 @@ bool TcpNetworkObject::Start()
 		if(_socket->is_open() == false)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), 
-				_index_key, 
-				_remote_ip_string.c_str()));
+				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
 		
