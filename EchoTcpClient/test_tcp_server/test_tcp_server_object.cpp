@@ -53,11 +53,9 @@ bool TestTcpServerObject::SendPackt(PacketType type_code, int data_size, uint8_t
 
 	header->type_code = type_code;
 	header->data_size = data_size;
-
-	send_data->insert(send_data->end(), data, data + data_size);
-
+	memcpy(header->data, data, data_size);
+	 
 	return PostSend(send_data, false);
-
 }
 
 //====================================================================================================
@@ -119,9 +117,7 @@ bool TestTcpServerObject::RecvPacketProcess(PacketType type_code, int data_size,
 		case PacketType::EchoResponse: 		
 			RecvEchoResponse(data_size, data); 	
 			break;
-		case PacketType::StreamResponse: 	
-			RecvStreamResponse(data_size, data);		
-			break;
+
 		default:
 		{
 			LOG_WRITE(("ERROR : [%s] Unknown Packet - Type(%d) TestTcpServer(%s:%d)", _object_name.c_str(), type_code, _remote_ip_string.c_str(), _remote_port));
@@ -133,18 +129,10 @@ bool TestTcpServerObject::RecvPacketProcess(PacketType type_code, int data_size,
 }
 
 //====================================================================================================
-//   PacketType::EchoResponse 패킷 처리 
+//   PacketType::EchoResponse Packet Process
 //====================================================================================================
 bool TestTcpServerObject::RecvEchoResponse(int data_size, uint8_t *data)
 {
 	LOG_WRITE(("INFO : [%s] Echo : %s ", _object_name.c_str(), data));
-	return true;
-}
-
-//====================================================================================================
-//  PacketType::StreamResponse 패킷 처리 
-//====================================================================================================
-bool TestTcpServerObject::RecvStreamResponse(int data_size, uint8_t *data)
-{
 	return true;
 }

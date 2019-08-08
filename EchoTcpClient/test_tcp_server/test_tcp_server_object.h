@@ -37,7 +37,6 @@ public:
 	int				RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data);
 	bool			RecvPacketProcess(PacketType type_code, int data_size, uint8_t *data);
 	bool			RecvEchoResponse(int data_size, uint8_t *data);
-	bool			RecvStreamResponse(int data_size, uint8_t *data);
 
 private:
 

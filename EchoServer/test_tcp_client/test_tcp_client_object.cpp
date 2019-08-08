@@ -50,12 +50,11 @@ bool TestTcpClientObject::Create(TcpNetworkObjectParam * param)
 bool TestTcpClientObject::SendPackt(PacketType type_code, int data_size, uint8_t *data)
 {
 	auto send_data = std::make_shared<std::vector<uint8_t>>(sizeof(PacketHeader) + data_size);
-	PacketHeader *header = (PacketHeader *)send_data->data();
+	PacketHeader* header = (PacketHeader*)send_data->data();
 
 	header->type_code = type_code;
 	header->data_size = data_size;
-	
-	send_data->insert(send_data->end(), data , data + data_size);
+	memcpy(header->data, data, data_size);
 
 	return PostSend(send_data, false);
 }
@@ -111,9 +110,6 @@ bool TestTcpClientObject::RecvPacketProcess(PacketType type_code, int data_size,
 	case PacketType::EchoRequest:
 		RecvEchoRequest(data_size, data);
 		break;
-	case PacketType::StreamRequest:
-		RecvStreamRequest(data_size, data);
-		break;
 	default:
 	{
 		LOG_WRITE(("ERROR : [%s] Unknown Packet - Type(%d) TestTcpClient(%s:%d)", 
@@ -136,12 +132,4 @@ bool TestTcpClientObject::RecvEchoRequest(int data_size, uint8_t *data)
 	LOG_WRITE(("INFO : [%s] Echo : %s ", _object_name.c_str(), data));
 
 	return SendPackt(PacketType::EchoResponse, data_size, data);;
-}
-
-//====================================================================================================
-//  PacketType::StreamRequest 패킷 처리 
-//====================================================================================================
-bool TestTcpClientObject::RecvStreamRequest(int data_size, uint8_t *data)
-{
-	return true;
 }

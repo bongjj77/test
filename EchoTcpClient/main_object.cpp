@@ -246,7 +246,7 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 
 	// data send
 	std::string data = "Echo Test";
-	if (_test_tcp_server_manager.SendEchoData(index_key, data.size() + 1, (uint8_t*)data.c_str()) == false)
+	if (_test_tcp_server_manager.SendEchoData(index_key, data.size() + 1, (uint8_t *)data.c_str()) == false)
 	{
 		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - SendEchoData Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
 		return false;
