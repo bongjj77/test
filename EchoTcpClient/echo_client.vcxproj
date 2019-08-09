@@ -52,6 +52,9 @@
     <ClInclude Include="test_tcp_server\test_tcp_server_manager.h" />
     <ClInclude Include="test_tcp_server\test_tcp_server_object.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="linux_build\Makefile" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{074244B7-CBDB-49BA-ADFD-D9CDE768F319}</ProjectGuid>
     <RootNamespace>Agent_router</RootNamespace>

@@ -17,7 +17,7 @@ TestTcpClintManager::TestTcpClintManager(int object_key) : TcpNetworkManager(obj
 //====================================================================================================
 // Object 추가(Accepted) 
 //====================================================================================================
-BOOL TestTcpClintManager::AcceptedAdd(NetTcpSocket * & socket, 
+bool TestTcpClintManager::AcceptedAdd(NetTcpSocket * & socket, 
 									uint32_t ip, 
 									int port, 
 									ITestTcpClientCallback *callback, 
@@ -40,10 +40,10 @@ BOOL TestTcpClintManager::AcceptedAdd(NetTcpSocket * & socket,
 	if(object->Create(&object_param) == false)
 	{
 		index_key = -1;
-		return FALSE;
+		return false;
 	}
 	 
 	index_key = Insert(object);
 
-	return index_key == -1 ? FALSE : TRUE;	
+	return index_key == -1 ? false : true;	
 }

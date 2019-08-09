@@ -54,6 +54,9 @@
     <Filter Include="test_tcp_server">
       <UniqueIdentifier>{f7581348-dc2d-49d1-8d4e-f9920cc61775}</UniqueIdentifier>
     </Filter>
+    <Filter Include="linux_build">
+      <UniqueIdentifier>{72cb71df-3914-4ee6-84b4-da9fa37296cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config_define.h" />
@@ -116,5 +119,10 @@
     <ClInclude Include="test_tcp_server\test_tcp_server_object.h">
       <Filter>test_tcp_server</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="linux_build\Makefile">
+      <Filter>linux_build</Filter>
+    </None>
   </ItemGroup>
 </Project>

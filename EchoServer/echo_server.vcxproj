@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="linux_build\Makefile" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{074244B7-CBDB-49BA-ADFD-D9CDE768F319}</ProjectGuid>

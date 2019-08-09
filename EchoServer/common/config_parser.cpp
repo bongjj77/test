@@ -2,7 +2,7 @@
 //  Created by Bong Jaejong
 //  Email : bongjj77@gmail.com
 //====================================================================================================
-
+#include <string.h>
 #include "config_parser.h"
 
 #pragma pack(push, 1)

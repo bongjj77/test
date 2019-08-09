@@ -16,7 +16,7 @@ public:
 	TestTcpClintManager(int object_key);
 
 public : 
-	BOOL AcceptedAdd(NetTcpSocket * &socket, uint32_t ip, int port, ITestTcpClientCallback * callback, int & index_key);
+	bool AcceptedAdd(NetTcpSocket * &socket, uint32_t ip, int port, ITestTcpClientCallback * callback, int & index_key);
 	
 private : 
 	
