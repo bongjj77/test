@@ -125,24 +125,22 @@ private :
 	
 protected : 
 	
-	bool				_is_private_accepter_service;
+	bool								_is_private_accepter_service;
 		
-	int					_index_key; 
-	uint32_t			_max_createing_count; 
-	TcpNetworkInfoMap	_network_info_map;
-	std::mutex			_network_info_map_mutex;
+	int									_index_key; 
+	uint32_t							_max_createing_count; 
+	TcpNetworkInfoMap					_network_info_map;
+	std::mutex							_network_info_map_mutex;
 
-	int					_listen_port; 
-	NetAcceptor			*_acceptor; 
-	std::shared_ptr<NetTcpSocket> _accept_socket;
-	std::shared_ptr<NetTimer> _release_timer;
-	
-	std::shared_ptr<INetworkCallback> _network_callback;
-	bool				_is_closeing;
-
-	bool				_is_support_ssl;
+	int									_listen_port; 
+	std::shared_ptr<NetAcceptor>		_acceptor; 
+	std::shared_ptr<NetTcpSocket>		_accept_socket;
+	std::shared_ptr<NetTimer>			_release_timer;
+	std::shared_ptr<INetworkCallback>	_network_callback;
+	bool								_is_closeing;
+	bool								_is_support_ssl;
 	std::shared_ptr<boost::asio::ssl::context> _ssl_context;
-	int					_timeout_request;
-	int					_timeout_content;
-	std::shared_ptr<NetSocketSSL> _accept_socket_ssl;	
+	int									_timeout_request;
+	int									_timeout_content;
+	std::shared_ptr<NetSocketSSL>		_accept_socket_ssl;	
 }; 

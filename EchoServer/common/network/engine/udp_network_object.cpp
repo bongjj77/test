@@ -47,7 +47,6 @@ void UdpNetworkObject::Release()
 {
 	if(_remote_end_point != nullptr)
 	{
-		delete _remote_end_point;
 		_remote_end_point = nullptr;
 	}
 	
@@ -77,7 +76,8 @@ bool UdpNetworkObject::Create(UdpNetworkObjectParam *param)
 	//Network Address -> host Address
 	_remote_ip_string = boost::asio::ip::address_v4(boost::asio::detail::socket_ops::network_to_host_long(param->remote_ip)).to_string();
 
-	_remote_end_point = new NetUdpEndPoint(boost::asio::ip::address::from_string(_remote_ip_string.c_str()), param->remote_port);
+	_remote_end_point = std::make_shared<NetUdpEndPoint>(boost::asio::ip::address::from_string(_remote_ip_string.c_str()), 
+														param->remote_port);
 	
 	_socket			= param->socket;
 	_remote_ip		= param->remote_ip;

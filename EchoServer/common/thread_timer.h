@@ -51,7 +51,7 @@ private:
 	ITimerCallback *_timer_interface;
 	uint32_t _interval;
 
-	std::map<uint32_t, TimerInfo*> _timer_map;
+	std::map<uint32_t, std::shared_ptr<TimerInfo>> _timer_map;
 	std::recursive_mutex _timer_map_mutex; // 동일 Thread에서 접속 가능
 
 	bool _is_timer_thread_stop;

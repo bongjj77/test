@@ -24,12 +24,12 @@
 TcpNetworkManager::TcpNetworkManager(int object_key) : NetworkManager(object_key)
 {
 	
-	_index_key 				= 0;
+	_index_key 					= 0;
 	_max_createing_count 		= 0;
 	_network_info_map.clear();
 	_listen_port				= 0; 
-	_is_private_accepter_service 	= false; 
-	_is_closeing					= false; 
+	_is_private_accepter_service= false; 
+	_is_closeing				= false; 
 	_release_timer				= nullptr;
 	_acceptor					= nullptr;
 	_accept_socket				= nullptr; 
@@ -120,7 +120,6 @@ void TcpNetworkManager::Release()
 			_acceptor->close(); 
 		}
 
-		delete _acceptor;
 		_acceptor = nullptr; 
 	}
 	
@@ -588,7 +587,9 @@ bool TcpNetworkManager::PostAccept()
 		{
 			NetTcpEndPoint endpoint(boost::asio::ip::tcp::v4(), _listen_port);
 			
-			_acceptor = new NetAcceptor(_is_private_accepter_service == true ? *(_context_pool->GetPrivateContext()) : *(_context_pool->GetContext()));
+			_acceptor = std::make_shared<NetAcceptor>(_is_private_accepter_service == true ? 
+													*(_context_pool->GetPrivateContext()) : 
+													*(_context_pool->GetContext()));
 			
 			_acceptor->open(endpoint.protocol());
 			_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address(false));

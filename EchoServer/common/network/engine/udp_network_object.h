@@ -73,32 +73,32 @@ protected :
 
 protected : 
 	
-	int				_index_key = -1;
-	int				_object_key = -1;
-	std::string		_object_name = "unknown_usp_object";
-	std::shared_ptr<INetworkCallback> _network_callback = nullptr;
-	std::shared_ptr<IObjectCallback> _object_callback = nullptr;
+	int										_index_key = -1;
+	int										_object_key = -1;
+	std::string								_object_name = "unknown_usp_object";
+	std::shared_ptr<INetworkCallback>		_network_callback = nullptr;
+	std::shared_ptr<IObjectCallback>		_object_callback = nullptr;
 
-	std::string		_remote_ip_string;
-	uint32_t 		_remote_ip = 0;
-	int				_remote_port = 0;
+	std::string								_remote_ip_string;
+	uint32_t 								_remote_ip = 0;
+	int										_remote_port = 0;
 	
-	bool			_is_create = false;
-	std::shared_ptr<NetUdpSocket> _socket = nullptr;
-	NetUdpEndPoint	*_remote_end_point = nullptr;
+	bool									_is_create = false;
+	std::shared_ptr<NetUdpSocket>			_socket = nullptr;
+	std::shared_ptr<NetUdpEndPoint>			_remote_end_point = nullptr;
 	
-	std::shared_ptr<std::vector<uint8_t>> _recv_buffer;
+	std::shared_ptr<std::vector<uint8_t>>	_recv_buffer;
 	
-	int64_t			_traffic_check_time = 0; // ms 
-	uint64_t		_send_traffic = 0; // bit 
-	uint64_t		_recv_traffic = 0; // bit
+	int64_t									_traffic_check_time = 0; // ms 
+	uint64_t								_send_traffic = 0; // bit 
+	uint64_t								_recv_traffic = 0; // bit
 
 
-	std::shared_ptr<NetTimer> _keep_alive_send_timer = nullptr;
-	UdpKeepaliveSendCallback _keepalive_send_callback;
+	std::shared_ptr<NetTimer>				_keep_alive_send_timer = nullptr;
+	UdpKeepaliveSendCallback				_keepalive_send_callback;
 
 	bool _is_closeing = false; 
-	std::shared_ptr<NetTimer> _post_close_timer = nullptr;
+	std::shared_ptr<NetTimer>				_post_close_timer = nullptr;
 
  };
 

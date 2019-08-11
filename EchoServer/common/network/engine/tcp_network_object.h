@@ -80,49 +80,49 @@ protected :
 
 protected : 
 	
-	int					_object_key = -1; 
-	int					_index_key = -1; 
-	std::shared_ptr<NetTcpSocket> _socket = nullptr;
-	std::shared_ptr<INetworkCallback> _network_callback = nullptr; 
-	std::shared_ptr<IObjectCallback> _object_callback = nullptr;
+	int										_object_key = -1; 
+	int										_index_key = -1; 
+	std::shared_ptr<NetTcpSocket>			_socket = nullptr;
+	std::shared_ptr<INetworkCallback>		_network_callback = nullptr; 
+	std::shared_ptr<IObjectCallback>		_object_callback = nullptr;
 
-	bool				_is_support_ssl = false;
-	std::shared_ptr<NetSocketSSL> _socket_ssl = nullptr;
+	bool									_is_support_ssl = false;
+	std::shared_ptr<NetSocketSSL>			_socket_ssl = nullptr;
 
-	std::string			_remote_ip_string;
-	uint32_t 			_remote_ip = 0; 
-	int					_remote_port = 0; 
-	std::string			_object_name = "unknown_tcp_object"; 
+	std::string								_remote_ip_string;
+	uint32_t 								_remote_ip = 0; 
+	int										_remote_port = 0; 
+	std::string								_object_name = "unknown_tcp_object"; 
 		
 	std::deque<std::shared_ptr<NetSendData>> _send_datas;
-	std::mutex			_send_data_queue_mutex;
+	std::mutex								_send_data_queue_mutex;
 	
-	std::shared_ptr<std::vector<uint8_t>> _recv_buffer = nullptr;
-	std::shared_ptr<std::vector<uint8_t>> _recv_data = nullptr;
-	std::shared_ptr<std::vector<uint8_t>> _rest_data = nullptr;
+	std::shared_ptr<std::vector<uint8_t>>	_recv_buffer = nullptr;
+	std::shared_ptr<std::vector<uint8_t>>	_recv_data = nullptr;
+	std::shared_ptr<std::vector<uint8_t>>	_rest_data = nullptr;
 		
-	bool		_is_closeing = false;
-	TcpKeepaliveSendCallback	_keepalive_send_callback; 
-	TcpKeepAliveCheckCallback 	_keepalive_check_callbak; 
-	uint32_t	_keepalive_check_time = 0; 
+	bool									_is_closeing = false;
+	TcpKeepaliveSendCallback				_keepalive_send_callback; 
+	TcpKeepAliveCheckCallback 				_keepalive_check_callbak; 
+	uint32_t								_keepalive_check_time = 0; 
 		
-	std::shared_ptr<NetTimer> _keep_alive_send_timer = nullptr; 
-	std::shared_ptr<NetTimer> _keepalive_check_timer = nullptr;
-	std::shared_ptr<NetTimer> _timeount_check_timer = nullptr;
-	std::shared_ptr<NetTimer> _close_timer = nullptr;
-	std::shared_ptr<NetTimer> _post_close_timer = nullptr;
+	std::shared_ptr<NetTimer>				_keep_alive_send_timer = nullptr; 
+	std::shared_ptr<NetTimer>				_keepalive_check_timer = nullptr;
+	std::shared_ptr<NetTimer>				_timeount_check_timer = nullptr;
+	std::shared_ptr<NetTimer>				_close_timer = nullptr;
+	std::shared_ptr<NetTimer>				_post_close_timer = nullptr;
 
-	time_t		_create_time = 0; 
-	time_t		_last_send_complete_time = 0; 
-	bool		_log_lock = false; 
-	bool		_network_error = false; 
-	bool		_is_send_completed_close = false; 
+	time_t									_create_time = 0; 
+	time_t									_last_send_complete_time = 0; 
+	bool									_log_lock = false; 
+	bool									_network_error = false; 
+	bool									_is_send_completed_close = false; 
 	
-	int64_t		_traffic_check_time = 0;	// ms 
-	uint64_t	_send_traffic = 0;			// bit 
-	uint64_t	_recv_traffic = 0;			// bit
+	int64_t									_traffic_check_time = 0;	// ms 
+	uint64_t								_send_traffic = 0;			// bit 
+	uint64_t								_recv_traffic = 0;			// bit
 	
-	int			_max_send_data_size = 0;
-	int			_post_close_time_interval = 0; 	
+	int										_max_send_data_size = 0;
+	int										_post_close_time_interval = 0; 	
 };
 

@@ -60,9 +60,6 @@ typedef boost::asio::ip::udp::endpoint	NetUdpEndPoint;
 
 typedef boost::asio::io_context NetIoContext;
 
-#define net_type_cast boost::static_pointer_cast
-
-
 //====================================================================================================
 // 데이터  정의 
 //====================================================================================================
@@ -93,7 +90,6 @@ static int64_t GetCurrentMilliSecond()
 	*/
 
 }
-
 
 //====================================================================================================
 // Network Interface 
