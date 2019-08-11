@@ -17,7 +17,7 @@ TestTcpClintManager::TestTcpClintManager(int object_key) : TcpNetworkManager(obj
 //====================================================================================================
 // Object 추가(Accepted) 
 //====================================================================================================
-bool TestTcpClintManager::AcceptedAdd(NetTcpSocket * & socket, 
+bool TestTcpClintManager::AcceptedAdd(std::shared_ptr<NetTcpSocket> socket, 
 									uint32_t ip, 
 									int port, 
 									ITestTcpClientCallback *callback, 

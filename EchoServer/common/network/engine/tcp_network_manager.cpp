@@ -60,13 +60,11 @@ TcpNetworkManager::~TcpNetworkManager( )
 
 	if(_accept_socket != nullptr)
 	{
-		delete _accept_socket;
 		_accept_socket = nullptr; 
 	}
 	
 	if(_accept_socket_ssl != nullptr)
 	{
-		delete _accept_socket_ssl;
 		_accept_socket_ssl = nullptr; 
 	}	
  
@@ -366,7 +364,7 @@ bool TcpNetworkManager::PostConnect(uint32_t ip, int port, std::shared_ptr<std::
 //====================================================================================================
 bool TcpNetworkManager::PostConnect(std::string & ip_string, int port, std::shared_ptr < std::vector<uint8_t>> connected_param)
 {
-	auto * socket = new NetTcpSocket(*(_context_pool->GetContext())); 
+	auto socket = std::make_shared<NetTcpSocket>(*(_context_pool->GetContext())); 
 
 	boost::asio::ip::tcp::endpoint endPoint(boost::asio::ip::address::from_string(ip_string.c_str()), port);
 	
@@ -392,7 +390,7 @@ bool TcpNetworkManager::PostConnectSSL(uint32_t ip, std::string host, int port, 
 	ip_string = NetAddress_v4(ip).to_string();
 
 
-	auto * socket = new NetSocketSSL(*(_context_pool->GetContext()), *_ssl_context);
+	auto socket = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
 	
 	socket->set_verify_callback(
 		boost::bind(&TcpNetworkManager::VerifyCallback, this, _1, _2));
@@ -435,7 +433,11 @@ bool TcpNetworkManager::VerifyCallback(bool preverified, boost::asio::ssl::verif
 //====================================================================================================
 // Connected 결과   
 //====================================================================================================
-void TcpNetworkManager::OnConnected(const NetErrorCode & error, NetTcpSocket * socket, std::shared_ptr<std::vector<uint8_t>> connected_param, uint32_t ip, int port)
+void TcpNetworkManager::OnConnected(const NetErrorCode & error, 
+									std::shared_ptr<NetTcpSocket> socket, 
+									std::shared_ptr<std::vector<uint8_t>> connected_param, 
+									uint32_t ip, 
+									int port)
 {
 	NetConnectedResult result= NetConnectedResult::Success;
 				
@@ -453,8 +455,6 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error, NetTcpSocket * s
 		if(socket != nullptr)
 		{
 			socket->close();
-
-			delete socket; 
 			socket = nullptr; 
 		}
 
@@ -479,7 +479,11 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error, NetTcpSocket * s
 //====================================================================================================
 // Connected 결과   
 //====================================================================================================
-void TcpNetworkManager::OnConnectedSSL(const NetErrorCode & error, NetSocketSSL * socket, std::shared_ptr<std::vector<uint8_t>> connected_param, uint32_t ip, int port)
+void TcpNetworkManager::OnConnectedSSL(	const NetErrorCode & error, 
+										std::shared_ptr<NetSocketSSL> socket, 
+										std::shared_ptr<std::vector<uint8_t>> connected_param, 
+										uint32_t ip, 
+										int port)
 {
 	NetConnectedResult result = NetConnectedResult::Success;
 
@@ -497,8 +501,6 @@ void TcpNetworkManager::OnConnectedSSL(const NetErrorCode & error, NetSocketSSL 
 		if (socket != nullptr)
 		{
 			socket->lowest_layer().close();
-
-			delete socket;
 			socket = nullptr;
 		}
 
@@ -527,7 +529,11 @@ void TcpNetworkManager::OnConnectedSSL(const NetErrorCode & error, NetSocketSSL 
 //====================================================================================================
 // SSL HandShake 핸들러(client) 
 //====================================================================================================
-void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error, NetSocketSSL * socket, std::shared_ptr<std::vector<uint8_t>> connected_param, uint32_t ip, int port)
+void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error, 
+										std::shared_ptr<NetSocketSSL> socket, 
+										std::shared_ptr<std::vector<uint8_t>> connected_param, 
+										uint32_t ip, 
+										int port)
 {
 	NetConnectedResult result = NetConnectedResult::Success;
 
@@ -545,8 +551,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error, NetSocketSSL 
 		if (socket != nullptr)
 		{
 			socket->lowest_layer().close();
-
-			delete socket;
 			socket = nullptr;
 		}
 
@@ -611,12 +615,10 @@ bool TcpNetworkManager::PostAccept()
 			{
 				_accept_socket_ssl->lowest_layer().close();
 			}
-
-			delete _accept_socket_ssl; 
 			_accept_socket_ssl = nullptr; 
 		}
 		
-		_accept_socket_ssl = new NetSocketSSL(*(_context_pool->GetContext()), *_ssl_context);
+		_accept_socket_ssl = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
 
 		_acceptor->async_accept(_accept_socket_ssl->lowest_layer(), boost::bind(&TcpNetworkManager::OnAcceptSSL, this, boost::asio::placeholders::error));
 	}
@@ -631,12 +633,10 @@ bool TcpNetworkManager::PostAccept()
 			{
 				_accept_socket->close();
 			}
-
-			delete _accept_socket; 
 			_accept_socket = nullptr; 
 		}
 		
-		_accept_socket  = new NetTcpSocket(*(_context_pool->GetContext())); 
+		_accept_socket  = std::make_shared<NetTcpSocket>(*(_context_pool->GetContext())); 
 		_acceptor->async_accept(*_accept_socket, boost::bind(&TcpNetworkManager::OnAccept, this, boost::asio::placeholders::error));
 	}
 
@@ -665,8 +665,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 			{
 				_accept_socket->close(); 
 			}
-
-			delete _accept_socket; 
 			_accept_socket 		= nullptr;
 		}
 
@@ -692,8 +690,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 			{
 				_accept_socket->close(); 
 			}
-
-			delete _accept_socket; 
 			_accept_socket = nullptr; 
 		}
 			
@@ -717,8 +713,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 			{
 				_accept_socket->close(); 
 			}
-
-			delete _accept_socket; 
 			_accept_socket = nullptr;
 		}
 
@@ -743,8 +737,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 			{
 				_accept_socket->close(); 
 			}
-
-			delete _accept_socket; 
 			_accept_socket = nullptr; 
 		}
 	}
@@ -775,8 +767,6 @@ void TcpNetworkManager::OnAcceptSSL(const NetErrorCode & error)
 			{
 				_accept_socket_ssl->lowest_layer().close(); 
 			}
-
-			delete _accept_socket_ssl; 
 			_accept_socket_ssl 		= nullptr;
 		}
 
@@ -825,8 +815,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 			{
 				_accept_socket_ssl->lowest_layer().close(); 
 			}
-
-			delete _accept_socket_ssl; 
 			_accept_socket_ssl = nullptr;
 		}
 
@@ -861,7 +849,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 				_accept_socket_ssl->lowest_layer().close(); 
 			}
 
-			delete _accept_socket_ssl; 
 			_accept_socket_ssl = nullptr;
 		}
 
@@ -888,8 +875,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 			{
 				_accept_socket_ssl->lowest_layer().close(); 
 			}
-
-			delete _accept_socket_ssl; 
 			_accept_socket_ssl = nullptr; 
 		}
 	}

@@ -101,22 +101,23 @@ static int64_t GetCurrentMilliSecond()
 class INetworkCallback
 {
 public:
-	virtual bool OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, uint32_t ip, int port) = 0;			// Accepted
-	virtual bool OnTcpNetworkAcceptedSSL(int object_key, NetSocketSSL * & socket_ssl, uint32_t ip, int port) = 0;	// Accepted(SSL)
-	 
-	virtual bool OnTcpNetworkConnected(int object_key,
-		NetConnectedResult result,
-		std::shared_ptr<std::vector<uint8_t>> connected_param,
-		NetTcpSocket* socket,
-		unsigned ip,
-		int port) = 0;
+	virtual bool OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSocket> socket, uint32_t ip, int port) = 0;			// Accepted
 	
-	virtual bool OnTcpNetworkConnectedSSL(int object_key,
-		NetConnectedResult result,
-		std::shared_ptr<std::vector<uint8_t>> connected_param,
-		NetSocketSSL* socket,
-		unsigned ip,
-		int port) = 0;
+	virtual bool OnTcpNetworkAcceptedSSL(int object_key, std::shared_ptr<NetSocketSSL>  socket_ssl, uint32_t ip, int port) = 0;	// Accepted(SSL)
+	 
+	virtual bool OnTcpNetworkConnected(	int object_key,
+										NetConnectedResult result,
+										std::shared_ptr<std::vector<uint8_t>> connected_param,
+										std::shared_ptr<NetTcpSocket> socket,
+										unsigned ip,
+										int port) = 0;
+	
+	virtual bool OnTcpNetworkConnectedSSL(	int object_key,
+											NetConnectedResult result,
+											std::shared_ptr<std::vector<uint8_t>> connected_param,
+											std::shared_ptr<NetSocketSSL> socket,
+											unsigned ip,
+											int port) = 0;
 
 
 	virtual int OnNetworkClose(int object_key, int index_key, uint32_t ip, int port) = 0;

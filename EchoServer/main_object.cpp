@@ -31,9 +31,11 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 //====================================================================================================
 // Constructor
 //====================================================================================================
-MainObject::MainObject( ) : _test_tcp_client_manager((int)NetworkObjectKey::TestTcpClient)
+MainObject::MainObject()
 {
-	_network_table[(int)NetworkObjectKey::TestTcpClient] = &_test_tcp_client_manager;
+	_test_tcp_client_manager = std::make_shared<TestTcpClintManager>((int)NetworkObjectKey::TestTcpClient);
+
+	_network_table[(int)NetworkObjectKey::TestTcpClient] = _test_tcp_client_manager;
 }
 
 //====================================================================================================
@@ -45,11 +47,11 @@ MainObject::~MainObject( )
 }
 
 //====================================================================================================
-// 종료 
+// Destroy 
 //====================================================================================================
 void MainObject::Destroy( )
 {
-	_thread_timer.Destroy();
+	_timer.Destroy();
 
 	// network close
 	for(int index = 0; index < (int)NetworkObjectKey::Max ; index++)
@@ -59,9 +61,9 @@ void MainObject::Destroy( )
 	LOG_WRITE(("INFO : Network Object Close Completed"));
 
 	// network service close
-	if(_network_service_pool != nullptr)
+	if(_network_context_pool != nullptr)
 	{
-		_network_service_pool->Stop(); 
+		_network_context_pool->Stop(); 
 
 		LOG_WRITE(("INFO : Network Service Pool Close Completed"));
 	}
@@ -75,21 +77,21 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_create_param = std::move(create_param);
 	 
 	// IoService start
-	_network_service_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
-	_network_service_pool->Run();  	
+	_network_context_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
+	_network_context_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_client_manager.Create(this, 
-		_network_service_pool, 
-		_create_param->test_tcp_client_listen_port, 
-		GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
+	if (!_test_tcp_client_manager->Create(	this, 
+											_network_context_pool, 
+											_create_param->test_tcp_client_listen_port, 
+											GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
 	{
 		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
 		return false;
 	}
 	 
 	// create timer 	
-	if(	_thread_timer.Create(this) == false)
+	if(	_timer.Create(this) == false)
 	{
 		LOG_WRITE(("ERROR : Init Timer Fail"));
 	    return false;   
@@ -101,7 +103,7 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 //====================================================================================================
 // Network Accepted Callback
 //====================================================================================================
-bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, uint32_t ip, int port)
+bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSocket> socket, uint32_t ip, int port)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
@@ -113,7 +115,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, u
 		
 	if (object_key == (int)NetworkObjectKey::TestTcpClient)
 	{
-		_test_tcp_client_manager.AcceptedAdd(socket, ip, port, this, index_key);
+		_test_tcp_client_manager->AcceptedAdd(socket, ip, port, this, index_key);
 	}
 	
 	if(index_key == -1)
@@ -131,12 +133,12 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, NetTcpSocket * & socket, u
 //====================================================================================================
 // Network Connected Callback
 //====================================================================================================
-bool MainObject::OnTcpNetworkConnected(int object_key, 
-									NetConnectedResult result, 
-									std::shared_ptr<std::vector<uint8_t>> connected_param, 
-									NetTcpSocket * socket, 
-									unsigned ip, 
-									int port)
+bool MainObject::OnTcpNetworkConnected(	int object_key, 
+										NetConnectedResult result, 
+										std::shared_ptr<std::vector<uint8_t>> connected_param, 
+										std::shared_ptr<NetTcpSocket> socket, 
+										unsigned ip, 
+										int port)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
@@ -153,7 +155,7 @@ bool MainObject::OnTcpNetworkConnected(int object_key,
 bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 										NetConnectedResult result,
 										std::shared_ptr<std::vector<uint8_t>> connected_param,
-										NetSocketSSL * socket,
+										std::shared_ptr < NetSocketSSL> socket,
 										unsigned ip,
 										int port)
 {

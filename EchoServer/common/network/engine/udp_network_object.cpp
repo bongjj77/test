@@ -56,8 +56,6 @@ void UdpNetworkObject::Release()
 	if(_socket != nullptr)
 	{
 		_socket->close();
-		
-		delete _socket;
 		_socket = nullptr;
 	}
 

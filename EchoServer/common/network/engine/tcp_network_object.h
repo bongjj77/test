@@ -21,9 +21,9 @@ struct TcpNetworkObjectParam
 	void *object_callback;
 	std::string object_name;
 
-	NetTcpSocket *socket; 
+	std::shared_ptr<NetTcpSocket> socket;
 	bool enable_ssl;
-	NetSocketSSL *socket_ssl; 
+	std::shared_ptr<NetSocketSSL> socket_ssl;
 	INetworkCallback *network_callback;
 };
 
@@ -82,12 +82,12 @@ protected :
 	
 	int					_object_key = -1; 
 	int					_index_key = -1; 
-	NetTcpSocket *		_socket = nullptr;
+	std::shared_ptr<NetTcpSocket> _socket = nullptr;
 	INetworkCallback *	_network_callback = nullptr; 
 	void *				_object_callback = nullptr; 
 
 	bool				_is_support_ssl = false;
-	NetSocketSSL * 		_socket_ssl = nullptr;	
+	std::shared_ptr<NetSocketSSL> _socket_ssl = nullptr;
 
 	std::string			_remote_ip_string;
 	uint32_t 			_remote_ip = 0; 

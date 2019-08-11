@@ -19,13 +19,13 @@ typedef bool (UdpNetworkObject::*UdpKeepaliveCheckCallback)(void);
 //====================================================================================================
 struct UdpNetworkObjectParam
 {
-	int 				object_key;
-	uint32_t			remote_ip;
-	int					remote_port;
-	NetUdpSocket		*socket;
-	INetworkCallback	*network_callback;
-	void				*object_callback;
-	std::string			object_name;
+	int 							object_key;
+	uint32_t						remote_ip;
+	int								remote_port;
+	std::shared_ptr<NetUdpSocket>	socket;
+	INetworkCallback				*network_callback;
+	void							*object_callback;
+	std::string						object_name;
 };
 
 
@@ -85,7 +85,7 @@ protected :
 	int				_remote_port = 0;
 	
 	bool			_is_create = false;
-	NetUdpSocket	*_socket = nullptr;
+	std::shared_ptr<NetUdpSocket> _socket = nullptr;
 	NetUdpEndPoint	*_remote_end_point = nullptr;
 	
 	std::shared_ptr<std::vector<uint8_t>> _recv_buffer;

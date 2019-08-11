@@ -98,22 +98,27 @@ protected :
 
 	void OnAccept(const NetErrorCode & error);
 
-	virtual void OnConnected(const NetErrorCode & error, 
-							NetTcpSocket * socket, 
-							std::shared_ptr<std::vector<uint8_t>> connected_param, 
-							uint32_t ip, 
-							int port);
-	
-	virtual void OnConnectedSSL(const NetErrorCode & error,
-							NetSocketSSL * socket,
+	virtual void OnConnected(const NetErrorCode& error,
+							std::shared_ptr<NetTcpSocket> socket,
 							std::shared_ptr<std::vector<uint8_t>> connected_param,
 							uint32_t ip,
 							int port);
+	
+	virtual void OnConnectedSSL(const NetErrorCode & error,
+								std::shared_ptr<NetSocketSSL> socket,
+								std::shared_ptr<std::vector<uint8_t>> connected_param,
+								uint32_t ip,
+								int port);
 
 	void OnAcceptSSL(const NetErrorCode & error);
 
 	void OnHandshakeSSL(const NetErrorCode & error);
-	void OnHandshakeSSL(const NetErrorCode & error, NetSocketSSL * socket, std::shared_ptr<std::vector<uint8_t>> connected_param, uint32_t ip, int port);
+
+	void OnHandshakeSSL(const NetErrorCode & error, 
+						std::shared_ptr<NetSocketSSL> socket, 
+						std::shared_ptr<std::vector<uint8_t>> connected_param, 
+						uint32_t ip, 
+						int port);
 
 private : 
 	bool TimeoutConnect(const char * host,int port, int timeout, SOCKET & socket_handle);
@@ -129,7 +134,7 @@ protected :
 
 	int					_listen_port; 
 	NetAcceptor			*_acceptor; 
-	NetTcpSocket		*_accept_socket;
+	std::shared_ptr<NetTcpSocket> _accept_socket;
 	NetTimer			*_release_timer;
 	
 	INetworkCallback	*_network_callback;
@@ -139,5 +144,5 @@ protected :
 	std::shared_ptr<boost::asio::ssl::context> _ssl_context;
 	int					_timeout_request;
 	int					_timeout_content;
-	NetSocketSSL		*_accept_socket_ssl;	
+	std::shared_ptr<NetSocketSSL> _accept_socket_ssl;	
 }; 

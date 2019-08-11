@@ -16,7 +16,7 @@ public:
 	TestTcpServerManager(int object_key);
 
 public : 
-	bool ConnectedAdd(NetTcpSocket *socket, ITestTcpServerCallback *callback, int &index_key);
+	bool ConnectedAdd(std::shared_ptr<NetTcpSocket> socket, ITestTcpServerCallback *callback, int &index_key);
 	bool SendEchoData(int index_key, int data_size, uint8_t * data);
 private :
 

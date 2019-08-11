@@ -16,7 +16,11 @@ public:
 	TestTcpClintManager(int object_key);
 
 public : 
-	bool AcceptedAdd(NetTcpSocket * &socket, uint32_t ip, int port, ITestTcpClientCallback * callback, int & index_key);
+	bool AcceptedAdd(std::shared_ptr<NetTcpSocket> socket, 
+					uint32_t ip, 
+					int port, 
+					ITestTcpClientCallback * callback, 
+					int &index_key);
 	
 private : 
 	

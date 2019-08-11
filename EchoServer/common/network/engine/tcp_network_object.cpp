@@ -69,13 +69,11 @@ TcpNetworkObject::~TcpNetworkObject()
 	// Socket 정리 
 	if(_socket != nullptr)
 	{
-		delete _socket; 
 		_socket = nullptr; 
 	}
 
 	if(_socket_ssl != nullptr)
 	{
-		delete _socket_ssl; 
 		_socket_ssl = nullptr; 
 	}
 
@@ -615,8 +613,9 @@ void TcpNetworkObject::SetKeepAliveSendTimer(int interval, TcpKeepaliveSendCallb
 		_keep_alive_send_timer = nullptr; 
 	}
 	
-	_keep_alive_send_timer	 	= new NetTimer(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() : 
-		(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_keep_alive_send_timer = new NetTimer(_is_support_ssl == false ? 
+										(boost::asio::io_context&)_socket->get_executor().context() : 
+										(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
 
 	_keepalive_send_callback 	= callback; 
 	SetNetworkTimer(_keep_alive_send_timer, (int)NetworkTimer::KeepaliveSend, interval);
