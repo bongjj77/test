@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include "network_manager.h" 
 #include "tcp_network_object.h" 
 #include "network_context_pool.h"
@@ -13,11 +18,6 @@ typedef std::map<int, std::shared_ptr<TcpNetworkObject>> 	TcpNetworkInfoMap; //K
 //====================================================================================================
 // NetworkManager
 //====================================================================================================
-//====================================================================================================
-//  Created by Bong Jaejong
-//  Email : bongjj77@gmail.com
-//====================================================================================================
-
 class TcpNetworkManager : public NetworkManager
 {
 public :
@@ -25,20 +25,20 @@ public :
 	virtual ~TcpNetworkManager();
 
 public : 
-	virtual bool Create(INetworkCallback * callback, 
+	virtual bool Create(std::shared_ptr<INetworkCallback> callback, 
 						std::shared_ptr<NetworkContextPool>service_pool, 
 						int listen_port, 
 						std::string object_name, 
 						bool private_accepter_service = false);
 
-	virtual bool Create(INetworkCallback * callback, 
+	virtual bool Create(std::shared_ptr<INetworkCallback> callback, 
 						std::shared_ptr<NetworkContextPool> service_pool, 
 						std::string object_name)
 	{ 
 		return Create(callback, service_pool, 0, object_name); 
 	}
 
-	virtual bool CreateSSL(INetworkCallback		*callback,
+	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
 						std::shared_ptr<NetworkContextPool> service_pool,
 						std::string 			cert_file,
 						std::string				key_file,
@@ -49,7 +49,7 @@ public :
 						int						timeout_request			= 5, 
 						long 					timeout_content			= 300);
 
-	virtual bool CreateSSL(INetworkCallback * callback,
+	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
 							std::shared_ptr<NetworkContextPool> service_pool,
 							std::string object_name)
 	{
@@ -89,7 +89,7 @@ protected :
 	void				Release();
 		
 	virtual int			Insert(std::shared_ptr<TcpNetworkObject> object, 
-								bool bKeepAliveCheck = false, 
+								bool is_keepalive_check = false, 
 								uint32_t keepalive_check_time = 0);
 
 	std::shared_ptr<TcpNetworkObject> Find(int index_key, bool erase = false);
@@ -135,9 +135,9 @@ protected :
 	int					_listen_port; 
 	NetAcceptor			*_acceptor; 
 	std::shared_ptr<NetTcpSocket> _accept_socket;
-	NetTimer			*_release_timer;
+	std::shared_ptr<NetTimer> _release_timer;
 	
-	INetworkCallback	*_network_callback;
+	std::shared_ptr<INetworkCallback> _network_callback;
 	bool				_is_closeing;
 
 	bool				_is_support_ssl;

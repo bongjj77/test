@@ -198,9 +198,9 @@ int main(int argc, char* argv[])
 	LOG_WRITE(("INFO : Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
-	MainObject main_object;
+	auto main_object = std::make_shared<MainObject>();
 
-   	if(main_object.Create(std::move(create_param)) == false)
+   	if(main_object->Create(std::move(create_param)) == false)
 	{
 		LOG_WRITE(("[ %s ] MainObject Create Error", _PROGREAM_NAME_));
 		return -1;

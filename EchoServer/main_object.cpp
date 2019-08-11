@@ -81,10 +81,10 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_context_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_client_manager->Create(	this, 
-											_network_context_pool, 
-											_create_param->test_tcp_client_listen_port, 
-											GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
+	if (!_test_tcp_client_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
+										_network_context_pool, 
+										_create_param->test_tcp_client_listen_port, 
+										GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
 	{
 		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
 		return false;
@@ -115,7 +115,11 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 		
 	if (object_key == (int)NetworkObjectKey::TestTcpClient)
 	{
-		_test_tcp_client_manager->AcceptedAdd(socket, ip, port, this, index_key);
+		_test_tcp_client_manager->AcceptedAdd(socket, 
+											ip, 
+											port, 
+											std::static_pointer_cast<ITestTcpClientCallback>(this->shared_from_this()), 
+											index_key);
 	}
 	
 	if(index_key == -1)

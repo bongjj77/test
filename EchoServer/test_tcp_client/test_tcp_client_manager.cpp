@@ -20,7 +20,7 @@ TestTcpClintManager::TestTcpClintManager(int object_key) : TcpNetworkManager(obj
 bool TestTcpClintManager::AcceptedAdd(std::shared_ptr<NetTcpSocket> socket, 
 									uint32_t ip, 
 									int port, 
-									ITestTcpClientCallback *callback, 
+									std::shared_ptr<ITestTcpClientCallback> callback, 
 									int &index_key) 
 {
 	TcpNetworkObjectParam object_param; 

@@ -34,21 +34,18 @@ TcpNetworkObject::~TcpNetworkObject()
 	// 종료 타이머 
 	if(_close_timer != nullptr)
 	{
-		delete _close_timer; 
 		_close_timer = nullptr; 
 	}
 
 	// Post 종료 타이머 
 	if(_post_close_timer != nullptr)
 	{
-		delete _post_close_timer; 
 		_post_close_timer = nullptr; 
 	}
 		
 	// KeepAlive 전송 타이머 정리 
 	if(_keep_alive_send_timer != nullptr)
 	{
-		delete _keep_alive_send_timer; 
 		_keep_alive_send_timer = nullptr; 
 	}
 	_keepalive_send_callback = nullptr; 
@@ -56,9 +53,7 @@ TcpNetworkObject::~TcpNetworkObject()
 	// KeepAlive 체크 타이머 정리 
 	if(_keepalive_check_timer != nullptr)
 	{
-		_keepalive_check_timer->cancel(); 
-
-		delete _keepalive_check_timer; 
+		_keepalive_check_timer->cancel(); 	
 		_keepalive_check_timer = nullptr; 
 	}
 	_keepalive_check_callbak = nullptr; 
@@ -222,7 +217,7 @@ void TcpNetworkObject::PostClose()
 		return; 
 	}
 	
-	_post_close_timer = new NetTimer(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() : 
+	_post_close_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() :
 		(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
 	
 	_post_close_timer->expires_from_now(std::chrono::nanoseconds(_post_close_time_interval * 1000000));
@@ -608,12 +603,10 @@ void TcpNetworkObject::SetKeepAliveSendTimer(int interval, TcpKeepaliveSendCallb
 	if(_keep_alive_send_timer != nullptr)
 	{
 		_keep_alive_send_timer->cancel(); 
-
-		delete _keep_alive_send_timer; 
 		_keep_alive_send_timer = nullptr; 
 	}
 	
-	_keep_alive_send_timer = new NetTimer(_is_support_ssl == false ? 
+	_keep_alive_send_timer = std::make_shared<NetTimer>(_is_support_ssl == false ?
 										(boost::asio::io_context&)_socket->get_executor().context() : 
 										(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
 
@@ -630,13 +623,12 @@ void TcpNetworkObject::SetKeepAliveCheckTimer(int interval, TcpKeepAliveCheckCal
 	if(_keepalive_check_timer != nullptr)
 	{
 		_keepalive_check_timer->cancel(); 
-
-		delete _keepalive_check_timer; 
 		_keepalive_check_timer = nullptr; 
 	}
 	
-	_keepalive_check_timer	 	= new NetTimer(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() :
-		(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_keepalive_check_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? 
+												(boost::asio::io_context&)_socket->get_executor().context() :
+												(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
 	_keepalive_check_callbak 	= callback; 
 	SetNetworkTimer(_keepalive_check_timer, (int)NetworkTimer::KeepaliveCheck, interval);
 }
@@ -650,20 +642,19 @@ void TcpNetworkObject::SetCloseTimer()
 	if(_close_timer != nullptr)
 	{
 		_close_timer->cancel(); 
-
-		delete _close_timer; 
 		_close_timer = nullptr; 
 	}
 	
-	_close_timer = new NetTimer(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() :
-		(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_close_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? 
+											(boost::asio::io_context&)_socket->get_executor().context() :
+											(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
 	SetNetworkTimer(_close_timer, (int)NetworkTimer::Close, DEFAULT_NETWORK_CLOSE_TIMER_INTERVAL);
 }
 
 //====================================================================================================
 // Timer설정 
 //====================================================================================================
-void TcpNetworkObject::SetNetworkTimer(NetTimer * network_timer, int id, int interval)
+void TcpNetworkObject::SetNetworkTimer(std::shared_ptr<NetTimer> network_timer, int id, int interval)
 {
 	if(_is_closeing == true)
 	{
@@ -683,7 +674,10 @@ void TcpNetworkObject::SetNetworkTimer(NetTimer * network_timer, int id, int int
 //====================================================================================================
 // Timer 처리 
 //====================================================================================================
-void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error, NetTimer * network_timer, int id, int interval)
+void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error, 
+									std::shared_ptr<NetTimer> network_timer, 
+									int id, 
+									int interval)
 {	
 
 	//종료 확인 

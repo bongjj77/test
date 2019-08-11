@@ -123,3 +123,14 @@ public:
 	virtual int OnNetworkClose(int object_key, int index_key, uint32_t ip, int port) = 0;
 
 };
+
+
+//====================================================================================================
+// Object Interface 
+//====================================================================================================
+class IObjectCallback
+{
+public:
+  // Empty
+
+};

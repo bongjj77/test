@@ -18,13 +18,13 @@ typedef bool (TcpNetworkObject::*TcpKeepAliveCheckCallback)(void);
 struct TcpNetworkObjectParam
 {
 	int object_key;
-	void *object_callback;
+	std::shared_ptr<IObjectCallback> object_callback;
 	std::string object_name;
 
 	std::shared_ptr<NetTcpSocket> socket;
 	bool enable_ssl;
 	std::shared_ptr<NetSocketSSL> socket_ssl;
-	INetworkCallback *network_callback;
+	std::shared_ptr<INetworkCallback> network_callback;
 };
 
 //====================================================================================================
@@ -66,8 +66,8 @@ protected :
 
 	void			ClearSendDataQueue(); 
 	
-	void			SetNetworkTimer(NetTimer * network_timer, int id, int interval);
-	void 			OnNetworkTimer(const boost::system::error_code& error, NetTimer * network_timer, int id, int interval);
+	void			SetNetworkTimer(std::shared_ptr<NetTimer> network_timer, int id, int interval);
+	void 			OnNetworkTimer(const boost::system::error_code& error, std::shared_ptr<NetTimer> network_timer, int id, int interval);
 	bool			CloseTimerProc();
 	bool			PostCloseTimerProc();
 	
@@ -83,8 +83,8 @@ protected :
 	int					_object_key = -1; 
 	int					_index_key = -1; 
 	std::shared_ptr<NetTcpSocket> _socket = nullptr;
-	INetworkCallback *	_network_callback = nullptr; 
-	void *				_object_callback = nullptr; 
+	std::shared_ptr<INetworkCallback> _network_callback = nullptr; 
+	std::shared_ptr<IObjectCallback> _object_callback = nullptr;
 
 	bool				_is_support_ssl = false;
 	std::shared_ptr<NetSocketSSL> _socket_ssl = nullptr;
@@ -106,11 +106,11 @@ protected :
 	TcpKeepAliveCheckCallback 	_keepalive_check_callbak; 
 	uint32_t	_keepalive_check_time = 0; 
 		
-	NetTimer	*_keep_alive_send_timer = nullptr; 
-	NetTimer	*_keepalive_check_timer = nullptr;
-	NetTimer	*_timeount_check_timer = nullptr;
-	NetTimer	*_close_timer = nullptr;
-	NetTimer	*_post_close_timer = nullptr;
+	std::shared_ptr<NetTimer> _keep_alive_send_timer = nullptr; 
+	std::shared_ptr<NetTimer> _keepalive_check_timer = nullptr;
+	std::shared_ptr<NetTimer> _timeount_check_timer = nullptr;
+	std::shared_ptr<NetTimer> _close_timer = nullptr;
+	std::shared_ptr<NetTimer> _post_close_timer = nullptr;
 
 	time_t		_create_time = 0; 
 	time_t		_last_send_complete_time = 0; 

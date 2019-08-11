@@ -46,9 +46,11 @@ public :
 protected :
 	void				Release();
 		
-	virtual int			Insert(std::shared_ptr<UdpNetworkObject> object, bool bKeepAliveCheck = false, uint32_t keepalive_check_time = 0);
+	virtual int			Insert(	std::shared_ptr<UdpNetworkObject> object, 
+								bool is_keepalive_check = false, 
+								uint32_t keepalive_check_time = 0);
+	
 	std::shared_ptr<UdpNetworkObject> Find(int index_key, bool erase = false);
-
 	
 protected : 	
 	std::shared_ptr<NetworkContextPool> _context_pool;

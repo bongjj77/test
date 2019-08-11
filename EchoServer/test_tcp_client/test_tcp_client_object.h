@@ -10,11 +10,10 @@
 //====================================================================================================
 // Interface
 //====================================================================================================
-class ITestTcpClientCallback
+class ITestTcpClientCallback : public IObjectCallback
 {
 	
-public:
-	
+public:	
 
 };
 
@@ -37,9 +36,7 @@ public:
 	bool			RecvPacketProcess(PacketType type_code, int data_size, uint8_t *data);
 	bool			RecvEchoRequest(int data_size, uint8_t *data);
 	bool			RecvStreamRequest(int data_size, uint8_t *data);
+
 private:
-
-	
-
 
 };

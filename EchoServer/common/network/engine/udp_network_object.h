@@ -23,8 +23,8 @@ struct UdpNetworkObjectParam
 	uint32_t						remote_ip;
 	int								remote_port;
 	std::shared_ptr<NetUdpSocket>	socket;
-	INetworkCallback				*network_callback;
-	void							*object_callback;
+	std::shared_ptr<INetworkCallback> network_callback;
+	std::shared_ptr<IObjectCallback> object_callback;
 	std::string						object_name;
 };
 
@@ -53,11 +53,10 @@ public :
 	std::string &	GetRemoteStringIP() { return _remote_ip_string; }
 	
 	// 네트워크 트래픽 관련 정보 
-	bool			GetTrafficRate(double &send_bitrate, double &recv_bitrate);
-	
+	bool			GetTrafficRate(double &send_bitrate, double &recv_bitrate);	
 
-	void			SetNetworkTimer(NetTimer * network_timer, int id, int interval);
-	void 			OnNetworkTimer(const boost::system::error_code& error, NetTimer * network_timer, int id, int interval);
+	void			SetNetworkTimer(std::shared_ptr<NetTimer> network_timer, int id, int interval);
+	void 			OnNetworkTimer(const boost::system::error_code& error, std::shared_ptr<NetTimer> network_timer, int id, int interval);
 	bool			PostCloseTimerProc();
 
 	void			SetKeepAliveSendTimer(int interval, UdpKeepaliveSendCallback callback);
@@ -77,8 +76,8 @@ protected :
 	int				_index_key = -1;
 	int				_object_key = -1;
 	std::string		_object_name = "unknown_usp_object";
-	INetworkCallback *	_network_callback = nullptr;
-	void *			_object_callback = nullptr;
+	std::shared_ptr<INetworkCallback> _network_callback = nullptr;
+	std::shared_ptr<IObjectCallback> _object_callback = nullptr;
 
 	std::string		_remote_ip_string;
 	uint32_t 		_remote_ip = 0;
@@ -95,11 +94,11 @@ protected :
 	uint64_t		_recv_traffic = 0; // bit
 
 
-	NetTimer		*_keep_alive_send_timer = nullptr;
+	std::shared_ptr<NetTimer> _keep_alive_send_timer = nullptr;
 	UdpKeepaliveSendCallback _keepalive_send_callback;
 
 	bool _is_closeing = false; 
-	NetTimer	*_post_close_timer = nullptr;
+	std::shared_ptr<NetTimer> _post_close_timer = nullptr;
 
  };
 

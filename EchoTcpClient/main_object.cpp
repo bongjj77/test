@@ -89,7 +89,9 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_context_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_server_manager->Create(this, _network_context_pool, GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
+	if (!_test_tcp_server_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()), 
+										_network_context_pool, 
+										GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
 	{
 		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpServer).c_str()));
 		return false;
@@ -245,7 +247,9 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 	}
 
 	// Session add
-	if (_test_tcp_server_manager->ConnectedAdd(socket, this, index_key) == false)
+	if (_test_tcp_server_manager->ConnectedAdd(	socket, 
+												std::static_pointer_cast<ITestTcpServerCallback>(this->shared_from_this()),
+												index_key) == false)
 	{
 		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - ConnectAdd Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
 		return false;

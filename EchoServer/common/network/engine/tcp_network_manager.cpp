@@ -54,7 +54,6 @@ TcpNetworkManager::~TcpNetworkManager( )
 
 	if(_release_timer != nullptr)
 	{
-		delete _release_timer;
 		_release_timer = nullptr; 
 	}
 
@@ -91,7 +90,7 @@ void TcpNetworkManager::PostRelease()
 			return; 
 		}
 			
-		_release_timer = new NetTimer((boost::asio::io_context&)_acceptor->get_executor().context());
+		_release_timer = std::make_shared<NetTimer>((boost::asio::io_context&)_acceptor->get_executor().context());
 		_release_timer->expires_from_now(std::chrono::nanoseconds(1000000));
 		_release_timer->async_wait(boost::bind(&TcpNetworkManager::Release, this ));
 	}
@@ -155,7 +154,7 @@ void TcpNetworkManager::Release()
 // 생성 
 // - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
 //====================================================================================================
-bool TcpNetworkManager::Create(INetworkCallback * callback, 
+bool TcpNetworkManager::Create(std::shared_ptr<INetworkCallback> callback, 
 								std::shared_ptr<NetworkContextPool> service_pool, 
 								int listen_port, 
 								std::string object_name, 
@@ -183,7 +182,7 @@ bool TcpNetworkManager::Create(INetworkCallback * callback,
 // SSL 생성 
 // - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
 //====================================================================================================
-bool TcpNetworkManager::CreateSSL(	INetworkCallback	*callback,
+bool TcpNetworkManager::CreateSSL(	std::shared_ptr<INetworkCallback> callback,
 									std::shared_ptr<NetworkContextPool>service_pool,
 									std::string 		cert_file,
 									std::string			key_file,
@@ -244,7 +243,9 @@ bool TcpNetworkManager::CreateSSL(	INetworkCallback	*callback,
 // - return -1 실패 
 // - return n (IndexKey) 
 //====================================================================================================
-int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object, bool bKeepAliveCheck/* = false*/, uint32_t keepalive_check_time /*= 0*/)
+int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object, 
+							bool is_keepalive_check/* = false*/, 
+							uint32_t keepalive_check_time /*= 0*/)
 {
 	int index_key	= -1; 
 
@@ -309,7 +310,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object, bool bKe
 		}
 	
 		// KeepAlive체크 설정 
-		if(bKeepAliveCheck == true && keepalive_check_time != 0 && index_key != -1)
+		if(is_keepalive_check == true && keepalive_check_time != 0 && index_key != -1)
 		{
 			object->StartKeepAliveCheck(keepalive_check_time);
 		}	

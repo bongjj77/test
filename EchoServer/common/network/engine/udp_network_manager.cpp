@@ -71,7 +71,9 @@ bool UdpNetworkManager::Create(INetworkCallback * callback, std::shared_ptr<Netw
 // - return -1 실패 
 // - return n (IndexKey) 
 //====================================================================================================
-int UdpNetworkManager::Insert(std::shared_ptr<UdpNetworkObject> object, bool bKeepAliveCheck/* = false*/, uint32_t keepalive_check_time /*= 0*/)
+int UdpNetworkManager::Insert(std::shared_ptr<UdpNetworkObject> object, 
+							bool is_keepalive_check/* = false*/, 
+							uint32_t keepalive_check_time /*= 0*/)
 {
 	int index_key	= -1; 
 
