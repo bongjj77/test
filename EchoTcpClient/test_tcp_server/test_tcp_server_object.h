@@ -5,7 +5,7 @@
 
 #pragma once
 #include "common/network/engine/tcp_network_object.h"
-#include "test_protocol.h"
+#include "common/network/protocol/test_protocol.h"
 
 //====================================================================================================
 // Interface

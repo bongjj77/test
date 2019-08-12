@@ -107,11 +107,10 @@ int TestTcpServerObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data
 }
 
 //====================================================================================================
-//  수신 패킷 처리 
+//  Recv Packet Process
 //====================================================================================================
 bool TestTcpServerObject::RecvPacketProcess(PacketType type_code, int data_size, uint8_t *data)
 {
-	//패킷 구분 
 	switch (type_code)
 	{
 		case PacketType::EchoResponse: 		

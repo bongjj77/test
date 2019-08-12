@@ -3,45 +3,45 @@
   <ItemGroup>
     <ClCompile Include="main_object.cpp" />
     <ClCompile Include="stream_manager.cpp" />
-    <ClCompile Include="..\EchoServer\common\bit_writer.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\common_function.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\config_parser.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\log_writer.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\thread_timer.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\network_context_pool.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\network_manager.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\tcp_network_manager.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\tcp_network_object.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\udp_network_manager.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\EchoServer\common\network\engine\udp_network_object.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
     <ClCompile Include="echo_client.cpp" />
     <ClCompile Include="test_tcp_server\test_tcp_server_manager.cpp">
       <Filter>test_tcp_server</Filter>
     </ClCompile>
     <ClCompile Include="test_tcp_server\test_tcp_server_object.cpp">
       <Filter>test_tcp_server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\bit_writer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\common_function.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\config_parser.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\log_writer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\thread_timer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\network_context_pool.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_network_object.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\udp_network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\udp_network_object.cpp">
+      <Filter>network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,61 +62,61 @@
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
     <ClInclude Include="stream_manager.h" />
-    <ClInclude Include="test_tcp_client\test_protocol.h">
-      <Filter>test_tcp_server</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\bit_writer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\common_function.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\common_header.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\config_parser.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\linux_definition.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\log_writer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\singleton.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\thread_timer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\network_context_pool.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\network_manager.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\network_object_header.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\root_certificates.hpp">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\tcp_network_manager.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\tcp_network_object.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\udp_network_manager.h">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EchoServer\common\network\engine\udp_network_object.h">
-      <Filter>network</Filter>
-    </ClInclude>
     <ClInclude Include="test_tcp_server\test_tcp_server_manager.h">
       <Filter>test_tcp_server</Filter>
     </ClInclude>
     <ClInclude Include="test_tcp_server\test_tcp_server_object.h">
+      <Filter>test_tcp_server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\bit_writer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common_function.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common_header.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\config_parser.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\linux_definition.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\log_writer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\singleton.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\thread_timer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_context_pool.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_object_header.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\root_certificates.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_network_object.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\udp_network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\udp_network_object.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\protocol\test_protocol.h">
       <Filter>test_tcp_server</Filter>
     </ClInclude>
   </ItemGroup>

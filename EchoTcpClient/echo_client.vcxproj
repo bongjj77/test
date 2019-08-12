@@ -11,17 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\EchoServer\common\bit_writer.cpp" />
-    <ClCompile Include="..\EchoServer\common\common_function.cpp" />
-    <ClCompile Include="..\EchoServer\common\config_parser.cpp" />
-    <ClCompile Include="..\EchoServer\common\log_writer.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\network_context_pool.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\network_manager.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\tcp_network_manager.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\tcp_network_object.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\udp_network_manager.cpp" />
-    <ClCompile Include="..\EchoServer\common\network\engine\udp_network_object.cpp" />
-    <ClCompile Include="..\EchoServer\common\thread_timer.cpp" />
+    <ClCompile Include="..\common\bit_writer.cpp" />
+    <ClCompile Include="..\common\common_function.cpp" />
+    <ClCompile Include="..\common\config_parser.cpp" />
+    <ClCompile Include="..\common\log_writer.cpp" />
+    <ClCompile Include="..\common\network\engine\network_context_pool.cpp" />
+    <ClCompile Include="..\common\network\engine\network_manager.cpp" />
+    <ClCompile Include="..\common\network\engine\tcp_network_manager.cpp" />
+    <ClCompile Include="..\common\network\engine\tcp_network_object.cpp" />
+    <ClCompile Include="..\common\network\engine\udp_network_manager.cpp" />
+    <ClCompile Include="..\common\network\engine\udp_network_object.cpp" />
+    <ClCompile Include="..\common\thread_timer.cpp" />
     <ClCompile Include="echo_client.cpp" />
     <ClCompile Include="main_object.cpp" />
     <ClCompile Include="stream_manager.cpp" />
@@ -29,26 +29,26 @@
     <ClCompile Include="test_tcp_server\test_tcp_server_object.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\EchoServer\common\bit_writer.h" />
-    <ClInclude Include="..\EchoServer\common\common_function.h" />
-    <ClInclude Include="..\EchoServer\common\common_header.h" />
-    <ClInclude Include="..\EchoServer\common\config_parser.h" />
-    <ClInclude Include="..\EchoServer\common\linux_definition.h" />
-    <ClInclude Include="..\EchoServer\common\log_writer.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\network_context_pool.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\network_manager.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\network_object_header.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\root_certificates.hpp" />
-    <ClInclude Include="..\EchoServer\common\network\engine\tcp_network_manager.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\tcp_network_object.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\udp_network_manager.h" />
-    <ClInclude Include="..\EchoServer\common\network\engine\udp_network_object.h" />
-    <ClInclude Include="..\EchoServer\common\singleton.h" />
-    <ClInclude Include="..\EchoServer\common\thread_timer.h" />
+    <ClInclude Include="..\common\bit_writer.h" />
+    <ClInclude Include="..\common\common_function.h" />
+    <ClInclude Include="..\common\common_header.h" />
+    <ClInclude Include="..\common\config_parser.h" />
+    <ClInclude Include="..\common\linux_definition.h" />
+    <ClInclude Include="..\common\log_writer.h" />
+    <ClInclude Include="..\common\network\engine\network_context_pool.h" />
+    <ClInclude Include="..\common\network\engine\network_manager.h" />
+    <ClInclude Include="..\common\network\engine\network_object_header.h" />
+    <ClInclude Include="..\common\network\engine\root_certificates.hpp" />
+    <ClInclude Include="..\common\network\engine\tcp_network_manager.h" />
+    <ClInclude Include="..\common\network\engine\tcp_network_object.h" />
+    <ClInclude Include="..\common\network\engine\udp_network_manager.h" />
+    <ClInclude Include="..\common\network\engine\udp_network_object.h" />
+    <ClInclude Include="..\common\network\protocol\test_protocol.h" />
+    <ClInclude Include="..\common\singleton.h" />
+    <ClInclude Include="..\common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
     <ClInclude Include="stream_manager.h" />
-    <ClInclude Include="test_tcp_client\test_protocol.h" />
     <ClInclude Include="test_tcp_server\test_tcp_server_manager.h" />
     <ClInclude Include="test_tcp_server\test_tcp_server_object.h" />
   </ItemGroup>
@@ -98,7 +98,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./;../EchoServer;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
