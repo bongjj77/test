@@ -24,7 +24,6 @@
     <ClCompile Include="..\common\thread_timer.cpp" />
     <ClCompile Include="echo_client.cpp" />
     <ClCompile Include="main_object.cpp" />
-    <ClCompile Include="stream_manager.cpp" />
     <ClCompile Include="test_tcp_server\test_tcp_server_manager.cpp" />
     <ClCompile Include="test_tcp_server\test_tcp_server_object.cpp" />
   </ItemGroup>
@@ -48,7 +47,6 @@
     <ClInclude Include="..\common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
-    <ClInclude Include="stream_manager.h" />
     <ClInclude Include="test_tcp_server\test_tcp_server_manager.h" />
     <ClInclude Include="test_tcp_server\test_tcp_server_object.h" />
   </ItemGroup>

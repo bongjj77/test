@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="stream_manager.cpp" />
+    <ClCompile Include="..\common\bit_writer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\common_function.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\config_parser.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\log_writer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\thread_timer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\network_context_pool.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_network_object.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\udp_network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\udp_network_object.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="main_object.cpp" />
+    <ClCompile Include="media_streaming_server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{e5310325-0692-4e2f-a527-dba6fd10c2a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{23c8e849-9d92-4b6e-9203-e5767ba241c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="linux_build">
+      <UniqueIdentifier>{c138ee81-fc6f-4ae7-9577-cee375645694}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config_define.h" />
+    <ClInclude Include="stream_manager.h" />
+    <ClInclude Include="..\common\bit_writer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common_function.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common_header.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\config_parser.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\linux_definition.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\log_writer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\singleton.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\thread_timer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_context_pool.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\network_object_header.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\root_certificates.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_network_object.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\udp_network_manager.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\udp_network_object.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="main_object.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+    <None Include="linux_build\Makefile">
+      <Filter>linux_build</Filter>
+    </None>
+  </ItemGroup>
+</Project>

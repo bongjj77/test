@@ -38,7 +38,6 @@ OBJS =	bit_writer.o\
 		udp_network_object.o\
 		test_tcp_client_manager.o\
 		test_tcp_client_object.o\
-		stream_manager.o\
 		main_object.o\
 		echo_server.o\
 		

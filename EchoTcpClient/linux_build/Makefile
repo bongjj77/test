@@ -8,8 +8,7 @@ VPATH =		../:\
 CXX = g++
 
 INCLUDE =	-I../\
-			-I../../\
-			-I../test_tcp_server
+			-I../../
 
 BASE_LIBS = -lpthread
 
@@ -39,7 +38,6 @@ OBJS =	bit_writer.o\
 		udp_network_object.o\
 		test_tcp_server_manager.o\
 		test_tcp_server_object.o\
-		stream_manager.o\
 		main_object.o\
 		echo_client.o\
 		
