@@ -78,9 +78,6 @@
     <ClInclude Include="..\common\config_parser.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\linux_definition.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\log_writer.h">
       <Filter>common</Filter>
     </ClInclude>

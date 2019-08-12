@@ -75,8 +75,8 @@ protected :
 	void			SetKeepAliveCheckTimer(int interval, TcpKeepAliveCheckCallback callback);
  	void			SetCloseTimer();
 
-	//상속 구현 클래스 
-	virtual int		RecvHandler(std::shared_ptr<std::vector<uint8_t>> &data) = 0;  //수신 패킷 처리(필수) 
+	// interface 
+	virtual int		RecvHandler(std::shared_ptr<std::vector<uint8_t>> &data) = 0;   
 
 protected : 
 	
@@ -94,7 +94,7 @@ protected :
 	int										_remote_port = 0; 
 	std::string								_object_name = "unknown_tcp_object"; 
 		
-	std::deque<std::shared_ptr<NetSendData>> _send_datas;
+	std::deque<std::shared_ptr<NetSendData>> _send_data_queue;
 	std::mutex								_send_data_queue_mutex;
 	
 	std::shared_ptr<std::vector<uint8_t>>	_recv_buffer = nullptr;

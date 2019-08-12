@@ -604,8 +604,7 @@ bool TcpNetworkManager::PostAccept()
 			return false; 
 		}
 	}	
-			
-	// 비동기 접속 
+	
 	if(_is_support_ssl == true)
 	{
 		if(_accept_socket_ssl != nullptr)
@@ -654,8 +653,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 {
 	uint32_t	ip	= 0; 
 	int			port= 0; 
-		
-	// 에러 
+	
 	if(error)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept - Error(%d) Message(%s)", 
@@ -683,7 +681,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 		return; 
 	}
 
-	// 연결 콜백 확인 
 	if(_network_callback == nullptr)
 	{
 		if(_accept_socket != nullptr)
@@ -698,7 +695,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 		return; 
 	}
 	
-	// IP/Port 설정 
+	// IP/Port Setting
 	try
 	{
 		ip		= boost::asio::detail::socket_ops::network_to_host_long(_accept_socket->remote_endpoint().address().to_v4().to_ulong()); 
@@ -726,7 +723,6 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 		return;
 	}
 	
-	// 연결 콜백 호출 
 	if(_network_callback->OnTcpNetworkAccepted(_object_key, _accept_socket, ip, port) == false)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept -  OnTcpNetworkAccepted fail", _object_name.c_str()));
@@ -744,8 +740,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 	}
 
 	_accept_socket = nullptr; 
-		
-	// Accept 이벤트 설정 
+	
 	PostAccept();
 	
 	return; 
@@ -753,7 +748,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 
 
 //====================================================================================================
-// SSL Accept 핸들러 
+// SSL Accept Handler 
 //====================================================================================================
 void TcpNetworkManager::OnAcceptSSL(const NetErrorCode & error)
 {
@@ -798,7 +793,7 @@ void TcpNetworkManager::OnAcceptSSL(const NetErrorCode & error)
 
 
 //====================================================================================================
-// SSL HandShake 핸들러(accepter)
+// SSL HandShake Handler(accepter)
 //====================================================================================================
 void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 {
@@ -832,9 +827,8 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 	{
 		return; 
 	}
-
-	
-	// IP/Port 설정 
+		
+	// IP/Port Setting 
 	try
 	{
 		ip 	= boost::asio::detail::socket_ops::network_to_host_long(_accept_socket_ssl->lowest_layer().remote_endpoint().address().to_v4().to_ulong()); 
@@ -854,7 +848,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 			_accept_socket_ssl = nullptr;
 		}
 
-		// Accept 이벤트 설정 
 		if(_is_closeing == false)
 		{
 			PostAccept();
@@ -863,7 +856,6 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 		return;
 	}
 
-	// 연결 콜백 호출 
 	if(_network_callback->OnTcpNetworkAcceptedSSL(_object_key, _accept_socket_ssl, ip, port) == false)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL -  OnTcpNetworkAcceptedSSL return false", 
@@ -882,8 +874,7 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 	}
 
 	_accept_socket_ssl = nullptr; 
-		
-	//Accept 이벤트 설정 
+	
 	PostAccept();
 		
 	return;
@@ -1021,21 +1012,21 @@ void TcpNetworkManager::RemoveAll()
 }
 
 //====================================================================================================
-// 연결 개수 
+// Session Count
 //====================================================================================================
 uint32_t TcpNetworkManager::GetCount()
 {
-	uint32_t nCount = 0; 
+	uint32_t count = 0;
 
 	std::lock_guard<std::mutex> network_info_map_lock(_network_info_map_mutex);;
 
-	nCount = (uint32_t)_network_info_map.size();
+	count = (uint32_t)_network_info_map.size();
 
-	return nCount;	
+	return count;
 }
 
 //====================================================================================================
-// 네트워크 전체 트래픽  
+// Network Traffic
 // - bps 
 //====================================================================================================
 uint64_t TcpNetworkManager::GetTotalTrafficRate()
@@ -1060,7 +1051,6 @@ uint64_t TcpNetworkManager::GetTotalTrafficRate()
 
 }
 
-
 //====================================================================================================
 // 연결 (time out)
 // - timeout( 0 - 무한) : 밀리초  단위 
@@ -1069,8 +1059,8 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 {
 #ifdef WIN32
 	SOCKADDR_IN address;
-	int 		nResult;
-	ULONG 		nNonBlocking; 
+	int 		result;
+	ULONG 		non_blocking; 
 	TIMEVAL 	timevalue;
 	fd_set 		fdset;
 	
@@ -1085,36 +1075,35 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	socket_handle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	// Set non-block
-	nNonBlocking = true;
-	if(ioctlsocket(socket_handle, FIONBIO, &nNonBlocking ) == SOCKET_ERROR)
+	non_blocking = true;
+	if(ioctlsocket(socket_handle, FIONBIO, &non_blocking ) == SOCKET_ERROR)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - option set fail", _object_name.c_str()));
 		return false;
 	}
 
 	// Connect
-	nResult = connect(socket_handle, (LPSOCKADDR)&address, sizeof(address));
-	
-		
+	result = connect(socket_handle, (LPSOCKADDR)&address, sizeof(address));
+			
 	// 연결 성공 
-	if(nResult == 0)
+	if(result == 0)
 	{
 		// Reset non-block
-		nNonBlocking = false;
-		ioctlsocket(socket_handle, FIONBIO, &nNonBlocking);
+		non_blocking = false;
+		ioctlsocket(socket_handle, FIONBIO, &non_blocking);
 		
 		return true;
 	}
 
-	if(nResult == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK)
+	if(result == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - connect fail", _object_name.c_str()));
 		return false;
 	}
 
 	// Reset non-block
-	nNonBlocking = false;
-	ioctlsocket(socket_handle, FIONBIO, &nNonBlocking);
+	non_blocking = false;
+	ioctlsocket(socket_handle, FIONBIO, &non_blocking);
 	
  
 	FD_ZERO( &fdset );
@@ -1141,11 +1130,11 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	return true;
 #else
 
-	SOCKADDR_IN 	address;
-	int				nFlags;
-	int 			nResult;
-	int				nError 			= 0;
-	socklen_t 		nErrorLength 	= sizeof(nError);
+	struct sockaddr_in address;
+	int				flags;
+	int 			result;
+	int				error = 0;
+	socklen_t 		error_length = sizeof(error);
 	
 	address.sin_addr.s_addr = inet_addr(host);
 	address.sin_family = AF_INET;
@@ -1155,16 +1144,16 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	socket_handle =  socket(AF_INET, SOCK_STREAM, 0);
 
 	// Set no-block
-	nFlags = fcntl(socket_handle, F_GETFL, 0);
-	fcntl(socket_handle, F_SETFL, nFlags | O_NONBLOCK);
+	flags = fcntl(socket_handle, F_GETFL, 0);
+	fcntl(socket_handle, F_SETFL, flags | O_NONBLOCK);
 
 	// Connect
-	nResult = connect(socket_handle, (struct sockaddr *)&address, sizeof(address)); 
+	result = connect(socket_handle, (struct sockaddr *)&address, sizeof(address));
 
 	// 연결 성공 
-	if(nResult == 0)
+	if(result == 0)
 	{
-		if(fcntl(socket_handle, F_SETFL, nFlags) == -1)
+		if(fcntl(socket_handle, F_SETFL, flags) == -1)
 		{
 			if(socket_handle != INVALID_SOCKET)
 			{
@@ -1194,7 +1183,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	struct epoll_event 	connectionEvent;
     int 				hEpoll				= -1;
     struct epoll_event 	processableEvents;
-    uint32_t 		nEventCount			= -1;
+    uint32_t 			nEventCount			= -1;
 
 	// epoll 생성 
 	hEpoll = epoll_create(1);
@@ -1214,8 +1203,8 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
     connectionEvent.data.fd = socket_handle;
     connectionEvent.events 	= EPOLLOUT | EPOLLIN | EPOLLERR;
 
-	nResult = epoll_ctl(hEpoll, EPOLL_CTL_ADD, socket_handle, &connectionEvent);
-    if(nResult != 0)
+	result = epoll_ctl(hEpoll, EPOLL_CTL_ADD, socket_handle, &connectionEvent);
+    if(result != 0)
     {
        	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - epoll_ctl(add) fail - Error(%d)", 
 				_object_name.c_str(), errno));
@@ -1243,8 +1232,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 
 	close(hEpoll);
 	
-	// 에러 확인 
-    if(getsockopt(socket_handle, SOL_SOCKET, SO_ERROR, (void *)&nError, &nErrorLength) != 0)
+    if(getsockopt(socket_handle, SOL_SOCKET, SO_ERROR, (void *)&error, &error_length) != 0)
     {
        	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - getsockopt fail", _object_name.c_str()));
 
@@ -1253,10 +1241,10 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 		return false;
     }
 
-    if(nError != 0) 
+    if(error != 0)
     {
       	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - socket error - error(%d)", 
-				_object_name.c_str(), nError));
+				_object_name.c_str(), error));
 
 		close(socket_handle);
 		socket_handle = INVALID_SOCKET;
@@ -1264,7 +1252,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
     }   
 
 	// 소켓 속성 reset
-	if(fcntl(socket_handle, F_SETFL, nFlags) == -1)
+	if(fcntl(socket_handle, F_SETFL, flags) == -1)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - fcntl fail", _object_name.c_str()));
 		close(socket_handle);
@@ -1289,7 +1277,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 }
 
 //====================================================================================================
-// 로컬 IP 획득 
+// Local IP
 //====================================================================================================
 std::string TcpNetworkManager::GetLocalIP()
 {

@@ -5,25 +5,12 @@
 
 #pragma once
 
-#ifndef VC_EXTRALEAN
-	#define VC_EXTRALEAN		// Windows 헤더에서 거의 사용되지 않는 내용을 제외시킵니다.
-#endif
-
-#include <stdio.h>
-#include <iostream>
-
 #ifdef WIN32
-	#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-	#include <windows.h>
-	#include <winsock2.h>
-#else
-	#include <stdarg.h>
-#endif
 
-//====================================================================================================
-// 메모리 릭 관련(Windows 디버깅 모드 정의) 
-//====================================================================================================
-#ifdef WIN32
+	#ifndef VC_EXTRALEAN
+		#define VC_EXTRALEAN		// Windows 헤더에서 거의 사용되지 않는 내용을 제외시킵니다.
+	#endif
+
 	#ifdef _DEBUG 
 		#define _CRTDBG_MAP_ALLOC
 		#define _CRTDBG_MAP_ALLOC_NEW
@@ -34,16 +21,7 @@
 		#define CHECK_MEMORY_LEAK
 		#define CHECK_BREAK_POINT(a)
 	#endif  
-#else
-	#define CHECK_MEMORY_LEAK7
-	#define CHECK_BREAK_POINT(a)
-#endif 
 
-#ifndef MAX_PATH
-	#define MAX_PATH (256)
-#endif 
-
-#ifdef WIN32
 	#define _STDINT_H
 	#pragma warning(disable:4200)	// zero-sized array warning
 	#pragma warning(disable:4996)	// ( vsprintf, strcpy, fopen ) function unsafe
@@ -54,38 +32,27 @@
 	#pragma warning(disable:4005)	// macro redefinition
 	#pragma warning(disable:94)		// the size of an array must be greater than zero
 
-#else	
-	#include <errno.h>
-	extern int errno;
+#else
+	#define CHECK_MEMORY_LEAK7
+	#define CHECK_BREAK_POINT(a)
 #endif
 
 #include "config_define.h"
 #include "common/common_header.h" 
-
-#ifndef _WIN32
-	#include <fcntl.h>
-	#include <iostream>
-	#include <string>
-	#include <unistd.h>
-	#include <sys/resource.h>
-	#include <sys/stat.h>
-	#include <sys/time.h>
-	#include <sys/types.h>
-#endif
 #include <signal.h>
 #include "main_object.h"
 
 #define _VERSION_ 		"1.0.000"
 #define _PROGREAM_NAME_ "echo_server"
 
-bool gRun = true;
+bool g_run = true;
 
 //====================================================================================================
 // 시그널 핸들러 
 //====================================================================================================
 void SignalHandler(int sig)
 {
-	gRun = false;
+	g_run = false;
 	
 	// ignore all these signals now and let the connection close
 	signal(SIGINT, SIG_IGN);
@@ -209,14 +176,14 @@ int main(int argc, char* argv[])
 	LOG_WRITE(("===== [ %s Start(%s)] =====", _PROGREAM_NAME_, time_string.c_str()));
 
 	// process main loop
-	while(gRun == true)
+	while(g_run == true)
 	{
-#ifndef _WIN32
-		Sleep(100);
+#ifndef WIN32
+		SleepWait(100);
 #else
         if(getchar() == 'x') 
 		{
-			gRun = false;
+			g_run = false;
         }
 #endif
 	}
@@ -226,7 +193,7 @@ int main(int argc, char* argv[])
 	
 	CONFIG_PARSER.UnloadFile();
 
-    //네트워크 종료 
+    // network release
     ReleaseNetwork();
 
 	return 0;

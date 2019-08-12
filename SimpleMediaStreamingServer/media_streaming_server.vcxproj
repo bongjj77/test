@@ -31,7 +31,6 @@
     <ClInclude Include="..\common\common_function.h" />
     <ClInclude Include="..\common\common_header.h" />
     <ClInclude Include="..\common\config_parser.h" />
-    <ClInclude Include="..\common\linux_definition.h" />
     <ClInclude Include="..\common\log_writer.h" />
     <ClInclude Include="..\common\network\engine\network_context_pool.h" />
     <ClInclude Include="..\common\network\engine\network_manager.h" />

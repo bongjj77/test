@@ -116,8 +116,8 @@ void ThreadTimer::TimerProcess( )
 {
 	while(!_is_timer_thread_stop)
 	{
-		Sleep(_interval);
- 
+		SleepWait(_interval);
+
 		std::unique_lock<std::recursive_mutex> timer_map_lock(_timer_map_mutex);
 		uint64_t current_tick = get_tick_count64();
 			 

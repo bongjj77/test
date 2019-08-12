@@ -10,9 +10,6 @@
 	#include <windows.h>
 	#include <winsock2.h>
 	#pragma comment (lib, "rpcrt4.lib") // for UuidCreate
-
-#else
-	#include <stdarg.h>
 #endif
 
 #include <time.h>
@@ -22,10 +19,9 @@
 #include <queue>
 #include <deque>
 #include <stdio.h>
-#include "linux_definition.h"
 #include "log_writer.h" 
 
-//------------------------------log define------------------------------ 
+//------------------------------ log define ------------------------------ 
 #define LOG_INIT(file_name, nBackupHour) LogInit(file_name, nBackupHour)
 #define LOG_WRITE(pFormat) LogPrint pFormat
 
@@ -33,6 +29,7 @@
 extern bool LogInit(const char * file_name, int nBackupHour); 
 extern void LogPrint(const char *str, ...);
 
+//
 extern void 		InitNetwork();
 extern void 		ReleaseNetwork();
 extern void			Tokenize(const std::string & str, std::vector<std::string> & tokens, const std::string& delimiters);

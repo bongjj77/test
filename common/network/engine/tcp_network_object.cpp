@@ -105,7 +105,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		catch (std::exception& error)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s)", 
-				param->object_name, _remote_ip_string.c_str())); 
+						param->object_name, _remote_ip_string.c_str())); 
 
 			return false;
 		}
@@ -131,7 +131,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		catch (const std::exception& e)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s) Error(%s)", 
-				param->object_name, _remote_ip_string.c_str(), e.what())); 
+						param->object_name, _remote_ip_string.c_str(), e.what())); 
 
 			return false;
 		}
@@ -156,7 +156,7 @@ void TcpNetworkObject::ClearSendDataQueue()
 	std::lock_guard<std::mutex> send_data_lock(_send_data_queue_mutex);
 
 	//전송 데이터 정리 
-	_send_datas.clear();  
+	_send_data_queue.clear();  
 	
 }
 
@@ -172,7 +172,7 @@ bool TcpNetworkObject::Start()
 		if(_socket_ssl->lowest_layer().is_open() == false)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
 		
@@ -187,7 +187,7 @@ bool TcpNetworkObject::Start()
 		if(_socket->is_open() == false)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
 		
@@ -244,7 +244,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(data == nullptr || data->size() == 0)
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::PostSend - Param Fail - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+					_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
 
@@ -253,7 +253,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(_is_closeing == true)
 	{
 		LOG_WRITE(("INFO : [%s] TcpNetworkObject::PostSend - Closeing Return - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+					_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
 
@@ -262,11 +262,11 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	{
 		
 		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::PostSend - MaxWaitSendDataSize Over - IndexKey(%d) IP(%s) Size(%d:%d)", 
-			_object_name.c_str(),
-			_index_key, 
-			_remote_ip_string.c_str(),
-			data->size(),
-			_max_send_data_size));
+				_object_name.c_str(),
+				_index_key, 
+				_remote_ip_string.c_str(),
+				data->size(),
+				_max_send_data_size));
 		
 		return false; 
 	}
@@ -282,12 +282,12 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	//동기화 시작 
 	std::lock_guard<std::mutex> send_data_lock(_send_data_queue_mutex);
 
-	_send_datas.push_back(send_data);
+	_send_data_queue.push_back(send_data);
 
 	//데이터 처리 존재 하지 않은 상황에서 이벤트 생성
-	if(_send_datas.size() == 1 && _is_closeing == false)
+	if(_send_data_queue.size() == 1 && _is_closeing == false)
 	{
-		auto send_data = _send_datas.front();
+		auto send_data = _send_data_queue.front();
 
 		//패킷 전송 이벤트 설정 
 		if(_is_support_ssl == true)
@@ -356,11 +356,11 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		if(_log_lock == false)
 		{
 			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnReceive - IndexKey(%d) IP(%s) Error(%d) Message(%s)", 
-				_object_name.c_str(), 
-				_index_key, 
-				_remote_ip_string.c_str(), 
-				error.value(), 
-				error.message().c_str()));
+						_object_name.c_str(), 
+						_index_key, 
+						_remote_ip_string.c_str(), 
+						error.value(), 
+						error.message().c_str()));
 		}
 
 		if(_is_closeing == false)
@@ -381,16 +381,16 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		if(_log_lock == false)
 		{
 			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnReceive Closeing Return - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
 		return; 
 	}
 		
-	time_t	current_time	= 0;
-	int 	time_gap		= 0; 
+	time_t current_time	= 0;
+	int time_gap = 0; 
 	
-	//이전 남은 데이터 복사 
+	// rest data copy
 	if(_rest_data != nullptr && _rest_data->size() > 0)
 	{
 		_recv_data = _rest_data;
@@ -402,17 +402,14 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	{
 		_recv_data = std::make_shared<std::vector<uint8_t>>(_recv_buffer->begin(), _recv_buffer->begin() + data_size);
 	}
-	
-	//데이터 처리 
-	//m_bRecvDataProcessing = true; 
+
 	int process_size = RecvHandler(_recv_data);
-	//m_bRecvDataProcessing = false; 
 	
-	//처리 에러 
+	  
 	if(process_size < 0 || process_size > _recv_data->size())
 	{
 		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnReceive - RecvHandler - IndexKey(%d) IP(%s) Result(%d)", 
-			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), process_size));
+					_object_name.c_str(), _index_key, _remote_ip_string.c_str(), process_size));
 
 		//종료 콜백 호출 
 		if(_is_closeing == false)
@@ -426,7 +423,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		return;
 	}
 
-	//남은 데이터 크기 
+	// rest data save
 	int rest_data_size = (int)_recv_data->size() - process_size;
 
 	if(rest_data_size > 0)
@@ -459,7 +456,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		}
 	}
 	
-	//Traffic Rate 확인 
+	//Traffic Rate 
 	current_time	= time(nullptr); 
 	_recv_traffic 	+= process_size*8;	
 	
@@ -467,7 +464,9 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 }
 
 //====================================================================================================
-// 데이터 전송 완료 
+// Data Send Complete
+// - next data send from queue
+//
 //====================================================================================================
 void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 {	
@@ -513,17 +512,16 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 		if(_log_lock == false)
 		{
 			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnSend Closeing Return - IndexKey(%d) IP(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
 		return;
 	}
-
 	
-	//동기화 시작 
+	// Send Queue Sync Start
 	std::lock_guard<std::mutex> send_data_lock(_send_data_queue_mutex);
 		
-	if(_send_datas.empty() == false)
+	if(_send_data_queue.empty() == false)
 	{
 		_last_send_complete_time = time(nullptr); 
 		
@@ -532,20 +530,16 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 			is_complete_close = true; 
 		}
 
-		_send_datas.pop_front(); 
-
-		
-		//추가 처리 데이터 확인 
-		if(_send_datas.empty() == false)
+		_send_data_queue.pop_front(); 
+ 
+		if(_send_data_queue.empty() == false)
 		{
-
-			//추가 데이터가 있으면 전송후 종료  	
+ 	
 			is_complete_close = false; 
 			
 			if(_is_closeing == false)
 			{
-				//데이터 전송 이벤트 재설정 
-				auto send_data = _send_datas.front();
+				auto send_data = _send_data_queue.front();
 				
 				if(_is_support_ssl == true)
 				{
@@ -580,20 +574,19 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 		}
 	}
 	
-	//전송 완료후 종료 처리 확인 
 	if(is_complete_close == true)
 	{
 		SetCloseTimer();
 	}
 
-	//Traffic Rate 확인 
+	//Traffic Rate
 	_send_traffic += data_size *8;
 	
 	return;
 }
 
 //====================================================================================================
-// KeepAlive 전송  Timer설정(Send/Check) 
+// KeepAlive Send Timer Setting(Send/Check) 
 // -TcpKeepaliveSendCallback 형변환 사용 
 //    static_cast<bool (TcpNetworkObject::*)()>(&ClassName::CallbackFunction)
 //    ex> SetKeepAliveSendTimer(n*1000, static_cast<bool (TcpNetworkObject::*)()>(&CServerObject::SendKeepAlive));
@@ -616,7 +609,7 @@ void TcpNetworkObject::SetKeepAliveSendTimer(int interval, TcpKeepaliveSendCallb
 } 
 
 //====================================================================================================
-// KeepAlive 체크 Timer설정
+// Keepalive Check TImer Setting 
 //====================================================================================================
 void TcpNetworkObject::SetKeepAliveCheckTimer(int interval, TcpKeepAliveCheckCallback callback)
 {
@@ -652,7 +645,7 @@ void TcpNetworkObject::SetCloseTimer()
 }
 
 //====================================================================================================
-// Timer설정 
+// Set Timer
 //====================================================================================================
 void TcpNetworkObject::SetNetworkTimer(std::shared_ptr<NetTimer> network_timer, int id, int interval)
 {
@@ -672,22 +665,19 @@ void TcpNetworkObject::SetNetworkTimer(std::shared_ptr<NetTimer> network_timer, 
 }
 
 //====================================================================================================
-// Timer 처리 
+// Timer Proc
 //====================================================================================================
 void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error, 
 									std::shared_ptr<NetTimer> network_timer, 
 									int id, 
 									int interval)
 {	
-
-	//종료 확인 
 	if(_is_closeing == true)
 	{
 		if(id == (int)NetworkTimer::PostClose)
 		{
 			if(PostCloseTimerProc() == false)
 			{
-				// 타이머 재호출 
 				SetNetworkTimer(network_timer, id, interval);	
 			}
 		}
@@ -695,8 +685,6 @@ void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error,
 		return; 
 	}
 		
-
-	// 에러  
 	if(error)
 	{
 		return; 
@@ -706,13 +694,11 @@ void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error,
 	{
 	case (int)NetworkTimer::KeepaliveSend :
 		{
-			// 함수 포인터 호출	
 			if(_keepalive_send_callback != nullptr && (this->*_keepalive_send_callback)() == false)
 			{
 				return; 
 			}			
-			
-			// 타이머 재호출 
+		
 			SetNetworkTimer(network_timer, id, interval);	
 			
 			break; 
@@ -721,13 +707,12 @@ void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error,
 		{
 			if(_keepalive_check_callbak != nullptr)
 			{
-				// 함수 포인터 호출	
 				if(_keepalive_check_callbak != nullptr && (this->*_keepalive_check_callbak)() == false)
 				{
 					return; 
 				}
 			}
-			// 타이머 재호출 
+			
 			SetNetworkTimer(network_timer, id, interval);	
 			
 			break; 
@@ -744,11 +729,10 @@ void TcpNetworkObject::OnNetworkTimer(const boost::system::error_code& error,
 }
 
 //====================================================================================================
-// 종료 타이머 처리 
+// Close Timer Proc 
 //====================================================================================================
 bool TcpNetworkObject::CloseTimerProc() 
 {
-	//종료 콜백 호출 
 	if(_is_closeing == false)
 	{
 		_is_closeing = true; 
@@ -759,7 +743,7 @@ bool TcpNetworkObject::CloseTimerProc()
 }
 
 //====================================================================================================
-// Post 종료 타이머 처리 
+// PostCloseTimerProc
 //====================================================================================================
 bool TcpNetworkObject::PostCloseTimerProc() 
 {
@@ -777,7 +761,6 @@ bool TcpNetworkObject::PostCloseTimerProc()
  	if(_close_timer != nullptr)			_close_timer->cancel(); 			//종료 타이머 종료 
 	if(_post_close_timer != nullptr)		_post_close_timer->cancel(); 		//Post 종료 타이머 종료 
 		
-	// 접속 종료 
 	if(_is_support_ssl == true)
 	{
 		_socket_ssl->lowest_layer().close();
@@ -791,7 +774,7 @@ bool TcpNetworkObject::PostCloseTimerProc()
 }
 
 //====================================================================================================
-// Open 여부
+// IsOpened
 //====================================================================================================
 bool TcpNetworkObject::IsOpened()
 { 

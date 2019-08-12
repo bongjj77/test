@@ -279,13 +279,13 @@ void UdpNetworkManager::RemoveAll()
 //====================================================================================================
 uint32_t UdpNetworkManager::GetCount()
 {
-	uint32_t nCount = 0; 
+	uint32_t count = 0;
 
 	std::unique_lock<std::mutex> network_info_map_lock(_network_info_map_mutex);;
 
-	nCount = (uint32_t)_network_info_map.size();
+	count = (uint32_t)_network_info_map.size();
 
-	return nCount;	
+	return count;
 }
 
 //====================================================================================================

@@ -6,31 +6,15 @@
 #include "common_function.h"
 
 #ifndef _WIN32
-
-	#include <stdio.h>
 	#include <stdarg.h>
-	#include <stdlib.h>
 	#include <string.h>
-	#include <sys/types.h>
-	#include <time.h>
-	#include <malloc.h>
-	#include <unistd.h>
-	#include <ctype.h>
-	#include <sys/errno.h>
 	#include <sys/stat.h>
 	#include <unistd.h>
-	#include <fcntl.h>
-	#include <sys/socket.h>
 	#include <sys/ioctl.h>
-	#include <netinet/in.h>
 	#include <arpa/inet.h>
 	#include <net/if.h>
-	#include <sys/uio.h>
 	#include <netdb.h>
-	#include <sys/vfs.h>
-	#include <math.h>
 	#include <signal.h>
-	//#include <rpcdce.h>
 
 	struct UUID
 	{
@@ -583,7 +567,7 @@ int RoundAdjust(double nNumber)
 //====================================================================================================
 bool FileExist(const char * pFilePath)
 {
-#if defined(_WIN32) || defined(_WIN64)
+#ifdef WIN32
     return (_access(pFilePath, 0) != -1) ? true : false;
 #else
     return (access( pFilePath, 0 ) != -1) ? true : false;
@@ -593,12 +577,12 @@ bool FileExist(const char * pFilePath)
 //====================================================================================================
 // Sleep(Millisecond)
 //====================================================================================================
-void SleepWait(int nMillisecond)
+void SleepWait(int milli_second)
 {
 #ifdef WIN32
-   	Sleep(nMillisecond);
+   	Sleep(milli_second);
 #else
-    usleep(nMillisecond * 1000);   // usleep takes sleep time in us (1 millionth of a second)
+    usleep(milli_second * 1000);   // usleep takes sleep time in us (1 millionth of a second)
 #endif
 }
 

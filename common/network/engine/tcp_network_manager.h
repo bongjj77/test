@@ -15,6 +15,11 @@ typedef std::map<int, std::shared_ptr<TcpNetworkObject>> 	TcpNetworkInfoMap; //K
 #define DEFAULT_NETWORK_TIMEOUT (3000) 
 #define DEFAULT_NETWORK_RECONNECT_COUNT (3) 
 
+#ifndef WIN32
+	#define SOCKET						int
+	#define INVALID_SOCKET				-1
+#endif
+
 //====================================================================================================
 // NetworkManager
 //====================================================================================================
