@@ -1,21 +1,15 @@
 .SUFFIXES : .cpp .o
 
-
-
-VPATH =	../:\
-		../../EchoServer/common:\
-		../../EchoServer/common/network/engine:\
-		../../EchoServer:\
-		../test_tcp_server
+VPATH =		../:\
+			../../common:\
+			../../common/network/engine:\
+			../test_tcp_server
 				
 CXX = g++
 
 INCLUDE =	-I../\
-			-I../../EchoServer/common\
-			-I../../EchoServer/common/network/engine\
-			-I../../EchoServer\
+			-I../../\
 			-I../test_tcp_server
-			
 
 BASE_LIBS = -lpthread
 

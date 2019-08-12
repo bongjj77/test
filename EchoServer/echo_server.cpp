@@ -57,7 +57,6 @@
 #else	
 	#include <errno.h>
 	extern int errno;
-	#include "linux_definition.h"
 #endif
 
 #include "config_define.h"
@@ -67,7 +66,6 @@
 	#include <fcntl.h>
 	#include <iostream>
 	#include <string>
-	#include <log_writer.h>
 	#include <unistd.h>
 	#include <sys/resource.h>
 	#include <sys/stat.h>
@@ -117,27 +115,26 @@ void SettingPrint( )
 bool LoadConfigFile(char * szProgramPath)
 {
 	// Confit 파일 경로 설정 
-	char szConfigFile[300] = {0, };
-	
-	
+	char config_file_path[300] = {0, };
+		
 #ifndef _WIN32
-	char szDelimiter = '/';
+	char delimiter = '/';
 #else
-	char szDelimiter = '\\';
+	char delimiter = '\\';
 #endif
 
-	const char* pszAppName = strrchr(szProgramPath, szDelimiter);
+	const char* pszAppName = strrchr(szProgramPath, delimiter);
 
 	if (nullptr != pszAppName)
 	{
 		int folderlenth = strlen(szProgramPath) - strlen(pszAppName) + 1;
-		strncpy(szConfigFile, szProgramPath, folderlenth);
+		strncpy(config_file_path, szProgramPath, folderlenth);
 	}
-	strcat(szConfigFile, DEFAULT_CONFIG_FILE);
+	strcat(config_file_path, DEFAULT_CONFIG_FILE);
 	
 
 	// Config 파일 로드 
-	if (CONFIG_PARSER.LoadFile(szConfigFile) == false) 
+	if (CONFIG_PARSER.LoadFile(config_file_path) == false) 
 	{
 		return false;
 	}
