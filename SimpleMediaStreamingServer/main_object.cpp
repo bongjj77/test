@@ -258,6 +258,34 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 	return true; 
 }
 
+
+//====================================================================================================
+// OnRtmpEncoderStart
+// - IRtmpEncoder Callback
+//====================================================================================================
+bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key)
+{
+	return true;
+}
+
+//====================================================================================================
+// OnRtmpEncoderReadyComplete
+// - IRtmpEncoder Callback
+//====================================================================================================
+bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info)
+{
+	return true;
+}
+
+//====================================================================================================
+// OnRtmpEncoderStreamData 
+// - IRtmpEncoder Callback
+//====================================================================================================
+bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
+{
+	return true;
+}
+
 //====================================================================================================
 // Timerr Callback
 //====================================================================================================

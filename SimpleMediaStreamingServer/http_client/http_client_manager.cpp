@@ -32,7 +32,7 @@ bool HttpClientManager::AcceptedAdd(std::shared_ptr<NetTcpSocket> socket,
 	object_param.object_callback	= callback; 
 	object_param.object_name		= _object_name;
 
-	//TcpNetworkObject 소멸자에서	삭제 처리 하므로 NULL로 설정 
+	//TcpNetworkObject 소멸자에서	삭제 처리 하므로 nullptr로 설정 
 	socket = nullptr;
 	 
 	auto object =  std::make_shared<HttpClientObject>();

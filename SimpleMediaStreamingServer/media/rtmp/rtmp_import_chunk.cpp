@@ -112,7 +112,7 @@ RtmpImportChunk::AppendChunk(std::shared_ptr<ImportStream> &stream, uint8_t *chu
 {
     int append_size = header_size + data_size;
  
-    if (append_size > MAX_PACKET_SIZE)//10M
+    if (append_size > MAX_MEDIA_PACKET_SIZE)//10M
     {
         LOG_WRITE(("Rtmp Append Data Size ( %d)", append_size));
         return false;

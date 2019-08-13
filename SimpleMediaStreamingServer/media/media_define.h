@@ -15,13 +15,13 @@
 
 #define AVC_NAL_HEADER_SIZE      (4) // 00 00 00 01  or 00 00 01
 #define ADTS_HEADER_SIZE         (7)
-#define MAX_PACKET_SIZE          (20*1024*1024) // 20M
+#define MAX_MEDIA_PACKET_SIZE          (20*1024*1024) // 20M
 
 // Avc Nal Header 
 const char g_avc_nal_header[AVC_NAL_HEADER_SIZE] = { 0, 0, 0, 1 };
 
 // samplerate index table
-const int g_sample_rate_tabel[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350, 0, 0, 0 };
+const int g_sample_rate_table[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350, 0, 0, 0 };
 #define SAMPLERATE_TABLE_SIZE (16)
 
 //===============================================================================================
@@ -81,7 +81,7 @@ public:
 
 public:
 	uint64_t	timestamp; // dts or pts 
-	uint64_t	cts; // composition_time_offset;
+	uint64_t	cts; // cts;
 	FrameType	frame_type;
 
 	std::shared_ptr<std::vector<uint8_t>> frame_data;

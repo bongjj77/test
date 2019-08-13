@@ -64,6 +64,9 @@
     <ClCompile Include="http_client\http_client_object.cpp">
       <Filter>http_client</Filter>
     </ClCompile>
+    <ClCompile Include="rtmp_encoder\rtmp_chunk_stream.cpp">
+      <Filter>rtmp_encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="http_client\http_client_object.h">
       <Filter>http_client</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmp_encoder\rtmp_chunk_stream.h">
+      <Filter>rtmp_encoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

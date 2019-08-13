@@ -88,6 +88,11 @@ private:
 	
 	int OnUdpNetworkClose(int object_key, int index_key, uint32_t ip, int port) { return 0;  }
 	
+	// IRtmpEncoder Implement
+	bool OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key);
+	bool OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info);
+	bool OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info);
+
 	
 	// Timer callback
 	void OnThreadTimer(uint32_t timer_id, bool &delete_timer);

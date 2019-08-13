@@ -11,8 +11,7 @@
 //====================================================================================================
 RtmpEncoderObject::RtmpEncoderObject()
 {
-	
-	
+	_last_packet_time = time(nullptr);
 }
 
 //====================================================================================================
@@ -28,7 +27,7 @@ RtmpEncoderObject::~RtmpEncoderObject()
 //====================================================================================================
 void RtmpEncoderObject::Destroy()
 {
-	
+	_rtmp_chunk_stream.Destroy();
 }
 
 //====================================================================================================
@@ -41,6 +40,10 @@ bool RtmpEncoderObject::Create(TcpNetworkObjectParam * param)
 		return false;
 	}
 	
+	_rtmp_chunk_stream.Create(this, 4096);
+
+	_last_packet_time = time(nullptr);
+
 	return true;
 }
 
@@ -60,17 +63,119 @@ bool RtmpEncoderObject::SendPackt(int data_size, uint8_t *data)
 //====================================================================================================
 int RtmpEncoderObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 {
-	 
-	return data->size();
-}
+	_last_packet_time = time(nullptr); 
 
+	return _rtmp_chunk_stream.OnDataReceived(data->size(), (char *)data->data());
+}
 //====================================================================================================
-// Recv Packet Proc
+// NetworkObject  
 //====================================================================================================
-bool RtmpEncoderObject::RecvPacketProcess(int data_size, uint8_t *data)
+bool RtmpEncoderObject::OnChunkStreamSend(int data_size, char* data)
 {
- 
+	auto send_data = std::make_shared<std::vector<uint8_t>>(data, data + data_size);
+
+	if (PostSend(send_data) == FALSE)
+	{
+		LOG_WRITE(("ERROR : [%s] OnChunkStreamSend - Post Sned Fail - IP(%s)", _object_name, _remote_ip_string));
+		return false;
+	}
 
 	return true;
 }
- 
+
+//====================================================================================================
+// RtmpChunkStream 
+//====================================================================================================
+bool RtmpEncoderObject::OnChunkStreamStart(StreamKey& stream_key)
+{
+	// Callback 호占쏙옙	
+	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStart(_index_key, _remote_ip, stream_key) == FALSE)
+	{
+		LOG_WRITE(("ERROR : [%s] OnChunkStreamStart - OnRtmpProviderStart - IP(%s)", _object_name, _remote_ip_string));
+		return false;
+	}
+
+
+	_stream_key = stream_key;
+
+	return true;
+}
+
+//====================================================================================================
+// RtmpChunkStream
+//====================================================================================================
+bool RtmpEncoderObject::OnChunkStreamReadyComplete(StreamKey& stream_key, MediaInfo& media_info)
+{
+	// Callback  	
+	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderReadyComplete(_index_key, _remote_ip, stream_key, media_info) == false)
+	{
+		LOG_WRITE(("ERROR : [%s] OnChunkStreamReadyComplete - OnRtmpProviderReadyComplete - IP(%s)", _object_name, _remote_ip_string));
+		return false;
+	}
+
+	_media_info = media_info;
+
+	return true;
+}
+
+//====================================================================================================
+// RtmpChunkStream  
+// 
+//====================================================================================================
+bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
+{
+
+	_last_packet_time = time(nullptr);
+
+	// Callback  
+	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStreamData(_index_key, _remote_ip, stream_key, frame_info) == false)
+	{
+		LOG_WRITE(("ERROR : [%s] OnChunkStreamData - OnRtmpProviderStreamData - IP(%s)", _object_name, _remote_ip_string));
+		return false;
+	}
+
+	return true;
+}
+
+//====================================================================================================
+// KeepAlive Check 占쏙옙占쏙옙 
+//====================================================================================================
+bool RtmpEncoderObject::StartKeepAliveCheck(uint32_t keepalive_check_time)
+{
+	//KeepAlive 占쏙옙占쏙옙
+	_keepalive_check_time = keepalive_check_time;
+
+	SetKeepAliveCheckTimer((uint32_t)(_keepalive_check_time * 1000 / 2), static_cast<bool (TcpNetworkObject::*)()>(&RtmpEncoderObject::KeepAliveCheck));
+
+
+	return true;
+}
+
+//====================================================================================================
+// KeepAlive 
+//====================================================================================================
+bool RtmpEncoderObject::KeepAliveCheck()
+{
+	time_t	last_packet_time = _last_packet_time; 
+	time_t	current_time = time(nullptr);
+	int 	time_gap = 0;
+
+	time_gap = current_time - last_packet_time;
+
+	if (time_gap > _keepalive_check_time)
+	{
+		// 
+		if (_is_closeing == false && _network_callback != nullptr)
+		{
+			if (_log_lock == false)
+			{
+				LOG_WRITE(("INFO : [%s] KeepAlive TimeOver Remove - IndexKey(%d) IP(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string, time_gap));
+			}
+
+			if (_network_callback != nullptr)
+				_network_callback->OnNetworkClose(_object_key, _index_key, _remote_ip, _remote_port);
+		}
+	}
+
+	return true;
+}
