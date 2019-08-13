@@ -16,6 +16,10 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 
 	switch (object_key)
 	{
+		case NetworkObjectKey::RtmpEncoder:
+			object_key_string = "RtmpEncoder";
+			break;
+
 		default:
 			object_key_string = "unknown";
 			break;
@@ -29,7 +33,9 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 //====================================================================================================
 MainObject::MainObject()
 {
-	
+	_rtmp_encoder_manager = std::make_shared<RtmpEncoderManager>((int)NetworkObjectKey::RtmpEncoder);
+
+	_network_table[(int)NetworkObjectKey::RtmpEncoder] = _rtmp_encoder_manager;
 }
 
 //====================================================================================================
@@ -74,6 +80,16 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_context_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
 	_network_context_pool->Run();  	
 	
+	// rtmp encoder
+	if (!_rtmp_encoder_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
+		_network_context_pool,
+		_create_param->rtmp_listen_port,
+		GetNetworkObjectName(NetworkObjectKey::RtmpEncoder)))
+	{
+		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::RtmpEncoder).c_str()));
+		return false;
+	}
+
 	// create timer 	
 	if(	_timer.Create(this) == false)
 	{
@@ -96,9 +112,16 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 	}
 		
 	int index_key = -1; 
-		
 	
-	
+	if (object_key == (int)NetworkObjectKey::RtmpEncoder)
+	{
+		_rtmp_encoder_manager->AcceptedAdd(socket,
+										ip,
+										port,
+										std::static_pointer_cast<IRtmpEncoder>(this->shared_from_this()),
+										index_key);
+	}
+
 	if(index_key == -1)
 	{
 		LOG_WRITE(("ERRRO : [%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)", 

@@ -6,6 +6,7 @@
 #pragma once
 #include "common/thread_timer.h"
 #include "common/network/engine/network_manager.h"
+#include "rtmp_encoder/rtmp_encoder_manager.h"
 #include "stream_manager.h" 
 
 
@@ -36,7 +37,8 @@ struct CreateParam
 //====================================================================================================
 class MainObject :	public std::enable_shared_from_this<MainObject>,
 					public ITimerCallback, 
-					public INetworkCallback
+					public INetworkCallback,
+					public IRtmpEncoder
 {
 public:
 	MainObject(void);
@@ -91,5 +93,6 @@ private:
 	std::unique_ptr<CreateParam>			_create_param;
 	std::shared_ptr<NetworkContextPool>		_network_context_pool = nullptr;	
 	std::shared_ptr<NetworkManager>			_network_table[(int)NetworkObjectKey::Max];
+	std::shared_ptr<RtmpEncoderManager>		_rtmp_encoder_manager;
 	
 };

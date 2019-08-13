@@ -29,6 +29,8 @@
     <ClCompile Include="media\rtmp\rtmp_import_chunk.cpp" />
     <ClCompile Include="media\rtmp\rtmp_mux_util.cpp" />
     <ClCompile Include="media_streaming_server.cpp" />
+    <ClCompile Include="rtmp_encoder\rtmp_encoder_manager.cpp" />
+    <ClCompile Include="rtmp_encoder\rtmp_encoder_object.cpp" />
     <ClCompile Include="stream_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +58,8 @@
     <ClInclude Include="media\rtmp\rtmp_handshake.h" />
     <ClInclude Include="media\rtmp\rtmp_import_chunk.h" />
     <ClInclude Include="media\rtmp\rtmp_mux_util.h" />
+    <ClInclude Include="rtmp_encoder\rtmp_encoder_manager.h" />
+    <ClInclude Include="rtmp_encoder\rtmp_encoder_object.h" />
     <ClInclude Include="stream_manager.h" />
   </ItemGroup>
   <ItemGroup>

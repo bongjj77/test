@@ -52,6 +52,12 @@
     <ClCompile Include="media\rtmp\rtmp_mux_util.cpp">
       <Filter>media\rtmp</Filter>
     </ClCompile>
+    <ClCompile Include="rtmp_encoder\rtmp_encoder_manager.cpp">
+      <Filter>rtmp_encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="rtmp_encoder\rtmp_encoder_object.cpp">
+      <Filter>rtmp_encoder</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -68,6 +74,9 @@
     </Filter>
     <Filter Include="media\rtmp">
       <UniqueIdentifier>{93b463a4-3b2a-442f-ad41-2f6e23413798}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rtmp_encoder">
+      <UniqueIdentifier>{332e715c-e2de-4db3-b169-c06be75ca085}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +148,12 @@
     </ClInclude>
     <ClInclude Include="media\media_define.h">
       <Filter>media</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmp_encoder\rtmp_encoder_manager.h">
+      <Filter>rtmp_encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="rtmp_encoder\rtmp_encoder_object.h">
+      <Filter>rtmp_encoder</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
