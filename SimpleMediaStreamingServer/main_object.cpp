@@ -20,6 +20,10 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 			object_key_string = "RtmpEncoder";
 			break;
 
+		case NetworkObjectKey::HttpClient:
+			object_key_string = "HttpClient";
+			break;
+
 		default:
 			object_key_string = "unknown";
 			break;
@@ -34,8 +38,11 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 MainObject::MainObject()
 {
 	_rtmp_encoder_manager = std::make_shared<RtmpEncoderManager>((int)NetworkObjectKey::RtmpEncoder);
+	_http_client_manager = std::make_shared<HttpClientManager>((int)NetworkObjectKey::HttpClient);
 
 	_network_table[(int)NetworkObjectKey::RtmpEncoder] = _rtmp_encoder_manager;
+	_network_table[(int)NetworkObjectKey::HttpClient] = _http_client_manager;
+
 }
 
 //====================================================================================================
@@ -82,11 +89,21 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	
 	// rtmp encoder
 	if (!_rtmp_encoder_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
-		_network_context_pool,
-		_create_param->rtmp_listen_port,
-		GetNetworkObjectName(NetworkObjectKey::RtmpEncoder)))
+										_network_context_pool,
+										_create_param->rtmp_listen_port,
+										GetNetworkObjectName(NetworkObjectKey::RtmpEncoder)))
 	{
 		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::RtmpEncoder).c_str()));
+		return false;
+	}
+
+	// http client
+	if (!_http_client_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
+									_network_context_pool,
+									_create_param->http_listen_port,
+									GetNetworkObjectName(NetworkObjectKey::HttpClient)))
+	{
+		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::HttpClient).c_str()));
 		return false;
 	}
 
@@ -121,6 +138,15 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 										std::static_pointer_cast<IRtmpEncoder>(this->shared_from_this()),
 										index_key);
 	}
+	else if (object_key == (int)NetworkObjectKey::HttpClient)
+	{
+		_http_client_manager->AcceptedAdd(socket,
+										ip,
+										port,
+										std::static_pointer_cast<IHttpClient>(this->shared_from_this()),
+										index_key);
+	}
+
 
 	if(index_key == -1)
 	{

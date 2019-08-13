@@ -67,12 +67,13 @@ void SettingPrint( )
 
 	LOG_WRITE(("===================================================================================================="));
 	LOG_WRITE(("[ %s Config]", 		_PROGREAM_NAME_));
-	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, 					GET_CONFIG_VALUE(CONFIG_VERSION)));
-	LOG_WRITE(("    - %s : %s",	CONFIG_THREAD_POOL_COUNT,			GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
-	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, 					GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
-	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, 		GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
-	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME,					GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
+	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, 			GET_CONFIG_VALUE(CONFIG_VERSION)));
+	LOG_WRITE(("    - %s : %s",	CONFIG_THREAD_POOL_COUNT,	GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, 			GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
+	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME,			GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
 	LOG_WRITE(("    - %s : %s", CONFIG_RTMP_LISTEN_PORT,	GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HTTP_LISTEN_PORT,	GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT)));
 	LOG_WRITE(("===================================================================================================="));
 }
 
@@ -144,13 +145,14 @@ int main(int argc, char* argv[])
 	// setting crate param
 	auto create_param = std::make_unique<CreateParam>();
 	 
-	create_param->version				= GET_CONFIG_VALUE(CONFIG_VERSION);
-	create_param->thread_pool_count		= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
-	create_param->debug_mode			= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
-	create_param->host_name				= GET_CONFIG_VALUE(CONFIG_HOST_NAME);
-	create_param->network_bandwidth		= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH));
-	create_param->local_ip				= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
-	create_param->rtmp_listen_port		= atoi(GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT));
+	create_param->version			= GET_CONFIG_VALUE(CONFIG_VERSION);
+	create_param->thread_pool_count	= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
+	create_param->debug_mode		= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
+	create_param->host_name			= GET_CONFIG_VALUE(CONFIG_HOST_NAME);
+	create_param->network_bandwidth	= atoi(GET_CONFIG_VALUE(CONFIG_NETWORK_BAND_WIDTH));
+	create_param->local_ip			= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
+	create_param->rtmp_listen_port	= atoi(GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT));
+	create_param->http_listen_port	= atoi(GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT));
 
 	create_param->start_time = time(nullptr);
 

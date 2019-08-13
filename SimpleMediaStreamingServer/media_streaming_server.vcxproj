@@ -22,6 +22,8 @@
     <ClCompile Include="..\common\network\engine\udp_network_manager.cpp" />
     <ClCompile Include="..\common\network\engine\udp_network_object.cpp" />
     <ClCompile Include="..\common\thread_timer.cpp" />
+    <ClCompile Include="http_client\http_client_manager.cpp" />
+    <ClCompile Include="http_client\http_client_object.cpp" />
     <ClCompile Include="main_object.cpp" />
     <ClCompile Include="media\rtmp\amf_document.cpp" />
     <ClCompile Include="media\rtmp\rtmp_export_chunk.cpp" />
@@ -50,6 +52,8 @@
     <ClInclude Include="..\common\singleton.h" />
     <ClInclude Include="..\common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
+    <ClInclude Include="http_client\http_client_manager.h" />
+    <ClInclude Include="http_client\http_client_object.h" />
     <ClInclude Include="main_object.h" />
     <ClInclude Include="media\media_define.h" />
     <ClInclude Include="media\rtmp\amf_document.h" />

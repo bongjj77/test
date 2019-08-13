@@ -7,12 +7,14 @@
 #include "common/thread_timer.h"
 #include "common/network/engine/network_manager.h"
 #include "rtmp_encoder/rtmp_encoder_manager.h"
+#include "http_client/http_client_manager.h"
 #include "stream_manager.h" 
 
 
 enum class NetworkObjectKey
 {
 	RtmpEncoder,
+	HttpClient,
 	Max,
 };
 
@@ -29,6 +31,7 @@ struct CreateParam
 	int			network_bandwidth; //Kbps
 	uint32_t	local_ip;
 	int			rtmp_listen_port;
+	int			http_listen_port;
 	time_t		start_time;
 };
 
@@ -38,7 +41,8 @@ struct CreateParam
 class MainObject :	public std::enable_shared_from_this<MainObject>,
 					public ITimerCallback, 
 					public INetworkCallback,
-					public IRtmpEncoder
+					public IRtmpEncoder,
+					public IHttpClient
 {
 public:
 	MainObject(void);
@@ -91,8 +95,10 @@ private:
 private:
 	ThreadTimer								_timer;
 	std::unique_ptr<CreateParam>			_create_param;
-	std::shared_ptr<NetworkContextPool>		_network_context_pool = nullptr;	
+	std::shared_ptr<NetworkContextPool>		_network_context_pool = nullptr;
+
 	std::shared_ptr<NetworkManager>			_network_table[(int)NetworkObjectKey::Max];
 	std::shared_ptr<RtmpEncoderManager>		_rtmp_encoder_manager;
+	std::shared_ptr<HttpClientManager>		_http_client_manager;
 	
 };

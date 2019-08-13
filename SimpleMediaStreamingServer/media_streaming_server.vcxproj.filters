@@ -58,6 +58,12 @@
     <ClCompile Include="rtmp_encoder\rtmp_encoder_object.cpp">
       <Filter>rtmp_encoder</Filter>
     </ClCompile>
+    <ClCompile Include="http_client\http_client_manager.cpp">
+      <Filter>http_client</Filter>
+    </ClCompile>
+    <ClCompile Include="http_client\http_client_object.cpp">
+      <Filter>http_client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -77,6 +83,9 @@
     </Filter>
     <Filter Include="rtmp_encoder">
       <UniqueIdentifier>{332e715c-e2de-4db3-b169-c06be75ca085}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="http_client">
+      <UniqueIdentifier>{b237f2c4-f044-43b0-8fab-3b93fd8060a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +163,12 @@
     </ClInclude>
     <ClInclude Include="rtmp_encoder\rtmp_encoder_object.h">
       <Filter>rtmp_encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="http_client\http_client_manager.h">
+      <Filter>http_client</Filter>
+    </ClInclude>
+    <ClInclude Include="http_client\http_client_object.h">
+      <Filter>http_client</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
