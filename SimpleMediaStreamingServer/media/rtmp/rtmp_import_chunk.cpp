@@ -152,7 +152,7 @@ int RtmpImportChunk::CompleteChunkMessage(std::shared_ptr<ImportStream> &stream,
     // Chunk Stream is not complete skip
     if (stream->data_size < chunk_header_size + chunk_data_raw_size)
     {
-        LOG_WRITE(("ERROR : Buffer(%d) RawData(%d)", stream->data_size, chunk_header_size + chunk_data_raw_size));
+        LOG_ERROR_WRITE(("Buffer(%d) RawData(%d)", stream->data_size, chunk_header_size + chunk_data_raw_size));
         return 0;
     }
  
@@ -168,7 +168,7 @@ int RtmpImportChunk::CompleteChunkMessage(std::shared_ptr<ImportStream> &stream,
     if (GetChunkData(chunk_size, stream->buffer->data() + chunk_header_size, chunk_data_raw_size,
                      message_header->body_size, message->body->data(), extend_type) == 0)
     {
-		LOG_WRITE(("ERROR : GetChunkData - Header(%d) RawData(%d)", chunk_header_size, chunk_data_raw_size));
+		LOG_ERROR_WRITE(("GetChunkData - Header(%d) RawData(%d)", chunk_header_size, chunk_data_raw_size));
         return 0;
     }
 	 
@@ -215,7 +215,7 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 
             if (data_size < chunk_header_size)
             {
-                LOG_WRITE(("INFO : Type3 Header Extend Size Cut"));
+                LOG_INFO_WRITE(("Type3 Header Extend Size Cut"));
                 return 0;
             }
         }
@@ -231,7 +231,7 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 
     if (rest_chunk_size <= 0)
     {
-        LOG_WRITE(("ERROR : Rest Chunk Size Fail - Header(%d) Data(%d) Chunk(%d)", 
+        LOG_ERROR_WRITE(("Rest Chunk Size Fail - Header(%d) Data(%d) Chunk(%d)", 
 					chunk_header_size, rest_chunk_size, _chunk_size));
         return -1;
     }
@@ -245,7 +245,7 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
  
         if (!AppendChunk(stream, data, chunk_header_size, _chunk_size))
         {
-            LOG_WRITE(("ERROR : AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
+            LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
 						chunk_header_size, rest_chunk_size, _chunk_size));
             return -1;
         }
@@ -265,7 +265,7 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 	 
     if (!AppendChunk(stream, data, chunk_header_size, rest_chunk_size))
     {
-        LOG_WRITE(("ERROR : AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
+        LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
 					chunk_header_size, rest_chunk_size, _chunk_size));
         return -1;
     }

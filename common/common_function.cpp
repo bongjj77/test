@@ -36,7 +36,7 @@
 LogWriter g_log_writer("Q");
 
 //====================================================================================================
-// 로그 초기화
+// Log Init
 //====================================================================================================
 bool LogInit(const char * file_name, int nBackupHour) 
 {
@@ -51,39 +51,38 @@ bool LogInit(const char * file_name, int nBackupHour)
 
 
 //====================================================================================================
-// 로그 출력 
+// Log Print
 //====================================================================================================
-void LogPrint(const char * pFormat, ...)
+void LogPrint(const char * format, ...)
 {
-	
-	char log[MAX_LOG_TEXT_SIZE + 100] = {0, };
-	struct tm * current_time;
-	time_t timer;
-	
-	timer = time(nullptr);
-	current_time = localtime(&timer); // 초 단위의 시간을 분리하여 구조체에 넣기
-	
-	
-	va_list argument;
-	va_start(argument,pFormat);
+	va_list vl;
+	va_start(vl, format);
+	g_log_writer.WriteLogV(LogType::Custom, format, vl);
+	va_end(vl);
+}
 
-	vsprintf(log, pFormat, argument);
+void LogErrorPrint(const char* format, ...)
+{
+	va_list vl;
+	va_start(vl, format);
+	g_log_writer.WriteLogV(LogType::Error, format, vl);
+	va_end(vl);
+}
 
-	va_end(argument);
+void LogWarningPrint(const char* format, ...)
+{
+	va_list vl;
+	va_start(vl, format);
+	g_log_writer.WriteLogV(LogType::Warning, format, vl);
+	va_end(vl);
+}
 
-	//화면 출력 
-	printf("\r\n[%04d-%02d-%02d %02d:%02d:%02d]\t%s", current_time->tm_year + 1900,
-		current_time->tm_mon + 1,
-		current_time->tm_mday,
-		current_time->tm_hour,
-		current_time->tm_min,
-		current_time->tm_sec,
-		log);
-
-	fflush(stdout);
-
-	//파일 출력 
-	g_log_writer.LogWrite(log);
+void LogInfoPrint(const char* format, ...)
+{
+	va_list vl;
+	va_start(vl, format);
+	g_log_writer.WriteLogV(LogType::Info, format, vl);
+	va_end(vl);
 }
 
 //====================================================================================================
@@ -222,7 +221,7 @@ void GetStringTime(std::string & time_string, time_t time_value)
 // 시간 문자 
 // - timer 0 입력시 현재시간 
 //====================================================================================================
-std::string GetStringDate(time_t time_value, const char * pFormat/* = nullptr */)
+std::string GetStringDate(time_t time_value, const char * format/* = nullptr */)
 {
 	std::string time_string; 
 	struct tm	time_struct;
@@ -236,13 +235,13 @@ std::string GetStringDate(time_t time_value, const char * pFormat/* = nullptr */
 
 	char szBuffer[100] = {0,}; 
 
-	if(pFormat == nullptr)
+	if(format == nullptr)
 	{
 		sprintf(szBuffer, "%04d-%02d-%02d", time_struct.tm_year + 1900, time_struct.tm_mon + 1, time_struct.tm_mday);
 	}
 	else
 	{
-		sprintf(szBuffer, pFormat, time_struct.tm_year + 1900, time_struct.tm_mon + 1, time_struct.tm_mday);
+		sprintf(szBuffer, format, time_struct.tm_year + 1900, time_struct.tm_mon + 1, time_struct.tm_mday);
 	}
 	
 	time_string = szBuffer; 
@@ -439,7 +438,7 @@ int GetAudioTimePerFrame(int nSamplesPerSecond, int nTimeScale, int nSamplesPerF
 
 bool GetUUID(std::string & strUUID)
 {
-	TCHAR 	szUUID[33] = {0, }; 
+	char 	szUUID[33] = {0, }; 
 	UUID 	uuid;
 #ifdef WIN32
 	
@@ -630,15 +629,15 @@ int GetLocalAddress(char *pAddress)
     char ac[80] = {0, };
     if( gethostname(ac, sizeof(ac)) == SOCKET_ERROR ) 
 	{
-        LOG_WRITE(( "ERR: %d when getting local host name. %s(%d)", WSAGetLastError(), __FUNCTION__, __LINE__ ));
+        LOG_ERROR_WRITE(("%d when getting local host name. %s(%d)", WSAGetLastError(), __FUNCTION__, __LINE__ ));
         return -1;
     }
-    LOG_WRITE( ("Host name is %s.", ac ));
+    LOG_WRITE(("Host name is %s.", ac ));
 
     struct hostent *phe = gethostbyname(ac);
     if (phe == 0) 
 	{
-        LOG_WRITE(( "ERR: Yow! Bad host lookup. %s(%d)", __FUNCTION__, __LINE__ ));
+		LOG_ERROR_WRITE(("Yow! Bad host lookup. %s(%d)", __FUNCTION__, __LINE__ ));
         return 1;
     }
 

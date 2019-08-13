@@ -87,7 +87,7 @@ int RtmpChunkStream::OnDataReceived(int data_size, char * data)
 
 	if (process_data->size() > MAX_MEDIA_PACKET_SIZE)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream -  OnDataReceived - Process Size Fail - DataSize(%d) ProcessSize(%d)", data_size, process_size));
+		LOG_ERROR_WRITE(("RtmpChunkStream -  OnDataReceived - Process Size Fail - DataSize(%d) ProcessSize(%d)", data_size, process_size));
 		return -1;
 	}
 
@@ -530,7 +530,7 @@ void RtmpChunkStream::OnAmfPublish(std::shared_ptr<RtmpMuxMessageHeader> &messag
 	 
 	if (((IRtmpChunkStream *)_stream_interface)->OnChunkStreamStart(_stream_key) == false)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - OnPublish - OnRtmpProviderStart"));
+		LOG_ERROR_WRITE(("RtmpChunkStream - OnPublish - OnRtmpProviderStart"));
 
 		//Reject 
 		SendAmfOnStatus((uint32_t)_chunk_stream_id, _stream_id, (char *)"error", (char *)"NetStream.Publish.Rejected", (char *)"Authentication Failed.", _client_id);
@@ -806,7 +806,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 
 	if(header->body_size > MAX_MEDIA_PACKET_SIZE || header->body_size <= 0)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvAudioMessage - Header Size Fail - Size(%d)", header->body_size));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvAudioMessage - Header Size Fail - Size(%d)", header->body_size));
 		return false; 
 	}	
 	
@@ -886,7 +886,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 
 	if(header->body_size <= RTMP_VIDEO_DATA_MIN_SIZE || header->body_size > MAX_MEDIA_PACKET_SIZE)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - Header Size Fail - Size(%d)", header->body_size));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Header Size Fail - Size(%d)", header->body_size));
 		return false; 
 	}
 		
@@ -899,7 +899,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 	else if	(control_header == RTMP_H264_P_FRAME_TYPE)frame_type = FrameType::VideoPFrame; 	//P-Frame
 	else 
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - Unknown Frame Type - Type(0x%x)", control_header));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Unknown Frame Type - Type(0x%x)", control_header));
 		return false; 
 	}
 	 
@@ -911,7 +911,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 		//SPS/PPS Load 
 		if(!ProcessVideoSequenceData(std::move(data)))
 		{
-			LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - LoadVideoConfig "));
+			LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - LoadVideoConfig "));
 			return true;
 		}
  
@@ -929,7 +929,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
  
 	if(header->body_size < RTMP_VIDEO_FRAME_INDEX)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - Frame Length Fail - Length(%u:%d)", header->body_size, RTMP_VIDEO_FRAME_INDEX));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Frame Length Fail - Length(%u:%d)", header->body_size, RTMP_VIDEO_FRAME_INDEX));
 		return false; 
 	}
 
@@ -941,7 +941,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 
 	if(frame_size <= 0 || frame_size > MAX_MEDIA_PACKET_SIZE || frame_size > (body_size - RTMP_VIDEO_FRAME_INDEX))
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - Frame Size Fail - Size(%d)", frame_size));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Frame Size Fail - Size(%d)", frame_size));
 		return false;
 	}
 	
@@ -962,7 +962,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
  
 		if(frame_size > MAX_MEDIA_PACKET_SIZE || frame_size <= 0 )
 		{
-			LOG_WRITE(("ERROR :  RtmpChunkStream - RecvVideoMessage - Padding Frame Size Fail - Size(%d)", frame_size));
+			LOG_ERROR_WRITE((" RtmpChunkStream - RecvVideoMessage - Padding Frame Size Fail - Size(%d)", frame_size));
 			return false;
 		}
 
@@ -972,7 +972,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 	 
 	if(frame_size <= 0 || (RTMP_VIDEO_FRAME_SIZE_INDEX + padding_size) > body_size)
 	{
-		LOG_WRITE(("ERROR : RtmpChunkStream - RecvVideoMessage - Frame Size Fail - Size(%d:%d)", frame_size, body_size));
+		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Frame Size Fail - Size(%d:%d)", frame_size, body_size));
 		return false; 
 	}
 	

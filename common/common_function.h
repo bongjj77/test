@@ -23,11 +23,17 @@
 
 //------------------------------ log define ------------------------------ 
 #define LOG_INIT(file_name, nBackupHour) LogInit(file_name, nBackupHour)
-#define LOG_WRITE(pFormat) LogPrint pFormat
 
-#define MAX_LOG_TEXT_SIZE	(4096)
+#define LOG_WRITE(format)			LogPrint format
+#define LOG_ERROR_WRITE(format)		LogErrorPrint format
+#define LOG_WARNING_WRITE(format)	LogWarningPrint format
+#define LOG_INFO_WRITE(format)		LogInfoPrint format
+
 extern bool LogInit(const char * file_name, int nBackupHour); 
 extern void LogPrint(const char *str, ...);
+extern void LogErrorPrint(const char* str, ...);
+extern void LogWarningPrint(const char* str, ...);
+extern void LogInfoPrint(const char* str, ...);
 
 //
 extern void 		InitNetwork();
@@ -37,7 +43,7 @@ extern void			Tokenize2(const char * pText, std::vector<std::string>& tokens, ch
 extern std::string 	GetStringIP(uint32_t ip); 
 extern void			GetStringTime(std::string & time_string, time_t time_value); 
 extern std::string 	GetStringTime2(time_t time_value, bool bDate = true);
-extern std::string 	GetStringDate(time_t time_value, const char * pFormat = nullptr); 
+extern std::string 	GetStringDate(time_t time_value, const char * format = nullptr); 
 
 extern void 		ReplaceString( std::string & strText, const char * pszBefore, const char * pszAfter );
 extern void			StringNCopy(char * pDest, const char * pSource, int pMaxLength); 

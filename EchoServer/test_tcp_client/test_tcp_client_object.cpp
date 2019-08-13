@@ -112,7 +112,7 @@ bool TestTcpClientObject::RecvPacketProcess(PacketType type_code, int data_size,
 		break;
 	default:
 	{
-		LOG_WRITE(("ERROR : [%s] Unknown Packet - Type(%d) TestTcpClient(%s:%d)", 
+		LOG_ERROR_WRITE(("[%s] Unknown Packet - Type(%d) TestTcpClient(%s:%d)", 
 					_object_name.c_str(), 
 					type_code, 
 					_remote_ip_string.c_str(), 
@@ -129,7 +129,7 @@ bool TestTcpClientObject::RecvPacketProcess(PacketType type_code, int data_size,
 //====================================================================================================
 bool TestTcpClientObject::RecvEchoRequest(int data_size, uint8_t *data)
 {
-	LOG_WRITE(("INFO : [%s] Echo : %s ", _object_name.c_str(), data));
+	LOG_INFO_WRITE(("[%s] Echo : %s ", _object_name.c_str(), data));
 
 	return SendPackt(PacketType::EchoResponse, data_size, data);;
 }

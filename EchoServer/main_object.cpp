@@ -58,14 +58,14 @@ void MainObject::Destroy( )
 	{
 		_network_table[index]->PostRelease(); 		
 	}
-	LOG_WRITE(("INFO : Network Object Close Completed"));
+	LOG_INFO_WRITE(("Network Object Close Completed"));
 
 	// network service close
 	if(_network_context_pool != nullptr)
 	{
 		_network_context_pool->Stop(); 
 
-		LOG_WRITE(("INFO : Network Service Pool Close Completed"));
+		LOG_INFO_WRITE(("Network Service Pool Close Completed"));
 	}
 }
 
@@ -86,14 +86,14 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 										_create_param->test_tcp_client_listen_port, 
 										GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
 	{
-		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
+		LOG_ERROR_WRITE(("[%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpClient).c_str()));
 		return false;
 	}
 	 
 	// create timer 	
 	if(	_timer.Create(this) == false)
 	{
-		LOG_WRITE(("ERROR : Init Timer Fail"));
+		LOG_ERROR_WRITE(("Init Timer Fail"));
 	    return false;   
 	}
 	
@@ -107,7 +107,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkAccepted - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - Unkown ObjectKey - Key(%d)", object_key));
 		return false; 
 	}
 		
@@ -124,7 +124,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 	
 	if(index_key == -1)
 	{
-		LOG_WRITE(("ERRRO : [%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)", 
+		LOG_ERROR_WRITE(("[%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)", 
 					GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
 					index_key, 
 					GetStringIP(ip).c_str()));
@@ -146,7 +146,7 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
 		return false; 
 	}
 	
@@ -165,7 +165,7 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
 		return false;
 	}
 
@@ -181,11 +181,11 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 			
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
 		return 0; 
 	}
 
-	LOG_WRITE(("INFO : [%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
+	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
 		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
 		index_key, 
 		GetStringIP(ip).c_str(), 
@@ -204,7 +204,7 @@ bool MainObject::RemoveNetwork(int object_key, int index_key)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
 		return false; 
 	}
 
@@ -222,7 +222,7 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
 		return false; 
 	}
 

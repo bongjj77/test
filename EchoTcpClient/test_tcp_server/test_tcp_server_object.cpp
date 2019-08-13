@@ -119,7 +119,7 @@ bool TestTcpServerObject::RecvPacketProcess(PacketType type_code, int data_size,
 
 		default:
 		{
-			LOG_WRITE(("ERROR : [%s] Unknown Packet - Type(%d) TestTcpServer(%s:%d)", _object_name.c_str(), type_code, _remote_ip_string.c_str(), _remote_port));
+			LOG_ERROR_WRITE(("[%s] Unknown Packet - Type(%d) TestTcpServer(%s:%d)", _object_name.c_str(), type_code, _remote_ip_string.c_str(), _remote_port));
 			break;
 		}
 	}
@@ -132,6 +132,6 @@ bool TestTcpServerObject::RecvPacketProcess(PacketType type_code, int data_size,
 //====================================================================================================
 bool TestTcpServerObject::RecvEchoResponse(int data_size, uint8_t *data)
 {
-	LOG_WRITE(("INFO : [%s] Echo : %s ", _object_name.c_str(), data));
+	LOG_INFO_WRITE(("[%s] Echo : %s ", _object_name.c_str(), data));
 	return true;
 }

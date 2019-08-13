@@ -66,14 +66,14 @@ void MainObject::Destroy( )
 	{
 		_network_table[index]->PostRelease(); 		
 	}
-	LOG_WRITE(("INFO : Network Object Close Completed"));
+	LOG_INFO_WRITE(("Network Object Close Completed"));
 
 	// network service close
 	if(_network_context_pool != nullptr)
 	{
 		_network_context_pool->Stop(); 
 
-		LOG_WRITE(("INFO : Network Service Pool Close Completed"));
+		LOG_INFO_WRITE(("Network Service Pool Close Completed"));
 	}
 }
 
@@ -93,7 +93,7 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 										_network_context_pool, 
 										GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
 	{
-		LOG_WRITE(("ERROR : [%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpServer).c_str()));
+		LOG_ERROR_WRITE(("[%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::TestTcpServer).c_str()));
 		return false;
 	}
 	 
@@ -101,7 +101,7 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	if(_timer.Create(this) == false || 
 		_timer.SetTimer((uint32_t)Timer::StartTest, START_TEST_TIMER_INTERVAL) == false)
 	{
-		LOG_WRITE(("ERROR : Init Timer Fail"));
+		LOG_ERROR_WRITE(("Init Timer Fail"));
 	    return false;   
 	}
 	
@@ -128,7 +128,7 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
 		return false;
 	}
 
@@ -138,7 +138,7 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 	}
 	else
 	{
-		LOG_WRITE(("INFO : [%s] OnTcpNetworkConnected - Unknown Connect Object -IP(%s) Port(%d)",
+		LOG_INFO_WRITE(("[%s] OnTcpNetworkConnected - Unknown Connect Object -IP(%s) Port(%d)",
 					GetNetworkObjectName((NetworkObjectKey)object_key).c_str(),
 					GetStringIP(ip).c_str(),
 					port));
@@ -160,7 +160,7 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
 		return false;
 	}
 
@@ -176,11 +176,11 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 			
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
 		return 0; 
 	}
 
-	LOG_WRITE(("INFO : [%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
+	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
 		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
 		index_key, 
 		GetStringIP(ip).c_str(), 
@@ -199,7 +199,7 @@ bool MainObject::RemoveNetwork(int object_key, int index_key)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
 		return false; 
 	}
 
@@ -217,7 +217,7 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 {
 	if(object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_WRITE(("ERRRO : RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
 		return false; 
 	}
 
@@ -241,7 +241,7 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 
 	if (result_code != NetConnectedResult::Success || socket == nullptr)
 	{
-		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - Connected Result Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+		LOG_ERROR_WRITE(("TestTcpServerConnectedProc - Connected Result Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
 
 		return false;
 	}
@@ -251,7 +251,7 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 												std::static_pointer_cast<ITestTcpServerCallback>(this->shared_from_this()),
 												index_key) == false)
 	{
-		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - ConnectAdd Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+		LOG_ERROR_WRITE(("TestTcpServerConnectedProc - ConnectAdd Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
 		return false;
 	}
 
@@ -259,7 +259,7 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 	std::string data = "Echo Test";
 	if (_test_tcp_server_manager->SendEchoData(index_key, data.size() + 1, (uint8_t *)data.c_str()) == false)
 	{
-		LOG_WRITE(("ERROR : TestTcpServerConnectedProc - SendEchoData Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
+		LOG_ERROR_WRITE(("TestTcpServerConnectedProc - SendEchoData Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));
 		return false;
 	}
 

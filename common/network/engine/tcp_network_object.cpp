@@ -104,7 +104,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		}
 		catch (std::exception& error)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Create - Socket Exception - IP(%s)", 
 						param->object_name, _remote_ip_string.c_str())); 
 
 			return false;
@@ -130,7 +130,7 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 		}
 		catch (const std::exception& e)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Create - Socket Exception - IP(%s) Error(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Create - Socket Exception - IP(%s) Error(%s)", 
 						param->object_name, _remote_ip_string.c_str(), e.what())); 
 
 			return false;
@@ -171,7 +171,7 @@ bool TcpNetworkObject::Start()
 	{
 		if(_socket_ssl->lowest_layer().is_open() == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
 						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
@@ -186,7 +186,7 @@ bool TcpNetworkObject::Start()
 	{
 		if(_socket->is_open() == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Start SocketClose - IndexKey(%d) IP(%s)", 
 						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 			return false; 
 		}
@@ -243,7 +243,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	
 	if(data == nullptr || data->size() == 0)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::PostSend - Param Fail - IndexKey(%d) IP(%s)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkObject::PostSend - Param Fail - IndexKey(%d) IP(%s)", 
 					_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
@@ -252,7 +252,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	// 종료 확인 
 	if(_is_closeing == true)
 	{
-		LOG_WRITE(("INFO : [%s] TcpNetworkObject::PostSend - Closeing Return - IndexKey(%d) IP(%s)", 
+		LOG_INFO_WRITE(("[%s] TcpNetworkObject::PostSend - Closeing Return - IndexKey(%d) IP(%s)", 
 					_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false; 
 	}
@@ -261,7 +261,7 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(_max_send_data_size > 0 && (_max_send_data_size < data->size()))
 	{
 		
-		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::PostSend - MaxWaitSendDataSize Over - IndexKey(%d) IP(%s) Size(%d:%d)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkObject::PostSend - MaxWaitSendDataSize Over - IndexKey(%d) IP(%s) Size(%d:%d)", 
 				_object_name.c_str(),
 				_index_key, 
 				_remote_ip_string.c_str(),
@@ -344,7 +344,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	//	if ((error.value() & 0xff) == SSL_R_SHORT_READ)
 	//	{
 //
-	//		LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnReceive - SSL Shot Read  - IndexKey(%d) IP(%s)", _object_name.c_str(), _index_key, _remote_ip_string.c_str()));	
+	//		LOG_INFO_WRITE(("[%s] TcpNetworkObject::OnReceive - SSL Shot Read  - IndexKey(%d) IP(%s)", _object_name.c_str(), _index_key, _remote_ip_string.c_str()));	
 	//		
 	//		return; 
 			
@@ -355,7 +355,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		
 		if(_log_lock == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnReceive - IndexKey(%d) IP(%s) Error(%d) Message(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::OnReceive - IndexKey(%d) IP(%s) Error(%d) Message(%s)", 
 						_object_name.c_str(), 
 						_index_key, 
 						_remote_ip_string.c_str(), 
@@ -380,7 +380,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	{
 		if(_log_lock == false)
 		{
-			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnReceive Closeing Return - IndexKey(%d) IP(%s)", 
+			LOG_INFO_WRITE(("[%s] TcpNetworkObject::OnReceive Closeing Return - IndexKey(%d) IP(%s)", 
 						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
@@ -408,7 +408,7 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 	  
 	if(process_size < 0 || process_size > _recv_data->size())
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnReceive - RecvHandler - IndexKey(%d) IP(%s) Result(%d)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkObject::OnReceive - RecvHandler - IndexKey(%d) IP(%s) Result(%d)", 
 					_object_name.c_str(), _index_key, _remote_ip_string.c_str(), process_size));
 
 		//종료 콜백 호출 
@@ -487,7 +487,7 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 
 		if(_log_lock == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkObject::OnSend - IndexKey(%d) IP(%s) Error(%d) Message(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::OnSend - IndexKey(%d) IP(%s) Error(%d) Message(%s)", 
 						_object_name.c_str(),
 						_index_key, 
 						_remote_ip_string.c_str(), 
@@ -511,7 +511,7 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 	{
 		if(_log_lock == false)
 		{
-			LOG_WRITE(("INFO : [%s] TcpNetworkObject::OnSend Closeing Return - IndexKey(%d) IP(%s)", 
+			LOG_INFO_WRITE(("[%s] TcpNetworkObject::OnSend Closeing Return - IndexKey(%d) IP(%s)", 
 						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		}
 
@@ -752,7 +752,7 @@ bool TcpNetworkObject::PostCloseTimerProc()
 	// 수신 데이터 처리 상태
 	//if(m_bRecvDataProcessing == true)
 	//{
-	//	LOG_WRITE(("WARNING : [%s] TcpNetworkObject::PostCloseTimerProc - RecvData Processing", _object_name.c_str()));
+	//	LOG_WARNING_WRITE(("[%s] TcpNetworkObject::PostCloseTimerProc - RecvData Processing", _object_name.c_str()));
 	//	return false; 
 	//}
 

@@ -3,8 +3,6 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#pragma once
-
 #ifdef WIN32
 
 	#ifndef VC_EXTRALEAN
@@ -161,7 +159,7 @@ int main(int argc, char* argv[])
 	if (GetLocalHostName(host_name) == true)	create_param->real_host_name = host_name;
 	else										create_param->real_host_name = create_param->host_name;
 
-	LOG_WRITE(("INFO : Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
+	LOG_INFO_WRITE(("Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
 	auto main_object = std::make_shared<MainObject>();

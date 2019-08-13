@@ -79,7 +79,7 @@ int UdpNetworkManager::Insert(std::shared_ptr<UdpNetworkObject> object,
 
 	if(object == nullptr)
 	{
-		LOG_WRITE(("ERROR : [%s] UdpNetworkManager::Insert() Parameter nullptr", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] UdpNetworkManager::Insert() Parameter nullptr", _object_name.c_str()));
 		return -1;
 	}
 
@@ -108,7 +108,7 @@ int UdpNetworkManager::Insert(std::shared_ptr<UdpNetworkObject> object,
 
 		if(bFindIndex == false)
 		{
-			LOG_WRITE(("ERROR : [%s] UdpNetworkManager::Insert() IndexKey Over", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] UdpNetworkManager::Insert() IndexKey Over", _object_name.c_str()));
 		}
 	}
 
@@ -142,7 +142,7 @@ int UdpNetworkManager::Insert(std::shared_ptr<UdpNetworkObject> object,
 	}
 	else 
 	{
-		LOG_WRITE(("ERROR : [%s] UdpNetworkManager::Insert() Exist IndexKey", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] UdpNetworkManager::Insert() Exist IndexKey", _object_name.c_str()));
 		index_key = -1; 
 	}
 

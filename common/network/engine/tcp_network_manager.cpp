@@ -250,7 +250,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object,
 
 	if(object == nullptr)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::Insert() Parameter nullptr", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::Insert() Parameter nullptr", _object_name.c_str()));
 		return -1;
 	}
 
@@ -279,7 +279,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object,
 
 		if(bFindIndex == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::Insert() IndexKey Over", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::Insert() IndexKey Over", _object_name.c_str()));
 		}
 	}
 
@@ -304,7 +304,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object,
 		// Object 통신 시작 
 		if(object->Start() == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::Insert() Object Start Fail", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::Insert() Object Start Fail", _object_name.c_str()));
 			index_key = -1;
 		}
 	
@@ -317,7 +317,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object,
 		//Open  확인 
 		if(object->IsOpened() == false)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::Insert() Object Socket Close", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::Insert() Object Socket Close", _object_name.c_str()));
 			index_key = -1; 
 		}
 
@@ -338,7 +338,7 @@ int TcpNetworkManager::Insert(std::shared_ptr<TcpNetworkObject> object,
 	}
 	else 
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::Insert() Exist IndexKey", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::Insert() Exist IndexKey", _object_name.c_str()));
 		index_key = -1; 
 	}
 
@@ -444,7 +444,7 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error,
 	// 에러 
 	if(error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnConnected - IP(%s) Port(%d) Error(%d) Message(%s) ", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - IP(%s) Port(%d) Error(%d) Message(%s) ", 
 			_object_name.c_str(), 
 			GetStringIP(ip).c_str(), 
 			port, 
@@ -471,7 +471,7 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error,
 	// 연결 콜백 호출 
 	if(_network_callback->OnTcpNetworkConnected(_object_key, result, connected_param, socket, ip, port) == false)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnConnected - OnTcpNetworkConnected return false - IP(%s) Port(%d)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - OnTcpNetworkConnected return false - IP(%s) Port(%d)", 
 			_object_name.c_str(), GetStringIP(ip).c_str(), port));
 	}
 }
@@ -490,7 +490,7 @@ void TcpNetworkManager::OnConnectedSSL(	const NetErrorCode & error,
 	// 에러 
 	if (error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnConnectedSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnectedSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port,
@@ -540,7 +540,7 @@ void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error,
 	// 에러 
 	if (error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port,
@@ -568,7 +568,7 @@ void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error,
 	// 연결 콜백 호출 
 	if (_network_callback->OnTcpNetworkConnectedSSL(_object_key, result, connected_param, socket, ip, port) == false)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - IP(%s) Port(%d)",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - IP(%s) Port(%d)",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port));
@@ -599,7 +599,7 @@ bool TcpNetworkManager::PostAccept()
 		}
 		catch (const std::exception& e)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::PostAccept - Accept Ready(Listen) fail - Error(%s)", 
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::PostAccept - Accept Ready(Listen) fail - Error(%s)", 
 				_object_name.c_str(), e.what()));
 			return false; 
 		}
@@ -609,7 +609,7 @@ bool TcpNetworkManager::PostAccept()
 	{
 		if(_accept_socket_ssl != nullptr)
 		{
-			LOG_WRITE(("WARNING : [%s] TcpNetworkManager::PostAccept - _accept_socket_ssl not nullptr", 
+			LOG_WARNING_WRITE(("[%s] TcpNetworkManager::PostAccept - _accept_socket_ssl not nullptr",
 				_object_name.c_str()));
 			
 			//if(_accept_socket_ssl->is_open() == true)
@@ -628,7 +628,7 @@ bool TcpNetworkManager::PostAccept()
 
 		if(_accept_socket != nullptr)
 		{
-			LOG_WRITE(("WARNING : [%s] TcpNetworkManager::PostAccept - _accept_socket not nullptr", _object_name.c_str()));
+			LOG_WARNING_WRITE(("[%s] TcpNetworkManager::PostAccept - _accept_socket not nullptr", _object_name.c_str()));
 			
 			//if(_accept_socket->is_open() == true)
 			{
@@ -656,7 +656,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 	
 	if(error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept - Error(%d) Message(%s)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnAccept - Error(%d) Message(%s)", 
 			_object_name.c_str(), error.value(), error.message().c_str()));
 				
 		if(_accept_socket != nullptr)
@@ -703,7 +703,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 	}	
 	catch (const std::exception& e)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept - Socket Exception - Error(%s)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnAccept - Socket Exception - Error(%s)", 
 				_object_name.c_str(), e.what()));
 		
 		if(_accept_socket != nullptr)
@@ -725,11 +725,11 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 	
 	if(_network_callback->OnTcpNetworkAccepted(_object_key, _accept_socket, ip, port) == false)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept -  OnTcpNetworkAccepted fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnAccept -  OnTcpNetworkAccepted fail", _object_name.c_str()));
 		
 		if(_accept_socket != nullptr)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnAccept - Socket Not nullptr", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnAccept - Socket Not nullptr", _object_name.c_str()));
 			
 			//if(_accept_socket->is_open() == true)
 			{
@@ -755,7 +755,7 @@ void TcpNetworkManager::OnAcceptSSL(const NetErrorCode & error)
 	// 에러 
 	if(error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnSSLAccept - Error(%d) Message(%s)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnSSLAccept - Error(%d) Message(%s)", 
 				_object_name.c_str(), error.value(), error.message().c_str()));
 				
 		if(_accept_socket_ssl != nullptr)
@@ -803,7 +803,7 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 	// 에러 
 	if(error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL - Error(%d) Message(%s)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Error(%d) Message(%s)", 
 				_object_name.c_str(), error.value(), error.message().c_str()));
 				
 		if(_accept_socket_ssl != nullptr)
@@ -836,7 +836,7 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 	}	
 	catch (std::exception& error)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL - Socket Exception", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Socket Exception", _object_name.c_str()));
 		
 		if(_accept_socket_ssl != nullptr)
 		{
@@ -858,12 +858,12 @@ void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 
 	if(_network_callback->OnTcpNetworkAcceptedSSL(_object_key, _accept_socket_ssl, ip, port) == false)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL -  OnTcpNetworkAcceptedSSL return false", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL -  OnTcpNetworkAcceptedSSL return false", 
 				_object_name.c_str()));
 		
 		if(_accept_socket_ssl != nullptr)
 		{
-			LOG_WRITE(("ERROR : [%s] TcpNetworkManager::OnHandshakeSSL - Socket Not nullptr", _object_name.c_str()));
+			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Socket Not nullptr", _object_name.c_str()));
 			
 			//if(_accept_socket_ssl->lowest_layer().is_open() == true)
 			{
@@ -1078,7 +1078,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	non_blocking = true;
 	if(ioctlsocket(socket_handle, FIONBIO, &non_blocking ) == SOCKET_ERROR)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - option set fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - option set fail", _object_name.c_str()));
 		return false;
 	}
 
@@ -1097,7 +1097,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 
 	if(result == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - connect fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - connect fail", _object_name.c_str()));
 		return false;
 	}
 
@@ -1112,7 +1112,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	// Select
 	if(select(0, nullptr, &fdset, nullptr, &timevalue ) == SOCKET_ERROR)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - select time over", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - select time over", _object_name.c_str()));
 		closesocket(socket_handle);
 		socket_handle = INVALID_SOCKET;
 		return false;
@@ -1120,7 +1120,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 
 	if(!FD_ISSET(socket_handle, &fdset))
 	{		
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - FD_ISSET fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - FD_ISSET fail", _object_name.c_str()));
 		closesocket(socket_handle);
 		socket_handle = INVALID_SOCKET;
 		return false;
@@ -1169,7 +1169,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	// 실패 
 	if(errno != EINPROGRESS )
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - connect fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - connect fail", _object_name.c_str()));
 
 		if(socket_handle != INVALID_SOCKET)
 		{
@@ -1189,7 +1189,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	hEpoll = epoll_create(1);
     if(hEpoll == -1)
     {
-    	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - epoll_create fail - Error(%d)", 
+    	LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - epoll_create fail - Error(%d)", 
 				_object_name.c_str(), errno));
 
 		close(socket_handle);
@@ -1206,7 +1206,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	result = epoll_ctl(hEpoll, EPOLL_CTL_ADD, socket_handle, &connectionEvent);
     if(result != 0)
     {
-       	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - epoll_ctl(add) fail - Error(%d)", 
+       	LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - epoll_ctl(add) fail - Error(%d)", 
 				_object_name.c_str(), errno));
 
 		close(socket_handle);
@@ -1223,7 +1223,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	// 이벤트 확인(시간 초과) 
     if(nEventCount < 0)
     {
-       	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - epoll_wait time over", _object_name.c_str()));
+       	LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - epoll_wait time over", _object_name.c_str()));
 		close(socket_handle);
 		close(hEpoll);
 		socket_handle = INVALID_SOCKET;
@@ -1234,7 +1234,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	
     if(getsockopt(socket_handle, SOL_SOCKET, SO_ERROR, (void *)&error, &error_length) != 0)
     {
-       	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - getsockopt fail", _object_name.c_str()));
+       	LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - getsockopt fail", _object_name.c_str()));
 
 		close(socket_handle);
 		socket_handle = INVALID_SOCKET;
@@ -1243,7 +1243,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 
     if(error != 0)
     {
-      	LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - socket error - error(%d)", 
+      	LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - socket error - error(%d)", 
 				_object_name.c_str(), error));
 
 		close(socket_handle);
@@ -1254,7 +1254,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	// 소켓 속성 reset
 	if(fcntl(socket_handle, F_SETFL, flags) == -1)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - fcntl fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - fcntl fail", _object_name.c_str()));
 		close(socket_handle);
 		socket_handle = INVALID_SOCKET;
 		return false;
@@ -1264,7 +1264,7 @@ bool TcpNetworkManager::TimeoutConnect(const char * host,int port, int timeout, 
 	socklen_t length = 0;
 	if(getpeername(socket_handle, (struct sockaddr *)&address, &length) != 0)
 	{
-		LOG_WRITE(("ERROR : [%s] TcpNetworkManager::TimeoutConnect - getpeername fail", _object_name.c_str()));
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::TimeoutConnect - getpeername fail", _object_name.c_str()));
 		
 		close(socket_handle);
 		socket_handle = INVALID_SOCKET;
