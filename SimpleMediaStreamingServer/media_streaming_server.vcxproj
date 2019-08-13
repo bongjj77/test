@@ -23,6 +23,11 @@
     <ClCompile Include="..\common\network\engine\udp_network_object.cpp" />
     <ClCompile Include="..\common\thread_timer.cpp" />
     <ClCompile Include="main_object.cpp" />
+    <ClCompile Include="media\rtmp\amf_document.cpp" />
+    <ClCompile Include="media\rtmp\rtmp_export_chunk.cpp" />
+    <ClCompile Include="media\rtmp\rtmp_handshake.cpp" />
+    <ClCompile Include="media\rtmp\rtmp_import_chunk.cpp" />
+    <ClCompile Include="media\rtmp\rtmp_mux_util.cpp" />
     <ClCompile Include="media_streaming_server.cpp" />
     <ClCompile Include="stream_manager.cpp" />
   </ItemGroup>
@@ -44,6 +49,13 @@
     <ClInclude Include="..\common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
     <ClInclude Include="main_object.h" />
+    <ClInclude Include="media\media_define.h" />
+    <ClInclude Include="media\rtmp\amf_document.h" />
+    <ClInclude Include="media\rtmp\rtmp_define.h" />
+    <ClInclude Include="media\rtmp\rtmp_export_chunk.h" />
+    <ClInclude Include="media\rtmp\rtmp_handshake.h" />
+    <ClInclude Include="media\rtmp\rtmp_import_chunk.h" />
+    <ClInclude Include="media\rtmp\rtmp_mux_util.h" />
     <ClInclude Include="stream_manager.h" />
   </ItemGroup>
   <ItemGroup>
