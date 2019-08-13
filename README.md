@@ -3,13 +3,17 @@
 Skill
 
 - c++14 / asio(boost 1.70) / network / visual studio 2019 / linux / windows
+
 - rtmp / hls / mpeg-dash / cmaf / http / https 
 
 Program 
 
   SimpleMediaStreamingServer : simple live media streaming server
+
      Input : rtmp(obs,xsplit...)
+
 	 Output : hls/mpeg-dash/cmaf(ull)
+
 	 Play : Chrome Browser, Media Player Applications
 
   EchoServer/EchoTcpCliet : boost base network server/client test 
@@ -20,9 +24,11 @@ Source
 
 
 Windows build
+
 		- boost 1.70 install
     
 		- open ssl
+
 			http://slproweb.com/products/Win32OpenSSL.html 1.1.1 install
     
 		- VisualStudio 2019 directory setting and solution build
