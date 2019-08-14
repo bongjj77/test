@@ -212,10 +212,7 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 	}
 
 	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
-		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
-		index_key, 
-		GetStringIP(ip).c_str(), 
-		port));
+		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), index_key, GetStringIP(ip).c_str(), port));
 	
 	// remove session 
 	_network_table[object_key]->Remove(index_key); 
@@ -265,6 +262,10 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key)
 {
+	LOG_INFO_WRITE((" Rtmp Encoder Start - ip(%s) stream(%s/%s)", GetStringIP(ip).c_str(), stream_key.first.c_str(), stream_key.second.c_str()));
+
+	// reginster stream 
+
 	return true;
 }
 
@@ -274,6 +275,8 @@ bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& strea
 //====================================================================================================
 bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info)
 {
+	LOG_INFO_WRITE((" Rtmp Encoder Read Complete - stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
+
 	return true;
 }
 
@@ -283,6 +286,10 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
 {
+	LOG_INFO_WRITE((" Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)", 
+					stream_key.first.c_str(), stream_key.second.c_str(), frame_info->frame_type, frame_info->timestamp));
+
+
 	return true;
 }
 

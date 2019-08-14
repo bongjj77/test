@@ -24,6 +24,9 @@ const char g_avc_nal_header[AVC_NAL_HEADER_SIZE] = { 0, 0, 0, 1 };
 const int g_sample_rate_table[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350, 0, 0, 0 };
 #define SAMPLERATE_TABLE_SIZE (16)
 
+// StreamKey app/stream 
+#define StreamKey std::pair< std::string, std::string> 
+
 //===============================================================================================
 // Rtmp Encoder Type
 //===============================================================================================
@@ -88,7 +91,7 @@ public:
 };
 
 //===============================================================================================
-// 스트림 정보 
+// Media Info
 //===============================================================================================
 struct MediaInfo
 {
@@ -117,8 +120,8 @@ public:
 		encoder_type = EncoderType::Custom;
 
 		//h.264 AVC Info
-		avc_sps = nullptr;
-		avc_pps = nullptr;
+		avc_sps = std::make_shared<std::vector<uint8_t>>();
+		avc_pps = std::make_shared<std::vector<uint8_t>>();
 	}
 
 public:

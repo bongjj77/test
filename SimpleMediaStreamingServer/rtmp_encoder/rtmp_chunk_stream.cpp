@@ -1072,9 +1072,7 @@ bool RtmpChunkStream::ProcessVideoSequenceData(std::unique_ptr<std::vector<uint8
 
 	_media_info.avc_sps->assign(data->begin() + 11, data->begin() + 11 + sps_size); // SPS
 	_media_info.avc_pps->assign(data->begin() + 14 + sps_size, data->begin() + 14 + sps_size + pps_size);  // PPS
-
-	LOG_WRITE(("Video Sequence Data - sps(%d) pps(%d)", _media_info.avc_sps->size(), _media_info.avc_pps->size()));
-
+	
 	return true;
 }
 
@@ -1103,25 +1101,24 @@ bool RtmpChunkStream::StreamInfoLoadCheck()
 //====================================================================================================
 bool RtmpChunkStream::OnAmfMetaData(std::shared_ptr<RtmpMuxMessageHeader> &message_header, AmfDocument &document, int32_t object_index)
 {
-	CodecType	video_codec_type 		= CodecType::H264;
-	CodecType	audio_codec_type		= CodecType::AAC;
-	double 				frame_rate 			= 30.0; 
-	double 				video_width			= 0; 
-	double 				video_height		= 0; 
-	double				video_bitrate		= 0; 
-	double  			audio_bitrate		= 0.0; 
-	double 				audio_channels		= 1.0; 
-	double 				audio_samplerate = 0.0;
-	double				audio_samplesize = 0.0;
-	//double 			audio_samplerate	= 0.0; 
-	AmfObjectArray * 	object				= nullptr; 
-	int 				index 				= 0;
-	std::string 		bitrate_string;
-	std::string			device_type_string		= RTMP_UNKNOWN_DEVICE_TYPE_STRING; 
-	std::string			device_guid_string		; 
-	EncoderType			encoder_type = EncoderType::Custom;
-
-	 
+	CodecType	video_codec_type 	= CodecType::H264;
+	CodecType	audio_codec_type	= CodecType::AAC;
+	double		frame_rate 			= 30.0; 
+	double		video_width			= 0; 
+	double		video_height		= 0; 
+	double		video_bitrate		= 0; 
+	double		audio_bitrate		= 0.0; 
+	double		audio_channels		= 1.0; 
+	double		audio_samplerate	= 0.0;
+	double		audio_samplesize	= 0.0;
+	//double 	audio_samplerate	= 0.0; 
+	AmfObjectArray * object			= nullptr; 
+	int			index 				= 0;
+	std::string bitrate_string;
+	std::string device_type_string	= RTMP_UNKNOWN_DEVICE_TYPE_STRING; 
+	std::string device_guid_string	; 
+	EncoderType encoder_type		= EncoderType::Custom;
+		 
 	if(document.GetProperty(object_index)->GetType() == AmfDataType::Object)	
 		object = (AmfObjectArray *)(document.GetProperty(object_index)->GetObject());
 	else 																
