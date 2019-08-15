@@ -16,17 +16,17 @@ std::string MainObject::GetNetworkObjectName(NetworkObjectKey object_key)
 
 	switch (object_key)
 	{
-		case NetworkObjectKey::RtmpEncoder:
-			object_key_string = "RtmpEncoder";
-			break;
+	case NetworkObjectKey::RtmpEncoder:
+		object_key_string = "RtmpEncoder";
+		break;
 
-		case NetworkObjectKey::HttpClient:
-			object_key_string = "HttpClient";
-			break;
+	case NetworkObjectKey::HttpClient:
+		object_key_string = "HttpClient";
+		break;
 
-		default:
-			object_key_string = "unknown";
-			break;
+	default:
+		object_key_string = "unknown";
+		break;
 	}
 
 	return object_key_string;
@@ -48,7 +48,7 @@ MainObject::MainObject()
 //====================================================================================================
 // Destructor
 //====================================================================================================
-MainObject::~MainObject( )
+MainObject::~MainObject()
 {
 	Destroy();
 }
@@ -56,21 +56,21 @@ MainObject::~MainObject( )
 //====================================================================================================
 // Destroy 
 //====================================================================================================
-void MainObject::Destroy( )
+void MainObject::Destroy()
 {
 	_timer.Destroy();
 
 	// network close
-	for(int index = 0; index < (int)NetworkObjectKey::Max ; index++)
+	for (int index = 0; index < (int)NetworkObjectKey::Max; index++)
 	{
-		_network_table[index]->PostRelease(); 		
+		_network_table[index]->PostRelease();
 	}
 	LOG_INFO_WRITE(("Network Object Close Completed"));
 
 	// network service close
-	if(_network_context_pool != nullptr)
+	if (_network_context_pool != nullptr)
 	{
-		_network_context_pool->Stop(); 
+		_network_context_pool->Stop();
 
 		LOG_INFO_WRITE(("Network Service Pool Close Completed"));
 	}
@@ -80,18 +80,18 @@ void MainObject::Destroy( )
 // Create
 //====================================================================================================
 bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
-{  
+{
 	_create_param = std::move(create_param);
-	 
+
 	// IoService start
 	_network_context_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
-	_network_context_pool->Run();  	
-	
+	_network_context_pool->Run();
+
 	// rtmp encoder
 	if (!_rtmp_encoder_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
-										_network_context_pool,
-										_create_param->rtmp_listen_port,
-										GetNetworkObjectName(NetworkObjectKey::RtmpEncoder)))
+		_network_context_pool,
+		_create_param->rtmp_listen_port,
+		GetNetworkObjectName(NetworkObjectKey::RtmpEncoder)))
 	{
 		LOG_ERROR_WRITE(("[%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::RtmpEncoder).c_str()));
 		return false;
@@ -99,21 +99,21 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 
 	// http client
 	if (!_http_client_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
-									_network_context_pool,
-									_create_param->http_listen_port,
-									GetNetworkObjectName(NetworkObjectKey::HttpClient)))
+		_network_context_pool,
+		_create_param->http_listen_port,
+		GetNetworkObjectName(NetworkObjectKey::HttpClient)))
 	{
 		LOG_ERROR_WRITE(("[%s] Create Fail", GetNetworkObjectName(NetworkObjectKey::HttpClient).c_str()));
 		return false;
 	}
 
 	// create timer 	
-	if(	_timer.Create(this) == false)
+	if (_timer.Create(this) == false)
 	{
 		LOG_ERROR_WRITE(("Init Timer Fail"));
-	    return false;   
+		return false;
 	}
-	
+
 	return true;
 }
 
@@ -122,60 +122,60 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 //====================================================================================================
 bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSocket> socket, uint32_t ip, int port)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
+	if (object_key >= (int)NetworkObjectKey::Max)
 	{
 		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - Unkown ObjectKey - Key(%d)", object_key));
-		return false; 
+		return false;
 	}
-		
-	int index_key = -1; 
-	
+
+	int index_key = -1;
+
 	if (object_key == (int)NetworkObjectKey::RtmpEncoder)
 	{
 		_rtmp_encoder_manager->AcceptedAdd(socket,
-										ip,
-										port,
-										std::static_pointer_cast<IRtmpEncoder>(this->shared_from_this()),
-										index_key);
+			ip,
+			port,
+			std::static_pointer_cast<IRtmpEncoder>(this->shared_from_this()),
+			index_key);
 	}
 	else if (object_key == (int)NetworkObjectKey::HttpClient)
 	{
 		_http_client_manager->AcceptedAdd(socket,
-										ip,
-										port,
-										std::static_pointer_cast<IHttpClient>(this->shared_from_this()),
-										index_key);
+			ip,
+			port,
+			std::static_pointer_cast<IHttpClient>(this->shared_from_this()),
+			index_key);
 	}
 
 
-	if(index_key == -1)
+	if (index_key == -1)
 	{
-		LOG_ERROR_WRITE(("[%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)", 
-					GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), 
-					index_key, 
-					GetStringIP(ip).c_str()));
-		return false; 
+		LOG_ERROR_WRITE(("[%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)",
+			GetNetworkObjectName((NetworkObjectKey)object_key).c_str(),
+			index_key,
+			GetStringIP(ip).c_str()));
+		return false;
 	}
-	
-	return true; 
+
+	return true;
 }
 
 //====================================================================================================
 // Network Connected Callback
 //====================================================================================================
-bool MainObject::OnTcpNetworkConnected(	int object_key, 
-										NetConnectedResult result, 
-										std::shared_ptr<std::vector<uint8_t>> connected_param, 
-										std::shared_ptr<NetTcpSocket> socket, 
-										unsigned ip, 
-										int port)
+bool MainObject::OnTcpNetworkConnected(int object_key,
+	NetConnectedResult result,
+	std::shared_ptr<std::vector<uint8_t>> connected_param,
+	std::shared_ptr<NetTcpSocket> socket,
+	unsigned ip,
+	int port)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
+	if (object_key >= (int)NetworkObjectKey::Max)
 	{
 		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
-		return false; 
+		return false;
 	}
-	
+
 	return true;
 }
 
@@ -183,11 +183,11 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 // Network ConnectedSSL Callback
 //====================================================================================================
 bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
-										NetConnectedResult result,
-										std::shared_ptr<std::vector<uint8_t>> connected_param,
-										std::shared_ptr < NetSocketSSL> socket,
-										unsigned ip,
-										int port)
+	NetConnectedResult result,
+	std::shared_ptr<std::vector<uint8_t>> connected_param,
+	std::shared_ptr < NetSocketSSL> socket,
+	unsigned ip,
+	int port)
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
@@ -204,55 +204,55 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int port)
 {
 	int stream_key = -1;
-			
-	if(object_key >= (int)NetworkObjectKey::Max)
+
+	if (object_key >= (int)NetworkObjectKey::Max)
 	{
 		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
-		return 0; 
+		return 0;
 	}
 
-	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)", 
+	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)",
 		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), index_key, GetStringIP(ip).c_str(), port));
-	
+
 	// remove session 
-	_network_table[object_key]->Remove(index_key); 
-		
+	_network_table[object_key]->Remove(index_key);
+
 	return 0;
 }
 
 //====================================================================================================
 // Delete Session 
 //====================================================================================================
-bool MainObject::RemoveNetwork(int object_key, int index_key) 
+bool MainObject::RemoveNetwork(NetworkObjectKey object_key, int index_key)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
+	if (object_key >= NetworkObjectKey::Max)
 	{
 		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
-		return false; 
+		return false;
 	}
 
-	//삭제 
-	_network_table[object_key]->Remove(index_key); 
+	// Remove
+	_network_table[(int)object_key]->Remove(index_key);
 
-	return true; 
-	
+	return true;
+
 }
 
 //====================================================================================================
 // Delete Sessions 
 //====================================================================================================
-bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys) 
+bool MainObject::RemoveNetwork(NetworkObjectKey object_key, std::vector<int>& IndexKeys)
 {
-	if(object_key >= (int)NetworkObjectKey::Max)
+	if (object_key >= NetworkObjectKey::Max)
 	{
 		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
-		return false; 
+		return false;
 	}
 
 	// Remove
-	_network_table[object_key]->Remove(IndexKeys); 
+	_network_table[(int)object_key]->Remove(IndexKeys);
 
-	return true; 
+	return true;
 }
 
 
@@ -286,20 +286,47 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
 {
-	LOG_INFO_WRITE((" Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)", 
-					stream_key.first.c_str(), stream_key.second.c_str(), frame_info->frame_type, frame_info->timestamp));
+	LOG_INFO_WRITE((" Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
+		stream_key.first.c_str(), stream_key.second.c_str(), frame_info->frame_type, frame_info->timestamp));
 
 
 	return true;
 }
 
 //====================================================================================================
+// OnHttpClientPlaylistRequest 
+// - IHttpClient callback
+//====================================================================================================
+bool MainObject::OnHttpClientPlaylistRequest(int index_key,
+	uint32_t ip,
+	const StreamKey& stream_key,
+	PlaylistType type,
+	std::string& play_list)
+{
+	return true;
+}
+
+//====================================================================================================
+// OnHttpClientSegmentRequest 
+// - IHttpClient callback
+//====================================================================================================
+bool MainObject::OnHttpClientSegmentRequest(int index_key,
+	uint32_t ip,
+	const std::string& file_name,
+	const StreamKey& stream_key,
+	SegmentType type,
+	std::shared_ptr<std::vector<uint8_t>>& data)
+{
+	return true;
+}
+
+//====================================================================================================
 // Timerr Callback
 //====================================================================================================
-void MainObject::OnThreadTimer(uint32_t timer_id, bool &delete_timer/* = false */)
+void MainObject::OnThreadTimer(uint32_t timer_id, bool& delete_timer/* = false */)
 {
-	switch(timer_id)
+	switch (timer_id)
 	{
-	
+
 	}
 }
