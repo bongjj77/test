@@ -47,7 +47,7 @@ bool RtmpHandshake::MakeC1(uint8_t * sig)
 	}
 
 	memset(sig, 0, RTMP_HANDSHAKE_PACKET_SIZE);
-	*(uint32_t *)&sig[0] = htonl( (uint32_t )time(nullptr) );//htonl( GetTickCount() );
+	*(uint32_t *)&sig[0] = htonl( (uint32_t )time(nullptr) );//htonl( GetCurrentTick() );
 	*(uint32_t *)&sig[4] = 0x01020503; // 03 05 02 01
 
 	for(int index = 8; index < RTMP_HANDSHAKE_PACKET_SIZE; index++)

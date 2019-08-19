@@ -80,6 +80,32 @@ enum class CodecType : int32_t
 };
 
 //===============================================================================================
+// Codec Type
+//===============================================================================================
+enum class PacketyzerStreamingType : int32_t
+{
+	Both,		// Video + Audio
+	VideoOnly,
+	AudioOnly,
+};
+
+enum class PacketyzerType : int32_t
+{
+	Dash,
+	Hls,
+	Cmaf,
+};
+
+
+enum class SegmentDataType : int32_t
+{
+	Ts,        // Video + Audio
+	Mp4Video,
+	Mp4Audio,
+};
+
+
+//===============================================================================================
 // Frame Info
 //===============================================================================================
 struct FrameInfo
@@ -87,24 +113,27 @@ struct FrameInfo
 public:
 	FrameInfo(uint32_t timestamp_, int cts_, FrameType frame_type_, int frame_size_, uint8_t* frame_)
 	{
-		timestamp	= timestamp_;
-		cts			= cts_;
-		frame_type	= frame_type_;
-		frame_data	= std::make_shared<std::vector<uint8_t>>(frame_, frame_ + frame_size_);
+		timestamp = timestamp_;
+		cts = cts_;
+		frame_type = frame_type_;
+		frame_data = std::make_shared<std::vector<uint8_t>>(frame_, frame_ + frame_size_);
+		timescale = 0;
 	}
 
 	FrameInfo(uint32_t timestamp_, int cts_, FrameType frame_type_, std::shared_ptr<std::vector<uint8_t>> frame_data_)
 	{
-		timestamp	= timestamp_;
-		cts			= cts_;
-		frame_type	= frame_type_;
-		frame_data	= frame_data_;
+		timestamp = timestamp_;
+		cts = cts_;
+		frame_type = frame_type_;
+		frame_data = frame_data_;
+		timescale = 0;
 	}
 
 public:
 	uint64_t	timestamp; // dts or pts 
 	uint64_t	cts; // cts;
 	FrameType	frame_type;
+	uint32_t	timescale; 
 
 	std::shared_ptr<std::vector<uint8_t>> frame_data;
 };
@@ -135,7 +164,8 @@ public:
 		audio_sampleindex = 0;
 		audio_bitrate = 0;
 
-		timestamp_scale = RTMP_TIMESCALE;
+		video_timescale = RTMP_TIMESCALE;
+		audio_timescale = RTMP_TIMESCALE;
 		encoder_type = EncoderType::Custom;
 
 		//h.264 AVC Info
@@ -162,12 +192,43 @@ public:
 	int			audio_sampleindex;
 	int			audio_bitrate;
 
-	uint32_t	timestamp_scale;
+	uint32_t	video_timescale;
+	uint32_t	audio_timescale;
 	EncoderType encoder_type;
 
 	//h.264 AVC Info
 	std::shared_ptr<std::vector<uint8_t>> avc_sps;
 	std::shared_ptr<std::vector<uint8_t>> avc_pps;
+};
+
+
+//====================================================================================================
+// SegmentInfo
+//====================================================================================================
+struct SegmentInfo
+{
+public:
+	SegmentInfo(int sequence_number_,
+		std::string file_name_,
+		uint64_t duration_,
+		uint64_t timestamp_,
+		std::shared_ptr<std::vector<uint8_t>>& data_)
+	{
+		sequence_number = sequence_number_;
+		file_name = file_name_;
+		create_time = time(nullptr);
+		duration = duration_;
+		timestamp = timestamp_;
+		data = data_;
+	}
+
+public:
+	int			sequence_number;
+	std::string file_name;
+	time_t		create_time;
+	uint64_t	duration;
+	uint64_t	timestamp;
+	std::shared_ptr<std::vector<uint8_t>> data;
 };
 
 #pragma pack()
