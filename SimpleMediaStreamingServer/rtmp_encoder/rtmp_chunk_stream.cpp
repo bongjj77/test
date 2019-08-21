@@ -16,7 +16,7 @@ RtmpChunkStream::RtmpChunkStream()
 	_import_chunk					= std::make_unique<RtmpImportChunk>(RTMP_DEFAULT_CHUNK_SIZE);
 	_export_chunk					= std::make_unique<RtmpExportChunk>(false, RTMP_DEFAULT_CHUNK_SIZE);
 
-	_media_info.timestamp_scale		= 1000;
+	_media_info.video_timescale		= 1000;
 	_media_info.audio_sampleindex	= 4;
 	
 	_stream_id						= 0;

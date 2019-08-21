@@ -121,6 +121,29 @@ void ReleaseNetwork()
 //====================================================================================================
 // string 파싱 
 //====================================================================================================
+std::string string_format(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+#ifdef WIN32
+	int size = _vscprintf(format, args);
+	std::string result(++size, 0);
+	vsnprintf_s((char*)result.data(), size, _TRUNCATE, format, args);
+	return result;
+#else
+	size_t size = std::snprintf(nullptr, 0, format, args) + 1; // Extra space for '\0'
+	std::unique_ptr<char[]> buf(new char[size]);
+	std::vsnprintf(buf.get(), size, format, args);
+	return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+#endif
+	va_end(args);
+}
+
+
+//====================================================================================================
+// string 파싱 
+//====================================================================================================
 void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters)
 {
     std::string::size_type delimPos = 0;
@@ -586,27 +609,9 @@ void SleepWait(int milli_second)
 }
 
 //====================================================================================================
-// GetTicketCount(Millisecond)
+// GetCurrentTick(Millisecond)
 //====================================================================================================
-uint32_t get_tick_count()
-{
-    uint32_t tick = 0ul;
-#ifdef WIN32
-    tick = GetTickCount();
-#else
-    struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC, &tp);
-    tick = (tp.tv_sec*1000ul) + (tp.tv_nsec/1000ul/1000ul);
-#endif
-    return tick;
-
-}
-
-//====================================================================================================
-// GetTickCount64(Millisecond)
-// Windows 2008 이상 지원
-//====================================================================================================
-uint64_t get_tick_count64()
+uint64_t GetCurrentTick()
 {
     uint64_t tick = 0ull;
 #ifdef WIN32
@@ -617,6 +622,25 @@ uint64_t get_tick_count64()
     tick = (tp.tv_sec*1000ull) + (tp.tv_nsec/1000ull/1000ull);
 #endif
     return tick;
+}
+
+//====================================================================================================
+// GetCurrentMilliseconds
+// - 1/1000
+//====================================================================================================
+double GetCurrentMilliseconds()
+{
+#ifdef WIN32
+	return clock(); 
+#else 
+	struct timespec now;
+
+	clock_gettime(CLOCK_REALTIME, &now);
+
+	double milliseconds = now.tv_sec * 1000LL + now.tv_nsec / 1000000; // calculate milliseconds
+	return milliseconds;
+#endif 
+
 }
 
 
@@ -771,4 +795,34 @@ std::string RandomNumberString(uint32_t size)
 	std::string random_str = str.substr(0, size);
 
 	return random_str;
+}
+
+
+//====================================================================================================
+// Gcd(Util)
+//====================================================================================================
+uint32_t Gcd(uint32_t n1, uint32_t n2)
+{
+	uint32_t temp;
+
+	while (n2 != 0)
+	{
+		temp = n1;
+		n1 = n2;
+		n2 = temp % n2;
+	}
+	return n1;
+}
+
+//====================================================================================================
+// ConvertTimescale 
+// - from_timescale => to_timescale
+//====================================================================================================
+uint64_t ConvertTimescale(uint64_t time, uint32_t from_timescale, uint32_t to_timescale)
+{
+	if (from_timescale == 0) return 0;
+
+	double ratio = (double)to_timescale / (double)from_timescale;
+
+	return ((uint64_t)((double)time * ratio));
 }

@@ -67,6 +67,30 @@
     <ClCompile Include="rtmp_encoder\rtmp_chunk_stream.cpp">
       <Filter>rtmp_encoder</Filter>
     </ClCompile>
+    <ClCompile Include="media\hls\hls_packetyzer.cpp">
+      <Filter>media\hls</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\packetyzer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\ts_writer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\m4s_writer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\m4s_init_writer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\m4s_segment_writer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetyzer\cmaf_chunk_writer.cpp">
+      <Filter>media\packetyzer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\dash\dash_packetyzer.cpp">
+      <Filter>media\dash</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -89,6 +113,15 @@
     </Filter>
     <Filter Include="http_client">
       <UniqueIdentifier>{b237f2c4-f044-43b0-8fab-3b93fd8060a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="media\hls">
+      <UniqueIdentifier>{11b6fbb0-c5f7-4e5b-a7d4-4ba8c635d992}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="media\packetyzer">
+      <UniqueIdentifier>{c15fcf96-5508-428b-9775-5f83aeb6c735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="media\dash">
+      <UniqueIdentifier>{37a83b72-c815-4b97-9ac1-af6919a3c10e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +208,30 @@
     </ClInclude>
     <ClInclude Include="rtmp_encoder\rtmp_chunk_stream.h">
       <Filter>rtmp_encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="media\hls\hls_packetyzer.h">
+      <Filter>media\hls</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\packetyzer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\ts_writer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\m4s_writer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\m4s_init_writer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\m4s_segment_writer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetyzer\cmaf_chunk_writer.h">
+      <Filter>media\packetyzer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\dash\dash_packetyzer.h">
+      <Filter>media\dash</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

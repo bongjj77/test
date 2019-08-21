@@ -14,20 +14,20 @@ class Packetyzer
 {
 public:
     Packetyzer(const std::string &app_name,
-               const std::string &stream_name,
-               PacketyzerType packetyzer_type,
-               PacketyzerStreamingType streaming_type,
-               const std::string &segment_prefix,
-               uint32_t segment_count,
-               uint32_t segment_duration,
-               MediaInfo &media_info);
+			const std::string &stream_name,
+			PacketyzerType packetyzer_type,
+			PacketyzerStreamingType streaming_type,
+			const std::string &segment_prefix,
+			uint32_t segment_duration,
+			uint32_t segment_count,
+			MediaInfo &media_info);
 
     virtual ~Packetyzer();
 
 public :
-    virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo> &frame_data) = 0;
+    virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo> &frame_info) = 0;
 
-    virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo> &frame_data) = 0;
+    virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo> &frame_info) = 0;
 
     virtual const std::shared_ptr<SegmentInfo> GetSegmentData(const std::string &file_name) = 0;
 

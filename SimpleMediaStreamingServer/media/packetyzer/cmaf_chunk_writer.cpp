@@ -240,8 +240,8 @@ int CmafChunkWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_st
 // mdat(Media Data)
 //====================================================================================================
 int CmafChunkWriter::MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream,
-										const std::shared_ptr<std::vector<uint8_t>> &frame_data)
+										const std::shared_ptr<std::vector<uint8_t>> &frame_info)
 {
-	return BoxDataWrite("mdat", frame_data, data_stream, _media_type == M4sMediaType::Video ? true : false);
+	return BoxDataWrite("mdat", frame_info, data_stream, _media_type == M4sMediaType::Video ? true : false);
 
 }

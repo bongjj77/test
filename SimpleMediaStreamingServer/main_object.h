@@ -114,12 +114,13 @@ private:
 	void OnThreadTimer(uint32_t timer_id, bool& delete_timer);
 
 private:
-	ThreadTimer								_timer;
-	std::unique_ptr<CreateParam>			_create_param;
-	std::shared_ptr<NetworkContextPool>		_network_context_pool = nullptr;
-
-	std::shared_ptr<NetworkManager>			_network_table[(int)NetworkObjectKey::Max];
-	std::shared_ptr<RtmpEncoderManager>		_rtmp_encoder_manager;
-	std::shared_ptr<HttpClientManager>		_http_client_manager;
+	ThreadTimer							_timer;
+	std::unique_ptr<CreateParam>		_create_param;
+	std::shared_ptr<NetworkContextPool>	_network_context_pool = nullptr;
+	std::shared_ptr<StreamManager>		_stream_manager = nullptr;
+	
+	std::shared_ptr<NetworkManager>		_network_table[(int)NetworkObjectKey::Max];
+	std::shared_ptr<RtmpEncoderManager>	_rtmp_encoder_manager;
+	std::shared_ptr<HttpClientManager>	_http_client_manager;
 
 };

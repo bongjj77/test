@@ -43,6 +43,7 @@ MainObject::MainObject()
 	_network_table[(int)NetworkObjectKey::RtmpEncoder] = _rtmp_encoder_manager;
 	_network_table[(int)NetworkObjectKey::HttpClient] = _http_client_manager;
 
+	_stream_manager = std::make_shared<StreamManager>(shared_from_this());
 }
 
 //====================================================================================================
@@ -262,10 +263,16 @@ bool MainObject::RemoveNetwork(NetworkObjectKey object_key, std::vector<int>& In
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key)
 {
-	LOG_INFO_WRITE((" Rtmp Encoder Start - ip(%s) stream(%s/%s)", GetStringIP(ip).c_str(), stream_key.first.c_str(), stream_key.second.c_str()));
+	LOG_INFO_WRITE(("Step 1. Rtmp Encoder Start - stream(%s/%s) ip(%s) index_key(%d)",
+					stream_key.first.c_str(), stream_key.second.c_str(), GetStringIP(ip).c_str(), index_key));
+	
+	if (!_stream_manager->CreateStream(stream_key, index_key, ip))
+	{
+		LOG_ERROR_WRITE(("OnRtmpEncoderStart - CreateStream fail - stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
 
-	// reginster stream 
-
+		return false;
+	}
+	
 	return true;
 }
 
@@ -275,7 +282,21 @@ bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& strea
 //====================================================================================================
 bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info)
 {
-	LOG_INFO_WRITE((" Rtmp Encoder Read Complete - stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
+	LOG_INFO_WRITE(("Step 2. Remp Encoder Ready Complete - stream(%s/%s) ip(%s) index_key(%d)",
+		stream_key.first.c_str(), stream_key.second.c_str(), GetStringIP(ip).c_str(), index_key));
+
+	// compete
+	if (!_stream_manager->SetCompleteState(stream_key, media_info))
+	{
+		LOG_ERROR_WRITE(("OnRtmpEncoderReadyComplete - SetCompleteState fail - Stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
+
+		return false;
+	}
+
+	LOG_INFO_WRITE(("Step 3. Media Info - Stream(%s/%s) *** \n\t\t\t - Video(%dK/%dFps/%d*%d) Audio(%d/%dHz)",
+				stream_key.first.c_str(), stream_key.second.c_str(),
+				media_info.video_bitrate, (int)media_info.video_framerate, media_info.video_width, media_info.video_height,
+				media_info.audio_channels, media_info.audio_samplerate));
 
 	return true;
 }
@@ -287,9 +308,15 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
 {
 	LOG_INFO_WRITE((" Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
-		stream_key.first.c_str(), stream_key.second.c_str(), frame_info->frame_type, frame_info->timestamp));
+		stream_key.first.c_str(), stream_key.second.c_str(), frame_info->type, frame_info->timestamp));
 
-
+	if (!_stream_manager->AppendStreamData(stream_key, frame_info))
+	{
+		LOG_ERROR_WRITE(("OnRtmpEncoderStreamData - StreamData Fail - Stream(%s/%s)", 
+					stream_key.first.c_str(), stream_key.second.c_str()));
+		return false;
+	}
+ 
 	return true;
 }
 

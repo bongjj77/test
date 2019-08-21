@@ -15,8 +15,8 @@ Packetyzer::Packetyzer(const std::string& app_name,
 	PacketyzerType packetyzer_type,
 	PacketyzerStreamingType streaming_type,
 	const std::string& segment_prefix,
-	uint32_t segment_count,
 	uint32_t segment_duration,
+	uint32_t segment_count,
 	MediaInfo& media_info)
 {
 	_app_name = app_name;
@@ -24,9 +24,9 @@ Packetyzer::Packetyzer(const std::string& app_name,
 	_packetyzer_type = packetyzer_type;
 	_streaming_type = streaming_type;
 	_segment_prefix = segment_prefix;
-	_segment_count = segment_count;
-	_segment_save_count = segment_count * 10;
 	_segment_duration = segment_duration;
+	_segment_count = segment_count;
+	_segment_save_count = segment_count * 10;	
 
 	_media_info = media_info;
 	_sequence_number = 1;

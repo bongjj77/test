@@ -77,13 +77,13 @@ bool ThreadTimer::SetTimer(uint32_t timer_id, uint32_t Elapse) // 단위는 ms
 	if( item != _timer_map.end() )
 	{
 		item->second->elapse		= Elapse;
-		item->second->recent_bell	= get_tick_count64();
+		item->second->recent_bell	= GetCurrentTick();
 	}
 	else
 	{
 		auto timer_info = std::make_shared<TimerInfo>();
 		timer_info->elapse		= Elapse;
-		timer_info->recent_bell	= get_tick_count64();
+		timer_info->recent_bell	= GetCurrentTick();
 	
 		_timer_map[timer_id] = timer_info;
 	}
@@ -119,7 +119,7 @@ void ThreadTimer::TimerProcess( )
 		SleepWait(_interval);
 
 		std::unique_lock<std::recursive_mutex> timer_map_lock(_timer_map_mutex);
-		uint64_t current_tick = get_tick_count64();
+		uint64_t current_tick = GetCurrentTick();
 			 
 	 	for(auto item=_timer_map.begin(); item!=_timer_map.end(); )
 		{

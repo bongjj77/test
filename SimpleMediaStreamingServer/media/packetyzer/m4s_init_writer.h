@@ -28,9 +28,11 @@ public:
 	~M4sInitWriter() override = default;
 
 public :
+
 	const std::shared_ptr<std::vector<uint8_t>> CreateData(bool http_chunked_transfer_support);
 
 protected :
+
 	int FtypBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	int MoovBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 
@@ -38,6 +40,7 @@ protected :
 
 	int TrakBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	int TkhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
+
 	//int EdtsBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	//int ElstBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	int MdiaBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);

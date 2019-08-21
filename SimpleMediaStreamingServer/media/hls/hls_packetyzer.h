@@ -13,26 +13,26 @@ class HlsPacketyzer : public Packetyzer
 {
 public:
 	HlsPacketyzer(const std::string& app_name,
-		const std::string& stream_name,
-		PacketyzerStreamingType streaming_type,
-		const std::string& segment_prefix,
-		uint32_t segment_count,
-		uint32_t segment_duration,
-		MediaInfo& media_info);
+				const std::string& stream_name,
+				PacketyzerStreamingType streaming_type,
+				const std::string& segment_prefix,
+				uint32_t segment_duration,
+				uint32_t segment_count,
+				MediaInfo& media_info);
 
 	~HlsPacketyzer() = default;
 
 public:
-	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_data) override;
+	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info) override;
 
-	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_data) override;
+	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_info) override;
 
 	virtual const std::shared_ptr<SegmentInfo> GetSegmentData(const std::string& file_name) override;
 
 	virtual bool SetSegmentData(std::string file_name,
-		uint64_t duration,
-		uint64_t timestamp,
-		std::shared_ptr<std::vector<uint8_t>>& data) override;
+								uint64_t duration,
+								uint64_t timestamp,
+								std::shared_ptr<std::vector<uint8_t>>& data) override;
 
 	bool SegmentWrite(uint64_t start_timestamp, uint64_t duration);
 

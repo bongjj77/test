@@ -31,37 +31,33 @@ TcpNetworkObject::TcpNetworkObject()
 //====================================================================================================
 TcpNetworkObject::~TcpNetworkObject()
 {
-	// 종료 타이머 
 	if(_close_timer != nullptr)
 	{
 		_close_timer = nullptr; 
 	}
 
-	// Post 종료 타이머 
 	if(_post_close_timer != nullptr)
 	{
 		_post_close_timer = nullptr; 
 	}
 		
-	// KeepAlive 전송 타이머 정리 
 	if(_keep_alive_send_timer != nullptr)
 	{
 		_keep_alive_send_timer = nullptr; 
 	}
+	
 	_keepalive_send_callback = nullptr; 
 
-	// KeepAlive 체크 타이머 정리 
 	if(_keepalive_check_timer != nullptr)
 	{
 		_keepalive_check_timer->cancel(); 	
 		_keepalive_check_timer = nullptr; 
 	}
+	
 	_keepalive_check_callbak = nullptr; 
 	
-	// 전송 데이터 정리 
 	ClearSendDataQueue(); 
 
-	// Socket 정리 
 	if(_socket != nullptr)
 	{
 		_socket = nullptr; 
@@ -75,11 +71,10 @@ TcpNetworkObject::~TcpNetworkObject()
 	_network_callback 	= nullptr; 
 	_object_callback = nullptr; 
 
-	//UNINIT_LOCK(m_PostCloseLock);
 }
 
 //====================================================================================================
-// 생성  
+// Create  
 //====================================================================================================
 bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 {

@@ -96,7 +96,6 @@ enum class PacketyzerType : int32_t
 	Cmaf,
 };
 
-
 enum class SegmentDataType : int32_t
 {
 	Ts,        // Video + Audio
@@ -104,38 +103,36 @@ enum class SegmentDataType : int32_t
 	Mp4Audio,
 };
 
-
 //===============================================================================================
 // Frame Info
 //===============================================================================================
 struct FrameInfo
 {
 public:
-	FrameInfo(uint32_t timestamp_, int cts_, FrameType frame_type_, int frame_size_, uint8_t* frame_)
+	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, int size_, uint8_t* data_)
 	{
 		timestamp = timestamp_;
 		cts = cts_;
-		frame_type = frame_type_;
-		frame_data = std::make_shared<std::vector<uint8_t>>(frame_, frame_ + frame_size_);
+		type = type_;
+		data = std::make_shared<std::vector<uint8_t>>(data_, data_ + size_);
 		timescale = 0;
 	}
 
-	FrameInfo(uint32_t timestamp_, int cts_, FrameType frame_type_, std::shared_ptr<std::vector<uint8_t>> frame_data_)
+	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, std::shared_ptr<std::vector<uint8_t>> data_)
 	{
 		timestamp = timestamp_;
 		cts = cts_;
-		frame_type = frame_type_;
-		frame_data = frame_data_;
+		type = type_;
+		data = data_;
 		timescale = 0;
 	}
 
 public:
 	uint64_t	timestamp; // dts or pts 
 	uint64_t	cts; // cts;
-	FrameType	frame_type;
+	FrameType	type;
 	uint32_t	timescale; 
-
-	std::shared_ptr<std::vector<uint8_t>> frame_data;
+	std::shared_ptr<std::vector<uint8_t>> data;
 };
 
 //===============================================================================================

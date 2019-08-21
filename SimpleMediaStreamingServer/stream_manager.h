@@ -8,6 +8,9 @@
 #include "media/media_define.h"
 #include <mutex>
 #include <memory>
+#include <media/hls/hls_packetyzer.h>
+#include <media/dash/dash_packetyzer.h>
+
 #pragma pack(1)
 
 class MainObject;
@@ -53,17 +56,63 @@ struct StreamInfo
 {
 public:
 
-	StreamInfo(const StreamKey& stream_key, int provider_index_key_, uint32_t provider_ip_)
+	StreamInfo(const StreamKey& stream_key_, int provider_index_key_, uint32_t provider_ip_)
 	{
+		stream_key = stream_key_;
 		create_time = time(nullptr);
 		state_code = StreamStatus::Ready;
 		error_code = StreamError::None;
 		provider_index_key = provider_index_key_;
 		provider_ip = provider_ip_;
-
+		hls_packetyzer = nullptr;
 	}
 
+	bool CreatePacketyzer(MediaInfo	media_info_, 
+						std::string segment_prefix_, 
+						uint32_t segment_duration_,
+						uint32_t segment_count_)
+	{
+		hls_packetyzer = std::make_unique<HlsPacketyzer>(stream_key.first.c_str(), 
+														stream_key.second.c_str(),
+														PacketyzerStreamingType::Both,
+														segment_prefix_,
+														segment_duration_,
+														segment_count_,
+														media_info_);
+
+		dash_packetyzer = std::make_unique<DashPacketyzer>(stream_key.first.c_str(),
+														stream_key.second.c_str(),
+														PacketyzerStreamingType::Both,
+														segment_prefix_,
+														segment_duration_,
+														segment_count_,
+														media_info_);
+
+
+		media_info = media_info_;
+
+		return true;
+	}
+
+	bool AppendFrame(std::shared_ptr<FrameInfo>& frame_info)
+	{
+		if (frame_info->type != FrameType::AudioFrame)
+		{
+			hls_packetyzer->AppendVideoFrame(frame_info);
+			dash_packetyzer->AppendVideoFrame(frame_info);
+		}
+		else
+		{
+			hls_packetyzer->AppendAudioFrame(frame_info);
+			dash_packetyzer->AppendAudioFrame(frame_info);
+		}
+		
+		return true;
+	}
+
+
 public:
+	StreamKey		stream_key;
 	time_t			create_time;
 	StreamStatus	state_code;
 	StreamError		error_code;
@@ -72,10 +121,10 @@ public:
 	uint32_t		provider_ip;
 
 	MediaInfo		media_info;
+	std::unique_ptr<HlsPacketyzer> hls_packetyzer; 
+	std::unique_ptr<DashPacketyzer> dash_packetyzer;
 
-	std::map<int, uint32_t> publisher_indexer;
 
-	// TODO : packetyzer
 };
 
 #pragma pack()
@@ -92,8 +141,7 @@ public:
 public:
 	bool CreateStream(const StreamKey& stream_key, int provider_index_key, uint32_t provider_ip);
 	bool SetCompleteState(const StreamKey& stream_key, MediaInfo& media_info);
-	bool AddPublisher(const StreamKey& stream_key, int publisher_index_key, uint32_t publisher_ip, MediaInfo& media_info);
-
+	
 	bool Remove(const StreamKey& stream_key);
 	void RemoveAll();
 	bool SetError(const StreamKey& stream_key, StreamError error_code);
@@ -101,19 +149,18 @@ public:
 
 	bool GetStatus(const StreamKey& stream_key, StreamStatus& state_code);
 
-	bool AppendStreamData(const StreamKey& stream_key,
-		const std::shared_ptr<FrameInfo>& frame_info,
-		const std::vector<int>& publisher_index_key_list);
-	bool RemovePublisherIndexKey(const StreamKey& stream_key, int publisher_index_key);
-
+	bool AppendStreamData(const StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info);
+	
 	int	 GarbageCheck(std::vector<StreamKey>& RemoveStreamKeys);
+
 	void GetCountInfo(int& stream_count);
 
 	bool GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& play_list);
+
 	bool GetSegmentData(const StreamKey& stream_key,
-		const std::string& file_name,
-		SegmentType type,
-		std::shared_ptr<std::vector<uint8_t>>& data);
+						const std::string& file_name,
+						SegmentType type,
+						std::shared_ptr<std::vector<uint8_t>>& data);
 
 private:
 	std::shared_ptr<StreamInfo> FindStream(const StreamKey& stream_key);
@@ -121,7 +168,6 @@ private:
 
 private:
 	std::shared_ptr<MainObject> _main_object;
-
 	std::map<StreamKey, std::shared_ptr<StreamInfo>> _stream_list;
 	std::mutex _stream_list_mutex;
 };
