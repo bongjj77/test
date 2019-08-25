@@ -74,7 +74,7 @@ bool RtmpEncoderObject::OnChunkStreamSend(int data_size, char* data)
 {
 	auto send_data = std::make_shared<std::vector<uint8_t>>(data, data + data_size);
 
-	if (PostSend(send_data) == FALSE)
+	if (PostSend(send_data) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] OnChunkStreamSend - Post Sned Fail - IP(%s)", _object_name, _remote_ip_string));
 		return false;
@@ -89,7 +89,7 @@ bool RtmpEncoderObject::OnChunkStreamSend(int data_size, char* data)
 bool RtmpEncoderObject::OnChunkStreamStart(StreamKey& stream_key)
 {
 	// Callback 호占쏙옙	
-	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStart(_index_key, _remote_ip, stream_key) == FALSE)
+	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStart(_index_key, _remote_ip, stream_key) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] OnChunkStreamStart - OnRtmpProviderStart - IP(%s)", _object_name, _remote_ip_string));
 		return false;

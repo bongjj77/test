@@ -91,6 +91,12 @@
     <ClCompile Include="media\dash\dash_packetyzer.cpp">
       <Filter>media\dash</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\network\protocol_object\HttpRequestObject.cpp">
+      <Filter>network\protocol_object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\protocol_object\HttpResponseObject.cpp">
+      <Filter>network\protocol_object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -122,6 +128,9 @@
     </Filter>
     <Filter Include="media\dash">
       <UniqueIdentifier>{37a83b72-c815-4b97-9ac1-af6919a3c10e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\protocol_object">
+      <UniqueIdentifier>{ecee4646-8a69-444f-ba7f-ba7a25f2d03e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +241,12 @@
     </ClInclude>
     <ClInclude Include="media\dash\dash_packetyzer.h">
       <Filter>media\dash</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\protocol_object\HttpRequestObject.h">
+      <Filter>network\protocol_object</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\protocol_object\HttpResponseObject.h">
+      <Filter>network\protocol_object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

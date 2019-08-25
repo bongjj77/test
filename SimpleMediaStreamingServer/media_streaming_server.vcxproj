@@ -21,6 +21,8 @@
     <ClCompile Include="..\common\network\engine\tcp_network_object.cpp" />
     <ClCompile Include="..\common\network\engine\udp_network_manager.cpp" />
     <ClCompile Include="..\common\network\engine\udp_network_object.cpp" />
+    <ClCompile Include="..\common\network\protocol_object\HttpRequestObject.cpp" />
+    <ClCompile Include="..\common\network\protocol_object\HttpResponseObject.cpp" />
     <ClCompile Include="..\common\thread_timer.cpp" />
     <ClCompile Include="http_client\http_client_manager.cpp" />
     <ClCompile Include="http_client\http_client_object.cpp" />
@@ -58,6 +60,8 @@
     <ClInclude Include="..\common\network\engine\tcp_network_object.h" />
     <ClInclude Include="..\common\network\engine\udp_network_manager.h" />
     <ClInclude Include="..\common\network\engine\udp_network_object.h" />
+    <ClInclude Include="..\common\network\protocol_object\HttpRequestObject.h" />
+    <ClInclude Include="..\common\network\protocol_object\HttpResponseObject.h" />
     <ClInclude Include="..\common\singleton.h" />
     <ClInclude Include="..\common\thread_timer.h" />
     <ClInclude Include="config_define.h" />
