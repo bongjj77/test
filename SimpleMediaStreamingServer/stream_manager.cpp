@@ -185,13 +185,13 @@ bool StreamManager::GetStatus(const StreamKey& stream_key, StreamStatus& state_c
 //====================================================================================================
 // GetPlayList
 //====================================================================================================
-bool StreamManager::GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& play_list)
+bool StreamManager::GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& playlist)
 {
 	auto stream_info = FindStream(stream_key);
 
 	if (stream_info != nullptr)
 	{
-		return stream_info->dash_packetyzer->GetPlayList(play_list);
+		return stream_info->dash_packetyzer->GetPlayList(playlist);
 	}
 
 	return false;

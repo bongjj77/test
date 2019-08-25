@@ -101,7 +101,7 @@ private:
 									uint32_t ip,
 									const StreamKey& stream_key,
 									PlaylistType type,
-									std::string& play_list);
+									std::string& playlist);
 
 	bool OnHttpClientSegmentRequest(int index_key,
 									uint32_t ip,

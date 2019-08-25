@@ -1,4 +1,9 @@
-﻿#include "HttpResponseObject.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "HttpResponseObject.h"
 #include <string.h>
 
 #define HTTP_REQUEST_DATA_MAX_SIZE			(8192)
@@ -133,7 +138,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		//최소 토큰 개수 확인( GET/[Page]/HTTP) 
 		if (tokens.size() < 3)
 		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - IndexKey(%d) IP(%s)", 
+			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - key(%s) ip(%s)", 
 				_object_name, _index_key, _remote_ip_string));
 			return -1;
 		}
@@ -143,7 +148,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 
 		if (_http_version.size() > HTTP_VERSION_MAX_SIZE)
 		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - IndexKey(%d) IP(%s) Size(%d:%d)",
+			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - key(%s) ip(%s) Size(%d:%d)",
 				_object_name, _index_key, _remote_ip_string, _http_version.size(), HTTP_VERSION_MAX_SIZE));
 
 			return -1;
@@ -389,13 +394,13 @@ bool HttpResponseObject::SendResponse(std::string content_type, int data_size, c
 		return false;
 	}
 
-	char 		szHeader[4096] = { 0, };
+	char 		header[4096] = { 0, };
 	std::string date_time = GetHttpHeaderDateTime().c_str();
 
 	// HTTP 헤더 설정 
 	if (_is_cors_use == false)
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 200 OK\r\n"\
 			"Date: %s\r\n"\
 			"Server: http server\r\n"\
@@ -409,7 +414,7 @@ bool HttpResponseObject::SendResponse(std::string content_type, int data_size, c
 	}
 	else
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 200 OK\r\n"\
 			"Date: %s\r\n"\
 			"Server: http server\r\n"\
@@ -427,7 +432,7 @@ bool HttpResponseObject::SendResponse(std::string content_type, int data_size, c
 			, data_size);
 	}
 
-	return SendResponse((int)strlen(szHeader), szHeader, data_size, data);
+	return SendResponse((int)strlen(header), header, data_size, data);
 
 }
 
@@ -436,13 +441,13 @@ bool HttpResponseObject::SendResponse(std::string content_type, int data_size, c
 //====================================================================================================
 bool HttpResponseObject::SendRedirectResponse(std::string content_type, std::string redirect_url, int data_size, char* data)
 {
-	char 		szHeader[4096] = { 0, };
+	char 		header[4096] = { 0, };
 	std::string date_time = GetHttpHeaderDateTime().c_str();
 
 	// HTTP 헤더 설정 
 	if (_is_cors_use == false)
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 302 Found\r\n"\
 			"Date: %s\r\n"\
 			"Server: http server\r\n"\
@@ -458,7 +463,7 @@ bool HttpResponseObject::SendRedirectResponse(std::string content_type, std::str
 	}
 	else
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 302 Found\r\n"\
 			"Date: %s\r\n"\
 			"Server: http server\r\n"\
@@ -479,7 +484,7 @@ bool HttpResponseObject::SendRedirectResponse(std::string content_type, std::str
 
 	}
 
-	return SendResponse((int)strlen(szHeader), szHeader, data_size, data);
+	return SendResponse((int)strlen(header), header, data_size, data);
 }
 
 
@@ -488,12 +493,12 @@ bool HttpResponseObject::SendRedirectResponse(std::string content_type, std::str
 //====================================================================================================
 bool HttpResponseObject::SendRedirectResponse(std::string redirect_url)
 {
-	char 		szHeader[4096] = { 0, };
+	char header[4096] = { 0, };
 
 	// HTTP 헤더 설정 
 	if (_is_cors_use == false)
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 302 Found\r\n"\
 			"Location: %s\r\n"\
 			"Content-Length: 0\r\n\r\n"
@@ -502,7 +507,7 @@ bool HttpResponseObject::SendRedirectResponse(std::string redirect_url)
 	}
 	else
 	{
-		snprintf(szHeader, sizeof(szHeader),
+		snprintf(header, sizeof(header),
 			"%s 302 Found\r\n"\
 			"Location: %s\r\n"\
 			"Access-Control-Allow-Credentials: true\r\n"\
@@ -516,7 +521,7 @@ bool HttpResponseObject::SendRedirectResponse(std::string redirect_url)
 
 	}
 
-	return SendResponse((int)strlen(szHeader), szHeader, 0, nullptr);
+	return SendResponse((int)strlen(header), header, 0, nullptr);
 }
 
 

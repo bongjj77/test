@@ -504,8 +504,8 @@ bool DashPacketyzer::UpdatePlayList()
 
 	play_list_stream << "</Period>\n" << "</MPD>\n";
 
-	std::string play_list = play_list_stream.str().c_str();
-	SetPlayList(play_list);
+	std::string playlist = play_list_stream.str().c_str();
+	SetPlayList(playlist);
 
 	if (_streaming_type == PacketyzerStreamingType::Both && _streaming_start)
 	{

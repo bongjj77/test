@@ -44,7 +44,6 @@ TcpNetworkManager::TcpNetworkManager(int object_key) : NetworkManager(object_key
 
 }
 
-
 //====================================================================================================
 // Destructor 
 //====================================================================================================
@@ -444,7 +443,7 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error,
 	// 에러 
 	if(error)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - IP(%s) Port(%d) Error(%d) Message(%s) ", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - ip(%s) Port(%d) Error(%d) Message(%s) ", 
 			_object_name.c_str(), 
 			GetStringIP(ip).c_str(), 
 			port, 
@@ -471,7 +470,7 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error,
 	// 연결 콜백 호출 
 	if(_network_callback->OnTcpNetworkConnected(_object_key, result, connected_param, socket, ip, port) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - OnTcpNetworkConnected return false - IP(%s) Port(%d)", 
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnected - OnTcpNetworkConnected return false - ip(%s) Port(%d)", 
 			_object_name.c_str(), GetStringIP(ip).c_str(), port));
 	}
 }
@@ -490,7 +489,7 @@ void TcpNetworkManager::OnConnectedSSL(	const NetErrorCode & error,
 	// 에러 
 	if (error)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnectedSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnectedSSL - ip(%s) Port(%d) Error(%d) Message(%s) ",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port,
@@ -540,7 +539,7 @@ void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error,
 	// 에러 
 	if (error)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - IP(%s) Port(%d) Error(%d) Message(%s) ",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - ip(%s) Port(%d) Error(%d) Message(%s) ",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port,
@@ -568,7 +567,7 @@ void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error,
 	// 연결 콜백 호출 
 	if (_network_callback->OnTcpNetworkConnectedSSL(_object_key, result, connected_param, socket, ip, port) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - IP(%s) Port(%d)",
+		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - ip(%s) Port(%d)",
 			_object_name.c_str(),
 			GetStringIP(ip).c_str(),
 			port));

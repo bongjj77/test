@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#pragma once
 #include "../engine/tcp_network_object.h"
 
 #define HTTP_ERROR_BAD_REQUEST 				(400)
@@ -37,7 +42,7 @@ public:
 
 protected:
 	virtual int			RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data);
-	virtual bool		RecvRequest(std::string& strRequestPage, std::string& agent) = 0;//agent값은 _agent_parsing == true에서 정상값 
+	virtual bool		RecvRequest(std::string& request_page, std::string& agent) = 0;//agent값은 _agent_parsing == true에서 정상값 
 
 protected:
 	bool		_is_complete;

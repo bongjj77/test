@@ -188,8 +188,8 @@ bool HlsPacketyzer::UpdatePlayList()
 		<< m3u8_play_list.str();
 
 	// Playlist 설정
-	std::string play_list = play_lis_stream.str().c_str();
-	SetPlayList(play_list);
+	std::string playlist = play_lis_stream.str().c_str();
+	SetPlayList(playlist);
 
 	if (_streaming_type == PacketyzerStreamingType::Both && _streaming_start)
 	{

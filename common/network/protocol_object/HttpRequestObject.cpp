@@ -1,4 +1,9 @@
-﻿#include "HttpRequestObject.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "HttpRequestObject.h"
 #include <string.h>
 
 #define HTTP_HEADER_END_DELIMITER   		("\r\n\r\n")

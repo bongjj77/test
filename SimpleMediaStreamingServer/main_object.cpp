@@ -226,7 +226,7 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 		return 0;
 	}
 
-	LOG_INFO_WRITE(("[%s] OnNetworkClose - IndexKey(%d) IP(%s) Port(%d)",
+	LOG_INFO_WRITE(("[%s] OnNetworkClose - key(%s) ip(%s) Port(%d)",
 		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), index_key, GetStringIP(ip).c_str(), port));
 
 	// remove session 
@@ -344,9 +344,9 @@ bool MainObject::OnHttpClientPlaylistRequest(int index_key,
 											uint32_t ip,
 											const StreamKey& stream_key,
 											PlaylistType type,
-											std::string& play_list)
+											std::string& playlist)
 {
-	if (!_stream_manager->GetPlaylist(stream_key, type, play_list))
+	if (!_stream_manager->GetPlaylist(stream_key, type, playlist))
 	{
 		LOG_ERROR_WRITE(("OnHttpClientPlaylistRequest - GetHlsPlayList fail - stream(%s/%s)", 
 						stream_key.first.c_str(), stream_key.second.c_str()));

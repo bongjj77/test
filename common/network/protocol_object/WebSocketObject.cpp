@@ -1,4 +1,9 @@
-﻿#include "WebSocketObject.h"
+﻿//====================================================================================================
+//  Created by Bong Jaejong
+//  Email : bongjj77@gmail.com
+//====================================================================================================
+
+#include "WebSocketObject.h"
 #include <string.h>
 #include <sha1.h>
 

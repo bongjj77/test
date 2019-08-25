@@ -158,7 +158,7 @@ public:
 
 	void GetCountInfo(int& stream_count);
 
-	bool GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& play_list);
+	bool GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& playlist);
 
 	bool GetSegmentData(const StreamKey& stream_key,
 						const std::string& file_name,

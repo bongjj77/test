@@ -86,18 +86,18 @@ std::string Packetyzer::MakeUtcMillisecond(double value)
 // PlayList
 // - thread safe
 //====================================================================================================
-void Packetyzer::SetPlayList(std::string& play_list)
+void Packetyzer::SetPlayList(std::string& playlist)
 {
 	// playlist mutex
 	std::unique_lock<std::mutex> lock(_play_list_guard);
-	_play_list = play_list;
+	_play_list = playlist;
 }
 
 //====================================================================================================
 // PlayList
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetPlayList(std::string& play_list)
+bool Packetyzer::GetPlayList(std::string& playlist)
 {
 	if (!_streaming_start)
 		return false;
@@ -105,7 +105,7 @@ bool Packetyzer::GetPlayList(std::string& play_list)
 	// playlist mutex
 	std::unique_lock<std::mutex> lock(_play_list_guard);
 
-	play_list = _play_list;
+	playlist = _play_list;
 
 	return true;
 }

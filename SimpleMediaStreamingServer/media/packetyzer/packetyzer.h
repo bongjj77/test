@@ -36,9 +36,9 @@ public :
 								uint64_t timestamp,
 								std::shared_ptr<std::vector<uint8_t>> &data) = 0;
 	
-    void SetPlayList(std::string &play_list);
+    void SetPlayList(std::string &playlist);
 
-    virtual bool GetPlayList(std::string &play_list);
+    virtual bool GetPlayList(std::string &playlist);
 
     bool GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>> &segment_datas);
 
