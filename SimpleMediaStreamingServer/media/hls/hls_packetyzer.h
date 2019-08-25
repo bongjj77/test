@@ -23,9 +23,9 @@ public:
 	~HlsPacketyzer() = default;
 
 public:
-	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info) override;
+	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame) override;
 
-	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_info) override;
+	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame) override;
 
 	virtual const std::shared_ptr<SegmentInfo> GetSegmentData(const std::string& file_name) override;
 

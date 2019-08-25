@@ -7,6 +7,17 @@
 #include "openssl/ssl.h"
 #include <iomanip>
 
+
+enum class TimerId
+{
+	GarbageCheck,
+	InfoPrint,
+ 
+};
+
+#define GARBAGE_CHECK_INTERVAL (20)
+#define INFO_PRINT_INTERVAL (30)
+
 //===============================================================================================
 // GetNetworkObjectName
 //===============================================================================================
@@ -109,7 +120,9 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	}
 
 	// create timer 	
-	if (_timer.Create(this) == false)
+	if (_timer.Create(this) == false || 
+		_timer.SetTimer((int)TimerId::GarbageCheck, GARBAGE_CHECK_INTERVAL * 1000) == false,
+		_timer.SetTimer((int)TimerId::InfoPrint, INFO_PRINT_INTERVAL * 1000) == false)
 	{
 		LOG_ERROR_WRITE(("Init Timer Fail"));
 		return false;
@@ -125,7 +138,8 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - unkown objectkey - obkect_key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - unkown objectkey - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -151,7 +165,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 
 	if (index_key == -1)
 	{
-		LOG_ERROR_WRITE(("[%s] OnTcpNetworkAccepted - Object Add Fail - IndexKey(%d) IP(%s)",
+		LOG_ERROR_WRITE(("[%s] OnTcpNetworkAccepted - object add fail - index_key(%d) ip(%s)",
 			GetNetworkObjectName((NetworkObjectKey)object_key).c_str(),
 			index_key,
 			GetStringIP(ip).c_str()));
@@ -173,7 +187,7 @@ bool MainObject::OnTcpNetworkConnected(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -192,7 +206,7 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -208,7 +222,7 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - Key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - obkect_key(%d)", object_key));
 		return 0;
 	}
 
@@ -228,7 +242,7 @@ bool MainObject::RemoveNetwork(NetworkObjectKey object_key, int index_key)
 {
 	if (object_key >= NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -246,7 +260,7 @@ bool MainObject::RemoveNetwork(NetworkObjectKey object_key, std::vector<int>& In
 {
 	if (object_key >= NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("RemoveNetwork - ObjectKey(%d)", object_key));
+		LOG_ERROR_WRITE(("RemoveNetwork - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -268,7 +282,8 @@ bool MainObject::OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& strea
 	
 	if (!_stream_manager->CreateStream(stream_key, index_key, ip))
 	{
-		LOG_ERROR_WRITE(("OnRtmpEncoderStart - CreateStream fail - stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
+		LOG_ERROR_WRITE(("OnRtmpEncoderStart - CreateStream fail - stream(%s/%s)", 
+						stream_key.first.c_str(), stream_key.second.c_str()));
 
 		return false;
 	}
@@ -288,7 +303,8 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 	// compete
 	if (!_stream_manager->SetCompleteState(stream_key, media_info))
 	{
-		LOG_ERROR_WRITE(("OnRtmpEncoderReadyComplete - SetCompleteState fail - Stream(%s/%s)", stream_key.first.c_str(), stream_key.second.c_str()));
+		LOG_ERROR_WRITE(("OnRtmpEncoderReadyComplete - SetCompleteState fail - stream(%s/%s)", 
+						stream_key.first.c_str(), stream_key.second.c_str()));
 
 		return false;
 	}
@@ -305,15 +321,15 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 // OnRtmpEncoderStreamData 
 // - IRtmpEncoder Callback
 //====================================================================================================
-bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
+bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame)
 {
-	LOG_INFO_WRITE((" Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
-		stream_key.first.c_str(), stream_key.second.c_str(), frame_info->type, frame_info->timestamp));
+	LOG_INFO_WRITE(("Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
+					stream_key.first.c_str(), stream_key.second.c_str(), frame->type, frame->timestamp));
 
-	if (!_stream_manager->AppendStreamData(stream_key, frame_info))
+	if (!_stream_manager->AppendStreamData(stream_key, frame))
 	{
-		LOG_ERROR_WRITE(("OnRtmpEncoderStreamData - StreamData Fail - Stream(%s/%s)", 
-					stream_key.first.c_str(), stream_key.second.c_str()));
+		LOG_ERROR_WRITE(("OnRtmpEncoderStreamData - AppendStreamData fail - Stream(%s/%s)", 
+						stream_key.first.c_str(), stream_key.second.c_str()));
 		return false;
 	}
  
@@ -325,11 +341,18 @@ bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& 
 // - IHttpClient callback
 //====================================================================================================
 bool MainObject::OnHttpClientPlaylistRequest(int index_key,
-	uint32_t ip,
-	const StreamKey& stream_key,
-	PlaylistType type,
-	std::string& play_list)
+											uint32_t ip,
+											const StreamKey& stream_key,
+											PlaylistType type,
+											std::string& play_list)
 {
+	if (!_stream_manager->GetPlaylist(stream_key, type, play_list))
+	{
+		LOG_ERROR_WRITE(("OnHttpClientPlaylistRequest - GetHlsPlayList fail - stream(%s/%s)", 
+						stream_key.first.c_str(), stream_key.second.c_str()));
+		return false;
+	}
+
 	return true;
 }
 
@@ -338,22 +361,67 @@ bool MainObject::OnHttpClientPlaylistRequest(int index_key,
 // - IHttpClient callback
 //====================================================================================================
 bool MainObject::OnHttpClientSegmentRequest(int index_key,
-	uint32_t ip,
-	const std::string& file_name,
-	const StreamKey& stream_key,
-	SegmentType type,
-	std::shared_ptr<std::vector<uint8_t>>& data)
+											uint32_t ip,
+											const std::string& file_name,
+											const StreamKey& stream_key,
+											SegmentType type,
+											std::shared_ptr<std::vector<uint8_t>>& data)
 {
+	if (!_stream_manager->GetSegmentData(stream_key, file_name, type, data))
+	{
+		LOG_ERROR_WRITE(("OnHttpClientSegmentRequest - GetSegmentData fail - stream(%s/%s) file(%s)", 
+						stream_key.first.c_str(), stream_key.second.c_str(), file_name.c_str()));
+		return false;
+	}
+
 	return true;
 }
 
 //====================================================================================================
-// Timerr Callback
+// Timer Callback
 //====================================================================================================
 void MainObject::OnThreadTimer(uint32_t timer_id, bool& delete_timer/* = false */)
 {
 	switch (timer_id)
 	{
+		case (int)TimerId::GarbageCheck: 					
+			GarbageCheckTimerProc();					
+			break;
 
+		case (int)TimerId::InfoPrint:
+			InfoPrintTimerProc();
+			break;
 	}
+}
+
+
+//====================================================================================================
+// Garbage Check Proc
+//====================================================================================================
+void MainObject::GarbageCheckTimerProc()
+{
+	int remove_count = 0;
+	std::vector<StreamKey> stream_key_list;
+	
+	remove_count = _stream_manager->GarbageCheck(stream_key_list);
+
+	if (remove_count > 0)
+	{
+		LOG_INFO_WRITE(("GarbageCheck - remove(%d)", remove_count));
+	}
+}
+
+//====================================================================================================
+// Information Print Proc
+//====================================================================================================
+void MainObject::InfoPrintTimerProc()
+{
+	int rtmp_encoder = _rtmp_encoder_manager->GetCount();
+	int	http_client = _http_client_manager->GetCount();
+	int	stream_count = 0;
+
+	_stream_manager->GetCountInfo(stream_count);
+
+	LOG_INFO_WRITE(("*** Connected - stream(%d) rtmp_encoder(%d) http_client(%d) ***", 
+					stream_count, rtmp_encoder, http_client));
 }

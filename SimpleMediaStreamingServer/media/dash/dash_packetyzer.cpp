@@ -38,7 +38,7 @@ DashPacketyzer::DashPacketyzer(const std::string& app_name,
 																segment_count,
 																media_info)
 {
-	_video_frrame_list.clear();
+	_video_frame_list.clear();
 	_audio_frame_list.clear();
 
 	uint32_t resolution_gcd = Gcd(media_info.video_width, media_info.video_height);
@@ -68,7 +68,7 @@ DashPacketyzer::DashPacketyzer(const std::string& app_name,
 //====================================================================================================
 DashPacketyzer::~DashPacketyzer()
 {
-	_video_frrame_list.clear();
+	_video_frame_list.clear();
 	_audio_frame_list.clear();
 }
 
@@ -168,14 +168,14 @@ bool DashPacketyzer::AudioInit()
 // Video Frame Append
 // - Video(Audio) Segment m4s Create
 //====================================================================================================
-bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info)
+bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_video_init)
 	{
-		if (frame_info->type != FrameType::VideoKeyFrame)
+		if (frame->type != FrameType::VideoKeyFrame)
 			return false;
 
-		if (!VideoInit(frame_info->data))
+		if (!VideoInit(frame->data))
 			return false;
 
 		_video_init = true;
@@ -183,17 +183,17 @@ bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info)
 
 	// Fragment Check
 	// - KeyFrame ~ KeyFrame(before)
-	if (frame_info->type == FrameType::VideoKeyFrame && !_video_frrame_list.empty())
+	if (frame->type == FrameType::VideoKeyFrame && !_video_frame_list.empty())
 	{
-		if (frame_info->timestamp - _video_frrame_list[0]->timestamp >=
+		if (frame->timestamp - _video_frame_list[0]->timestamp >=
 			((_segment_duration - _duration_margen) * _media_info.video_timescale))
 		{
 
-			VideoSegmentWrite(frame_info->timestamp);
+			VideoSegmentWrite(frame->timestamp);
 
 			if (!_audio_frame_list.empty())
 			{
-				AudioSegmentWrite(ConvertTimescale(frame_info->timestamp,
+				AudioSegmentWrite(ConvertTimescale(frame->timestamp,
 					_media_info.video_timescale,
 					_media_info.audio_timescale));
 			}
@@ -207,7 +207,7 @@ bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info)
 		_start_time = MakeUtcSecond(time(nullptr));
 	}
 
-	_video_frrame_list.push_back(frame_info);
+	_video_frame_list.push_back(frame);
 	_last_video_append_time = time(nullptr);
 
 	return true;
@@ -217,7 +217,7 @@ bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info)
 // Audio Frame Append
 // - Audio Segment m4s Create
 //====================================================================================================
-bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_info)
+bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_audio_init)
 	{
@@ -232,17 +232,17 @@ bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_info)
 		_start_time = MakeUtcSecond(time(nullptr));
 	}
 
-	_audio_frame_list.push_back(frame_info);
+	_audio_frame_list.push_back(frame);
 	_last_audio_append_time = time(nullptr);
 
 	// audio only or video input error
 	if ((time(nullptr) - _last_video_append_time >=
 		static_cast<uint32_t>(_segment_duration)) && !_audio_frame_list.empty())
 	{
-		if ((frame_info->timestamp - _audio_frame_list[0]->timestamp) >=
+		if ((frame->timestamp - _audio_frame_list[0]->timestamp) >=
 			((_segment_duration - _duration_margen) * _media_info.audio_timescale))
 		{
-			AudioSegmentWrite(frame_info->timestamp);
+			AudioSegmentWrite(frame->timestamp);
 
 			UpdatePlayList();
 		}
@@ -260,31 +260,31 @@ bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
 	uint64_t start_timestamp = 0;
 	std::vector<std::shared_ptr<SampleData>> sample_datas;
 
-	while (!_video_frrame_list.empty())
+	while (!_video_frame_list.empty())
 	{
-		auto frame_info = _video_frrame_list.front();
+		auto frame = _video_frame_list.front();
 
 		if (start_timestamp == 0)
-			start_timestamp = frame_info->timestamp;
+			start_timestamp = frame->timestamp;
 
-		if (frame_info->timestamp >= max_timestamp)
+		if (frame->timestamp >= max_timestamp)
 			break;
 
-		_video_frrame_list.pop_front();
+		_video_frame_list.pop_front();
 
-		uint64_t duration = _video_frrame_list.empty() ? (max_timestamp - frame_info->timestamp) :
-			(_video_frrame_list.front()->timestamp - frame_info->timestamp);
+		uint64_t duration = _video_frame_list.empty() ? (max_timestamp - frame->timestamp) :
+			(_video_frame_list.front()->timestamp - frame->timestamp);
 
 		auto sample_data = std::make_shared<SampleData>(duration,
-			frame_info->type == FrameType::VideoKeyFrame
+			frame->type == FrameType::VideoKeyFrame
 			? 0X02000000 : 0X01010000,
-			frame_info->timestamp,
-			frame_info->cts,
-			frame_info->data);
+			frame->timestamp,
+			frame->cts,
+			frame->data);
 
 		sample_datas.push_back(sample_data);
 	}
-	_video_frrame_list.clear();
+	_video_frame_list.clear();
 
 	// Fragment write
 	auto fragment_writer = std::make_unique<M4sSegmentWriter>(M4sMediaType::Video,
@@ -323,19 +323,19 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 	//  size > 1  for duration calculation
 	while (_audio_frame_list.size() > 1)
 	{
-		auto frame_info = _audio_frame_list.front();
+		auto frame = _audio_frame_list.front();
 
 		if (start_timestamp == 0)
-			start_timestamp = frame_info->timestamp;
+			start_timestamp = frame->timestamp;
 
-		if (((frame_info->timestamp + AAC_SAMPLES_PER_FRAME) > max_timestamp))
+		if (((frame->timestamp + AAC_SAMPLES_PER_FRAME) > max_timestamp))
 			break;
 
 		_audio_frame_list.pop_front();
 
-		auto sample_data = std::make_shared<SampleData>(_audio_frame_list.front()->timestamp - frame_info->timestamp,
-			frame_info->timestamp,
-			frame_info->data);
+		auto sample_data = std::make_shared<SampleData>(_audio_frame_list.front()->timestamp - frame->timestamp,
+			frame->timestamp,
+			frame->data);
 
 		end_timestamp = _audio_frame_list.front()->timestamp;
 

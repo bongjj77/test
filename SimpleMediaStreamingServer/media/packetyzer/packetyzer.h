@@ -25,9 +25,9 @@ public:
     virtual ~Packetyzer();
 
 public :
-    virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo> &frame_info) = 0;
+    virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo> &frame) = 0;
 
-    virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo> &frame_info) = 0;
+    virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo> &frame) = 0;
 
     virtual const std::shared_ptr<SegmentInfo> GetSegmentData(const std::string &file_name) = 0;
 

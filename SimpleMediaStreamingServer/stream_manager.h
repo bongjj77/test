@@ -64,7 +64,8 @@ public:
 		error_code = StreamError::None;
 		provider_index_key = provider_index_key_;
 		provider_ip = provider_ip_;
-		hls_packetyzer = nullptr;
+		// hls_packetyzer = nullptr;
+		dash_packetyzer = nullptr;
 	}
 
 	bool CreatePacketyzer(MediaInfo	media_info_, 
@@ -72,6 +73,7 @@ public:
 						uint32_t segment_duration_,
 						uint32_t segment_count_)
 	{
+		/*
 		hls_packetyzer = std::make_unique<HlsPacketyzer>(stream_key.first.c_str(), 
 														stream_key.second.c_str(),
 														PacketyzerStreamingType::Both,
@@ -79,7 +81,8 @@ public:
 														segment_duration_,
 														segment_count_,
 														media_info_);
-
+														*/
+		
 		dash_packetyzer = std::make_unique<DashPacketyzer>(stream_key.first.c_str(),
 														stream_key.second.c_str(),
 														PacketyzerStreamingType::Both,
@@ -94,17 +97,17 @@ public:
 		return true;
 	}
 
-	bool AppendFrame(std::shared_ptr<FrameInfo>& frame_info)
+	bool AppendFrame(std::shared_ptr<FrameInfo>& frame)
 	{
-		if (frame_info->type != FrameType::AudioFrame)
+		if (frame->type != FrameType::AudioFrame)
 		{
-			hls_packetyzer->AppendVideoFrame(frame_info);
-			dash_packetyzer->AppendVideoFrame(frame_info);
+			//hls_packetyzer->AppendVideoFrame(frame);
+			dash_packetyzer->AppendVideoFrame(frame);
 		}
 		else
 		{
-			hls_packetyzer->AppendAudioFrame(frame_info);
-			dash_packetyzer->AppendAudioFrame(frame_info);
+			//hls_packetyzer->AppendAudioFrame(frame);
+			dash_packetyzer->AppendAudioFrame(frame);
 		}
 		
 		return true;
@@ -149,7 +152,7 @@ public:
 
 	bool GetStatus(const StreamKey& stream_key, StreamStatus& state_code);
 
-	bool AppendStreamData(const StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info);
+	bool AppendStreamData(const StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame);
 	
 	int	 GarbageCheck(std::vector<StreamKey>& RemoveStreamKeys);
 

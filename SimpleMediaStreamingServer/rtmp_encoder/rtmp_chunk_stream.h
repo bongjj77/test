@@ -26,7 +26,7 @@ public:
 	virtual bool OnChunkStreamSend(int data_size, char * data) = 0;	
 	virtual bool OnChunkStreamStart(StreamKey & stream_key) = 0;
 	virtual bool OnChunkStreamReadyComplete(StreamKey & stream_key, MediaInfo & media_info) = 0;
-	virtual bool OnChunkStreamData(StreamKey & stream_key, std::shared_ptr<FrameInfo> &frame_info) = 0;
+	virtual bool OnChunkStreamData(StreamKey & stream_key, std::shared_ptr<FrameInfo> &frame) = 0;
 	
 };
 

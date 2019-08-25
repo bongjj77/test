@@ -39,13 +39,13 @@ public:
 
 	static DashFileType GetFileType(const std::string& file_name);
 
-	bool VideoInit(const std::shared_ptr<std::vector<uint8_t>>& frame_info);
+	bool VideoInit(const std::shared_ptr<std::vector<uint8_t>>& frame);
 
 	bool AudioInit();
 
-	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame_info) override;
+	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame) override;
 
-	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame_info) override;
+	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame) override;
 
 	virtual const std::shared_ptr<SegmentInfo> GetSegmentData(const std::string& file_name) override;
 
@@ -80,7 +80,7 @@ private:
 	uint32_t _video_sequence_number = 1;
 	uint32_t _audio_sequence_number = 1;
 
-	std::deque<std::shared_ptr<FrameInfo>> _video_frrame_list;
+	std::deque<std::shared_ptr<FrameInfo>> _video_frame_list;
 	std::deque<std::shared_ptr<FrameInfo>> _audio_frame_list;
 
 	time_t _last_video_append_time;

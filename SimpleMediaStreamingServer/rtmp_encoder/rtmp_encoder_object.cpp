@@ -122,13 +122,13 @@ bool RtmpEncoderObject::OnChunkStreamReadyComplete(StreamKey& stream_key, MediaI
 // RtmpChunkStream  
 // 
 //====================================================================================================
-bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
+bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame)
 {
 
 	_last_packet_time = time(nullptr);
 
 	// Callback  
-	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStreamData(_index_key, _remote_ip, stream_key, frame_info) == false)
+	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStreamData(_index_key, _remote_ip, stream_key, frame) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] OnChunkStreamData - OnRtmpProviderStreamData - IP(%s)", _object_name, _remote_ip_string));
 		return false;

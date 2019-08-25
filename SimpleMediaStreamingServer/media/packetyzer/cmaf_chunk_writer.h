@@ -47,7 +47,7 @@ protected :
 	int TfdtBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, uint64_t timestamp);
 	int TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::shared_ptr<SampleData> &sample_data);
 
-	int MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::shared_ptr<std::vector<uint8_t>> &frame_info);
+	int MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::shared_ptr<std::vector<uint8_t>> &frame);
 
 private :
 

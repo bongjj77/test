@@ -22,7 +22,7 @@ public:
 					bool is_keyframe,
 					uint64_t timestamp,
 					uint64_t cts,
-					std::shared_ptr<std::vector<uint8_t>>& frame_info);
+					std::shared_ptr<std::vector<uint8_t>>& frame);
 
 	std::shared_ptr<std::vector<uint8_t>> GetDataStream()
 	{

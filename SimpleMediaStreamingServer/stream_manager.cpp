@@ -191,7 +191,7 @@ bool StreamManager::GetPlaylist(const StreamKey& stream_key, PlaylistType type, 
 
 	if (stream_info != nullptr)
 	{
-		// return stream_info->stream_packetyzer->GetPlayList(type, play_list);
+		return stream_info->dash_packetyzer->GetPlayList(play_list);
 	}
 
 	return false;
@@ -201,15 +201,20 @@ bool StreamManager::GetPlaylist(const StreamKey& stream_key, PlaylistType type, 
 // GetSegment
 //====================================================================================================
 bool StreamManager::GetSegmentData(const StreamKey& stream_key,
-	const std::string& file_name,
-	SegmentType type,
-	std::shared_ptr<std::vector<uint8_t>>& data)
+								const std::string& file_name,
+								SegmentType type,
+								std::shared_ptr<std::vector<uint8_t>>& data)
 {
 	auto stream_info = FindStream(stream_key);
 
 	if (stream_info != nullptr)
 	{
-		// return stream_info->stream_packetyzer->GetSegment(file_name, type, data);
+		auto segment = stream_info->dash_packetyzer->GetSegmentData(file_name); 
+		if (segment != nullptr)
+		{
+			data = segment->data;
+			return true;
+		}
 	}
 
 	return false;
@@ -218,13 +223,13 @@ bool StreamManager::GetSegmentData(const StreamKey& stream_key,
 //====================================================================================================
 // Stream Data Input
 //====================================================================================================
-bool StreamManager::AppendStreamData(const StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info)
+bool StreamManager::AppendStreamData(const StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame)
 {
 	auto stream_info = FindStream(stream_key);
 	
 	if (stream_info != nullptr)
 	{
-		stream_info->AppendFrame(frame_info);
+		stream_info->AppendFrame(frame);
 		return true;
 	}
 
@@ -260,7 +265,7 @@ int StreamManager::GarbageCheck(std::vector<StreamKey>& remove_stream_keys)
 			// Error code check
 			if (stream_info->error_code != StreamError::None)
 			{
-				LOG_ERROR_WRITE(("*** Stream Error Remove - Stream(%s/%s) Status(%s) Error(%s)***",
+				LOG_ERROR_WRITE(("*** Stream Error Remove - stream(%s/%s) status(%s) error(%s)***",
 					item->first.first.c_str(),
 					item->first.second.c_str(),
 					g_stream_status_string[(int)stream_info->state_code],
@@ -271,7 +276,7 @@ int StreamManager::GarbageCheck(std::vector<StreamKey>& remove_stream_keys)
 			// Max read wait check
 			else if (stream_info->state_code == StreamStatus::Ready && (create_time_gap > READY_STATUS_MAX_WAIT_TIME))
 			{
-				LOG_ERROR_WRITE(("*** Stream Ready Time Over Remove - Stream(%s/%s) Status(%s) Gap(%d:%d) ***",
+				LOG_ERROR_WRITE(("*** Stream Ready Time Over Remove - stream(%s/%s) status(%s) gap(%d:%d) ***",
 					item->first.first.c_str(),
 					item->first.second.c_str(),
 					g_stream_status_string[(int)stream_info->state_code],
@@ -283,7 +288,7 @@ int StreamManager::GarbageCheck(std::vector<StreamKey>& remove_stream_keys)
 			// Max complete wait check
 			else if (stream_info->state_code != StreamStatus::Complete && (create_time_gap > COMPLETE_STATUS_MAX_WAIT_TIME))
 			{
-				LOG_ERROR_WRITE(("*** Stream Create Time Over Remove - Stream(%s/%s) Status(%s) Gap(%d:%d) ***",
+				LOG_ERROR_WRITE(("*** Stream Create Time Over Remove - stream(%s/%s) Status(%s) gap(%d:%d) ***",
 					item->first.first.c_str(),
 					item->first.second.c_str(),
 					g_stream_status_string[(int)stream_info->state_code],

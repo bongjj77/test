@@ -790,7 +790,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 {
 	int 				frame_size		= 0; 
 	uint8_t				*data			= nullptr;
-	uint8_t				*frame			= nullptr; 
+	uint8_t				*frame_data			= nullptr; 
 	int 				data_size 		= 0; 
 	uint8_t				control_header	= 0; 
 	bool				sequence_data	= false; 
@@ -814,9 +814,9 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 	data_size 		= header->body_size; 
 	control_header	= data[RTMP_AUDIO_CONTROL_HEADER_INDEX]; 
 
-	frame 					= data + RTMP_AAC_AUDIO_FRAME_INDEX; 
-	frame_size				= data_size - RTMP_AAC_AUDIO_FRAME_INDEX;
-	sequence_data  			= data[RTMP_AAC_AUDIO_SEQUENCE_HEADER_INDEX] == RTMP_SEQUENCE_INFO_TYPE ? true : false;
+	frame_data		= data + RTMP_AAC_AUDIO_FRAME_INDEX;
+	frame_size		= data_size - RTMP_AAC_AUDIO_FRAME_INDEX;
+	sequence_data  	= data[RTMP_AAC_AUDIO_SEQUENCE_HEADER_INDEX] == RTMP_SEQUENCE_INFO_TYPE ? true : false;
 		
 
 	if(sequence_data == true && data_size >= 4)
@@ -853,9 +853,9 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 		return true; 
 	}
 
-	auto frame_info = std::make_shared<FrameInfo>(header->timestamp, 0, FrameType::AudioFrame, frame_size, frame);
+	auto frame = std::make_shared<FrameInfo>(header->timestamp, 0, FrameType::AudioFrame, frame_size, frame_data);
 
-	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame_info);
+	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame);
 }
 
 //====================================================================================================
@@ -863,18 +863,18 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 //====================================================================================================
 bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &message)
 {
-	uint8_t  			control_header 			= 0;
-	int 				frame_size 				= 0; 
-	uint8_t				*body_data				= nullptr;
-	uint8_t				*frame 					= nullptr; 
-	FrameType 	frame_type				= FrameType::VideoPFrame; 
-	int	   	 			skip_size				= 0; 
-	int					body_size				= 0; 
-	int					cts = 0;
-	bool				sequence_data			= false; 
-	int					padding_size			= 0; 
-	char * 				avc_frame 				= nullptr; 
-	int	 				avc_frame_size 			= 0; 
+	uint8_t  	control_header 	= 0;
+	int 		frame_size 		= 0; 
+	uint8_t		*body_data		= nullptr;
+	uint8_t		*frame_data		= nullptr; 
+	FrameType 	frame_type		= FrameType::VideoPFrame; 
+	int	   	 	skip_size		= 0; 
+	int			body_size		= 0; 
+	int			cts = 0;
+	bool		sequence_data	= false; 
+	int			padding_size	= 0; 
+	char		*avc_frame 		= nullptr; 
+	int	 		avc_frame_size	= 0; 
 
 	std::shared_ptr<RtmpMuxMessageHeader>	header = message->message_header;
 	uint8_t									*body = message->body->data();
@@ -934,10 +934,10 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 	}
 
 	// + 9( [Control Header:1] + [type:1] + [Composition Offset:3] + [Size:4]) 
-	cts = RtmpMuxUtil::ReadInt24(body_data + RTMP_VIDEO_COMPOSITION_OFFSET_INDEX);
-	frame_size				= RtmpMuxUtil::ReadInt32(body_data + RTMP_VIDEO_FRAME_SIZE_INDEX); 
-	frame					= body_data + RTMP_VIDEO_FRAME_INDEX;
-	padding_size 			= (RTMP_VIDEO_FRAME_SIZE_INFO_SIZE + frame_size); 
+	cts				= RtmpMuxUtil::ReadInt24(body_data + RTMP_VIDEO_COMPOSITION_OFFSET_INDEX);
+	frame_size		= RtmpMuxUtil::ReadInt32(body_data + RTMP_VIDEO_FRAME_SIZE_INDEX); 
+	frame_data		= body_data + RTMP_VIDEO_FRAME_INDEX;
+	padding_size 	= (RTMP_VIDEO_FRAME_SIZE_INFO_SIZE + frame_size); 
 
 	if(frame_size <= 0 || frame_size > MAX_MEDIA_PACKET_SIZE || frame_size > (body_size - RTMP_VIDEO_FRAME_INDEX))
 	{
@@ -950,15 +950,15 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 	{
 	 
 		if( (RTMP_VIDEO_FRAME_SIZE_INDEX + padding_size) + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE + 2 <= body_size && 
-			frame[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE] == 0x0c && 
-			(frame[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE+1] == 0xff || frame[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE+1] == 0x80))
+			frame_data[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE] == 0x0c &&
+			(frame_data[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE+1] == 0xff || frame_data[frame_size + RTMP_VIDEO_FRAME_SIZE_INFO_SIZE+1] == 0x80))
 		{
 			break;
 		}
 						
-		frame += frame_size; 
+		frame_data += frame_size;
 		
-		frame_size = RtmpMuxUtil::ReadInt32(frame);
+		frame_size = RtmpMuxUtil::ReadInt32(frame_data);
  
 		if(frame_size > MAX_MEDIA_PACKET_SIZE || frame_size <= 0 )
 		{
@@ -966,8 +966,8 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 			return false;
 		}
 
-		frame			+= RTMP_VIDEO_FRAME_SIZE_INFO_SIZE;
-		padding_size	+= (RTMP_VIDEO_FRAME_SIZE_INFO_SIZE + frame_size);
+		frame_data += RTMP_VIDEO_FRAME_SIZE_INFO_SIZE;
+		padding_size += (RTMP_VIDEO_FRAME_SIZE_INFO_SIZE + frame_size);
 	}
 	 
 	if(frame_size <= 0 || (RTMP_VIDEO_FRAME_SIZE_INDEX + padding_size) > body_size)
@@ -976,8 +976,8 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 		return false; 
 	}
 	
-	auto frame_info = std::make_shared<FrameInfo>(header->timestamp, cts, frame_type, frame_size, frame);
-	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame_info);
+	auto frame = std::make_shared<FrameInfo>(header->timestamp, cts, frame_type, frame_size, frame_data);
+	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame);
 }
 
 //====================================================================================================

@@ -16,7 +16,7 @@ class IRtmpEncoder : public IObjectCallback
 public:	
 	virtual bool OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key) = 0;
 	virtual bool OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info) = 0;
-	virtual bool OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info) = 0;
+	virtual bool OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame) = 0;
 };
 
 //====================================================================================================
@@ -40,7 +40,7 @@ public:
 	bool			OnChunkStreamSend(int data_size, char* data);
 	bool 			OnChunkStreamStart(StreamKey& stream_key);
 	bool 			OnChunkStreamReadyComplete(StreamKey& stream_key, MediaInfo& media_info);
-	bool 			OnChunkStreamData(StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info);
+	bool 			OnChunkStreamData(StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame);
 
 	virtual bool	StartKeepAliveCheck(uint32_t keepalive_check_time);
 	bool			KeepAliveCheck();

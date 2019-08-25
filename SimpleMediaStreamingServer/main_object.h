@@ -39,10 +39,10 @@ struct CreateParam
 // MainObject
 //====================================================================================================
 class MainObject : public std::enable_shared_from_this<MainObject>,
-	public ITimerCallback,
-	public INetworkCallback,
-	public IRtmpEncoder,
-	public IHttpClient
+				public ITimerCallback,
+				public INetworkCallback,
+				public IRtmpEncoder,
+				public IHttpClient
 {
 public:
 	MainObject(void);
@@ -64,27 +64,28 @@ private:
 	bool OnTcpNetworkAcceptedSSL(int object_key, std::shared_ptr<NetSocketSSL> socket_ssl, uint32_t ip, int port) { return true; }
 
 	bool OnTcpNetworkConnected(int object_key,
-		NetConnectedResult result,
-		std::shared_ptr<std::vector<uint8_t>> connected_param,
-		std::shared_ptr<NetTcpSocket> socket,
-		unsigned ip,
-		int port);
+							NetConnectedResult result,
+							std::shared_ptr<std::vector<uint8_t>> connected_param,
+							std::shared_ptr<NetTcpSocket> socket,
+							unsigned ip,
+							int port);
 
 	bool OnTcpNetworkConnectedSSL(int object_key,
-		NetConnectedResult result,
-		std::shared_ptr<std::vector<uint8_t>> connected_param,
-		std::shared_ptr<NetSocketSSL>  socket,
-		unsigned ip,
-		int port);
+								NetConnectedResult result,
+								std::shared_ptr<std::vector<uint8_t>> connected_param,
+								std::shared_ptr<NetSocketSSL>  socket,
+								unsigned ip,
+								int port);
 
 	int  OnNetworkClose(int object_key, int index_key, uint32_t ip, int port);
 
 	bool OnUdpNetworkConnected(int object_key,
-		NetConnectedResult result,
-		char* connected_param,
-		NetUdpSocket* socket,
-		unsigned ip,
-		int port) {
+							NetConnectedResult result,
+							char* connected_param,
+							NetUdpSocket* socket,
+							unsigned ip,
+							int port) 
+	{
 		return true;
 	}
 
@@ -93,25 +94,28 @@ private:
 	// IRtmpEncoder implement
 	bool OnRtmpEncoderStart(int index_key, uint32_t ip, StreamKey& stream_key);
 	bool OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKey& stream_key, MediaInfo& media_info);
-	bool OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame_info);
+	bool OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame);
 
 	// IHttpClient implement
 	bool OnHttpClientPlaylistRequest(int index_key,
-		uint32_t ip,
-		const StreamKey& stream_key,
-		PlaylistType type,
-		std::string& play_list);
+									uint32_t ip,
+									const StreamKey& stream_key,
+									PlaylistType type,
+									std::string& play_list);
 
 	bool OnHttpClientSegmentRequest(int index_key,
-		uint32_t ip,
-		const std::string& file_name,
-		const StreamKey& stream_key,
-		SegmentType type,
-		std::shared_ptr<std::vector<uint8_t>>& data);
+									uint32_t ip,
+									const std::string& file_name,
+									const StreamKey& stream_key,
+									SegmentType type,
+									std::shared_ptr<std::vector<uint8_t>>& data);
 
 
 	// Timer callback
 	void OnThreadTimer(uint32_t timer_id, bool& delete_timer);
+
+	void GarbageCheckTimerProc();
+	void InfoPrintTimerProc();
 
 private:
 	ThreadTimer							_timer;
