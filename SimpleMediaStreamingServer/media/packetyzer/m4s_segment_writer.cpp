@@ -42,11 +42,11 @@ M4sSegmentWriter::~M4sSegmentWriter( )
 //====================================================================================================
 //  CreateData
 //====================================================================================================
-const std::shared_ptr<std::vector<uint8_t>> M4sSegmentWriter::AppendSamples(const std::vector<std::shared_ptr<SampleData>> &sample_datas)
+const std::shared_ptr<std::vector<uint8_t>> M4sSegmentWriter::AppendSamples(const std::vector<std::shared_ptr<SampleData>> &sample_data_list)
 {
 	uint32_t total_sample_size = 0;
 
-	for(const auto &sample_data : sample_datas)
+	for(const auto &sample_data : sample_data_list)
 	{
 		total_sample_size += sample_data->data->size();
 
@@ -58,9 +58,9 @@ const std::shared_ptr<std::vector<uint8_t>> M4sSegmentWriter::AppendSamples(cons
 
 	auto data_stream = std::make_shared<std::vector<uint8_t>>(total_sample_size + DEFAULT_SEGMENT_HEADER_SIZE);
 
-	MoofBoxWrite(data_stream, sample_datas);
+	MoofBoxWrite(data_stream, sample_data_list);
 
-	MdatBoxWrite(data_stream, sample_datas, total_sample_size);
+	MdatBoxWrite(data_stream, sample_data_list, total_sample_size);
 
 	return data_stream;
 }
@@ -68,20 +68,20 @@ const std::shared_ptr<std::vector<uint8_t>> M4sSegmentWriter::AppendSamples(cons
 //====================================================================================================
 // moof(Movie Fragment) 
 //====================================================================================================
-int M4sSegmentWriter::MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_datas)
+int M4sSegmentWriter::MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_data_list)
 {
 	auto data = std::make_shared<std::vector<uint8_t>>(DEFAULT_SEGMENT_HEADER_SIZE);
 
 	MfhdBoxWrite(data);
 
-	TrafBoxWrite(data, sample_datas);
+	TrafBoxWrite(data, sample_data_list);
 
 	BoxDataWrite("moof", data, data_stream);
 
 	uint32_t data_offset = data_stream->size() + 8;
 
-	uint32_t position = (_media_type == M4sMediaType::Video) ? data_stream->size() - sample_datas.size() * 16 - 4:
-					data_stream->size() - sample_datas.size() * 8 - 4;
+	uint32_t position = (_media_type == M4sMediaType::Video) ? data_stream->size() - sample_data_list.size() * 16 - 4:
+					data_stream->size() - sample_data_list.size() * 8 - 4;
 
 	if(position < 0)
 	{
@@ -112,13 +112,13 @@ int M4sSegmentWriter::MfhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 //====================================================================================================
 // traf(Track Fragment) 
 //====================================================================================================
-int M4sSegmentWriter::TrafBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_datas)
+int M4sSegmentWriter::TrafBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_data_list)
 {
 	auto data = std::make_shared<std::vector<uint8_t>>();
 
 	TfhdBoxWrite(data);
 	TfdtBoxWrite(data);
-	TrunBoxWrite(data, sample_datas);
+	TrunBoxWrite(data, sample_data_list);
 
 	return BoxDataWrite("traf", data, data_stream);
 }
@@ -167,7 +167,7 @@ int M4sSegmentWriter::TfdtBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 #define TRUN_FLAG_SAMPLE_COMPOSITION_TIME_OFFSET_PRESENT (0x0800)
 
 int M4sSegmentWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream,
-									const std::vector<std::shared_ptr<SampleData>> &sample_datas)
+									const std::vector<std::shared_ptr<SampleData>> &sample_data_list)
 {
 	auto data = std::make_shared<std::vector<uint8_t>>();
 	uint32_t flag = 0;
@@ -182,10 +182,10 @@ int M4sSegmentWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 		flag = TRUN_FLAG_DATA_OFFSET_PRESENT | TRUN_FLAG_SAMPLE_DURATION_PRESENT | TRUN_FLAG_SAMPLE_SIZE_PRESENT;
 	}
 
-	WriteUint32(sample_datas.size(), data);	// Sample Item Count;
+	WriteUint32(sample_data_list.size(), data);	// Sample Item Count;
 	WriteUint32(0x11111111, data);	            // Data offset - temp 0 setting
 
-	for (auto &sample_data : sample_datas)
+	for (auto &sample_data : sample_data_list)
 	{
 		WriteUint32(sample_data->duration, data);					// duration
 
@@ -208,13 +208,13 @@ int M4sSegmentWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 // mdat(Media Data) 
 //====================================================================================================
 int M4sSegmentWriter::MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream,
-									const std::vector<std::shared_ptr<SampleData>> &sample_datas,
+									const std::vector<std::shared_ptr<SampleData>> &sample_data_list,
 									uint32_t total_sample_size)
 {
 	WriteUint32(M4S_BOX_HEADER_SIZE + total_sample_size, data_stream); 	// box size write
 	WriteText("mdat", data_stream);			// type write
 
-	for (auto &sample_data : sample_datas)
+	for (auto &sample_data : sample_data_list)
 	{
 		// only video)
 		if (_media_type == M4sMediaType::Video)

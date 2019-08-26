@@ -148,7 +148,7 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 				start_timestamp,
 				ts_data);
 
-	UpdatePlayList();
+	UpdatePlaylist();
 
 	_video_enable = false;
 	_audio_enable = false;
@@ -159,16 +159,16 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 //====================================================================================================
 // PlayList(M3U8) update 
 //====================================================================================================
-bool HlsPacketyzer::UpdatePlayList()
+bool HlsPacketyzer::UpdatePlaylist()
 {
 	std::ostringstream play_list_stream;
 	std::ostringstream m3u8_play_list;
 	double max_duration = 0;
 
-	std::vector<std::shared_ptr<SegmentInfo>> segment_datas;
-	Packetyzer::GetVideoPlaySegments(segment_datas);
+	std::vector<std::shared_ptr<SegmentInfo>> segment_list;
+	Packetyzer::GetVideoPlaySegments(segment_list);
 
-	for (const auto& segment_data : segment_datas)
+	for (const auto& segment_data : segment_list)
 	{
 		m3u8_play_list << "#EXTINF:" << std::fixed << std::setprecision(3)
 			<< (double)(segment_data->duration) / (double)(HLS_TIMESCALE) << ",\r\n"

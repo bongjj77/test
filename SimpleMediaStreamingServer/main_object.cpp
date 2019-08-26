@@ -7,7 +7,6 @@
 #include "openssl/ssl.h"
 #include <iomanip>
 
-
 enum class TimerId
 {
 	GarbageCheck,
@@ -138,8 +137,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - unkown objectkey - obkect_key(%d)", object_key));
-		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - unkown objectkey - obkect_key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkAccepted - unkown object - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -187,7 +185,7 @@ bool MainObject::OnTcpNetworkConnected(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnected - Unkown ObjectKey - obkect_key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnected - unkown object - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -206,7 +204,7 @@ bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
 {
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - obkect_key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - unkown object - obkect_key(%d)", object_key));
 		return false;
 	}
 
@@ -222,7 +220,7 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 
 	if (object_key >= (int)NetworkObjectKey::Max)
 	{
-		LOG_ERROR_WRITE(("OnNetworkClose - Unkown ObjectKey - obkect_key(%d)", object_key));
+		LOG_ERROR_WRITE(("OnNetworkClose - unkown object - obkect_key(%d)", object_key));
 		return 0;
 	}
 

@@ -65,7 +65,7 @@ protected:
 		double& time_shift_buffer_depth,
 		double& minimumUpdatePeriod);
 
-	bool UpdatePlayList();
+	bool UpdatePlaylist();
 
 private:
 	

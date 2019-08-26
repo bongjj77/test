@@ -40,9 +40,9 @@ public :
 
     virtual bool GetPlayList(std::string &playlist);
 
-    bool GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>> &segment_datas);
+    bool GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>> &segment_list);
 
-    bool GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>> &segment_datas);
+    bool GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>> &segment_list);
 
     static std::string MakeUtcSecond(time_t value);
 	static std::string MakeUtcMillisecond(double value);

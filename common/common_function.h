@@ -41,7 +41,7 @@ extern void 		InitNetwork();
 extern void 		ReleaseNetwork();
 extern std::string	string_format(const char* format, ...);
 extern void			Tokenize(const std::string & str, std::vector<std::string> & tokens, const std::string& delimiters);
-extern void			Tokenize2(const char * pText, std::vector<std::string>& tokens, char delimiter);
+extern void			Tokenize2(const char * text, std::vector<std::string>& tokens, char delimiter);
 extern std::string 	GetStringIP(uint32_t ip); 
 extern void			GetStringTime(std::string & time_string, time_t time_value); 
 extern std::string 	GetStringTime2(time_t time_value, bool bDate = true);

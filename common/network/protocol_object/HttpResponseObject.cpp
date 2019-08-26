@@ -66,7 +66,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 	std::string strHeader;
 	std::string page_line;
 	int read_size = 0;
-	std::vector<std::string> 	tokens;
+	std::vector<std::string> tokens;
 	bool completed_close = false;
 	std::string agent;
 
@@ -91,11 +91,9 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 
 	memcpy(data_buffer, data->data(), data_size);
 	data_buffer[data_size] = 0;
-
-	//데이터 복사 
+ 
 	string_data = data_buffer;
-
-	//메모리 정리 
+ 
 	if (data_buffer != nullptr)
 	{
 		delete[] data_buffer;
@@ -157,19 +155,19 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		//Agent 파싱
 		if (_agent_parsing == true)
 		{
-			std::string::size_type nAgentLineStartPos = strHeader.find("User-Agent: ");
+			std::string::size_type agent_line_start_pos = strHeader.find("User-Agent: ");
 
-			if (nAgentLineStartPos != std::string::npos)
+			if (agent_line_start_pos != std::string::npos)
 			{
-				std::size_t nAgentLineEndPos = strHeader.find("\r\n", nAgentLineStartPos);
+				std::size_t agent_line_end_pos = strHeader.find("\r\n", agent_line_start_pos);
 
-				if (nAgentLineEndPos != std::string::npos)
+				if (agent_line_end_pos != std::string::npos)
 				{
-					nAgentLineStartPos += strlen("User-Agent: ");
+					agent_line_start_pos += strlen("User-Agent: ");
 
-					if (nAgentLineEndPos > nAgentLineStartPos)
+					if (agent_line_end_pos > agent_line_start_pos)
 					{
-						agent = strHeader.substr(nAgentLineStartPos, nAgentLineEndPos - nAgentLineStartPos);
+						agent = strHeader.substr(agent_line_start_pos, agent_line_end_pos - agent_line_start_pos);
 					}
 				}
 			}
@@ -178,32 +176,31 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		// CORS Origin 파싱
 		if (_cors_origin_list.empty() == false)
 		{
-			std::string::size_type nCorsOriginStartPos = strHeader.find("Origin:");
+			std::string::size_type origin_start_pos = strHeader.find("Origin:");
 
-			if (nCorsOriginStartPos != std::string::npos)
+			if (origin_start_pos != std::string::npos)
 			{
-				std::size_t nCorsOriginEndPos = strHeader.find("\r\n", nCorsOriginStartPos);
+				std::size_t origin_end_pos = strHeader.find("\r\n", origin_start_pos);
 
-				if (nCorsOriginEndPos != std::string::npos)
+				if (origin_end_pos != std::string::npos)
 				{
-					nCorsOriginStartPos += strlen("Origin:");
+					origin_start_pos += strlen("Origin:");
 
-					if (nCorsOriginEndPos > nCorsOriginStartPos)
+					if (origin_end_pos > origin_start_pos)
 					{
-						std::string strOriginURL = strHeader.substr(nCorsOriginStartPos, nCorsOriginEndPos - nCorsOriginStartPos);
+						std::string origin_url = strHeader.substr(origin_start_pos, origin_end_pos - origin_start_pos);
 
-						ReplaceString(strOriginURL, " ", "");			// 공백 제거
-						_cors_origin_full_url = strOriginURL;
+						ReplaceString(origin_url, " ", ""); // 공백 제거
+						_cors_origin_full_url = origin_url;
 
-						ReplaceString(strOriginURL, "http://", "");		// http:// 제거 
-						ReplaceString(strOriginURL, "https://", "");	// https:// 제거 
+						ReplaceString(origin_url, "http://", ""); // http:// 제거 
+						ReplaceString(origin_url, "https://", ""); // https:// 제거 
+						
+						std::string find_text = "|" + origin_url + "|";
 
-
-						std::string strFindText = "|" + strOriginURL + "|";
-
-						if (_cors_origin_list.find(strFindText.c_str()) != std::string::npos)
+						if (_cors_origin_list.find(find_text.c_str()) != std::string::npos)
 						{
-							EnableCors(strOriginURL.c_str()); // CORS 활성화
+							EnableCors(origin_url); // CORS 활성화
 						}
 					}
 				}
@@ -235,298 +232,99 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 //====================================================================================================
 // Error 응답 
 //====================================================================================================
-bool HttpResponseObject::SendErrorResponse(const char* error_string, int max_age)
+bool HttpResponseObject::SendErrorResponse(std::string error)
 {
-	char 		szData[4096] = { 0, };
-	char 		szBody[4096] = { 0, };
+ 	std::ostringstream http_body;
+	std::ostringstream http_data;
+ 
 	std::string date_time = GetHttpHeaderDateTime().c_str();
+ 
+	http_body << "<html>\n"
+		<< "<head>\n"
+		<< "<title>error</title>\n"
+		<< "</head>\n"
+		<< "<body>\n"
+		<< "<br>" << error << "\n"
+		<< "</body>\n"
+		<< "</html>";
 
-	// HTTP 데이터 설정 
-	snprintf(szBody, sizeof(szBody),
-		"<html>\n"\
-		"<head>\n"\
-		"<title>error</title>\n"\
-		"</head>\n"\
-		"<body>\n"\
-		"<br>%s\n"\
-		"</body>\n"\
-		"</html>", error_string);
+	http_data << _http_version << " 400 Bad Request\r\n"
+		<< "Server: http server\r\n"
+		<< "Content-Type: text/html\r\n"
+		<< "Content-Length: " << http_body.str().size() << "\r\n\r\n"
+		<< http_body.str();
 
-	// HTTP 설정 
-	if (_is_cors_use == false)
-	{
-		snprintf(szData, sizeof(szData),
-			"%s 400 Bad Request\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: text/html\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Cache-Control: max-age=%d\r\n"\
-			"Content-Length: %d\r\n\r\n%s"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, max_age
-			, (int)strlen(szBody)
-			, szBody);
-	}
-	else
-	{
-		snprintf(szData, sizeof(szData),
-			"%s 400 Bad Request\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: text/html\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Cache-Control: max-age=%d\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: %s://%s\r\n"\
-			"Content-Length: %d\r\n\r\n%s"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, max_age
-			, (_is_support_ssl == true) ? "https" : "http"
-			, _cors_origin_url.c_str()
-			, (int)strlen(szBody)
-			, szBody);
-	}
-	
-	auto send_data = std::make_shared<std::vector<uint8_t>>(szData, szData + strlen(szData));
+	auto send_data = std::make_shared<std::vector<uint8_t>>(http_data.str().begin(), http_data.str().end());
 
 	return PostSend(send_data);
 }
 
 //====================================================================================================
-// Error 응답 
+// Http Content Respons
 //====================================================================================================
-bool HttpResponseObject::SendErrorResponse(const char* error_string)
+bool HttpResponseObject::SendContentResponse(const std::string& content_type, const std::string& body, int max_age)
 {
-	char 		szData[4096] = { 0, };
-	char 		szBody[4096] = { 0, };
-	std::string date_time = GetHttpHeaderDateTime().c_str();
+	auto data = std::make_shared<std::vector<uint8_t>>(body.begin(), body.end());
 
-	// HTTP 데이터 설정 
-	snprintf(szBody, sizeof(szBody),
-		"<html>\n"\
-		"<head>\n"\
-		"<title>error</title>\n"\
-		"</head>\n"\
-		"<body>\n"\
-		"<br>%s\n"\
-		"</body>\n"\
-		"</html>", error_string);
-
-	// HTTP 설정 
-	if (_is_cors_use == false)
-	{
-		snprintf(szData, sizeof(szData),
-			"%s 400 Bad Request\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: text/html\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Content-Length: %d\r\n\r\n%s"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, (int)strlen(szBody)
-			, szBody);
-	}
-	else
-	{
-		snprintf(szData, sizeof(szData),
-			"%s 400 Bad Request\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: text/html\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: %s://%s\r\n"\
-			"Content-Length: %d\r\n\r\n%s"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, (_is_support_ssl == true) ? "https" : "http"
-			, _cors_origin_url.c_str()
-			, (int)strlen(szBody)
-			, szBody);
-	}
-
-	auto send_data = std::make_shared<std::vector<uint8_t>>(szData, szData + strlen(szData));
-
-	return PostSend(send_data);
-}
-
-
-
-//====================================================================================================
-// Http응답 
-//====================================================================================================
-bool HttpResponseObject::SendResponse(int header_size, char* header, int data_size, char* data)
-{
-	bool	result = false;
-	char* pBuffer = nullptr;
-	int		nBufferSize = 0;
-
-	nBufferSize = header_size + data_size;
-	pBuffer = new char[nBufferSize];
-
-	// 헤더 복사 
-	memcpy(pBuffer, header, header_size);
-
-	// 데이터 복사 
-	if (data_size != 0 && data != nullptr)
-	{
-		memcpy(pBuffer + header_size, data, data_size);
-	}
-
-	auto send_data = std::make_shared<std::vector<uint8_t>>(pBuffer, pBuffer + nBufferSize);
-  
-	return PostSend(send_data);
+	return SendContentResponse(content_type, data, max_age);
 }
 
 //====================================================================================================
-// Http응답 
+// Http Content Respons
 //====================================================================================================
-bool HttpResponseObject::SendResponse(std::string content_type, int data_size, char* data)
+bool HttpResponseObject::SendContentResponse(const std::string& content_type, const std::shared_ptr<std::vector<uint8_t>>& body, int max_age)
 {
-	if (data == nullptr)
+	if (body == nullptr)
 	{
 		return false;
 	}
 
-	char 		header[4096] = { 0, };
+	std::ostringstream http_header;
 	std::string date_time = GetHttpHeaderDateTime().c_str();
 
 	// HTTP 헤더 설정 
-	if (_is_cors_use == false)
+	 
+	http_header << _http_version << " 200 OK\r\n"
+		<< "Server: http server\r\n"
+		<< "Content-Type: " << content_type << "\r\n"
+		<< "Date: " << date_time << "\r\n"
+		<< "Cache-Control: max-age=" << max_age << "\r\n";
+
+	if (_is_cors_use == true)
 	{
-		snprintf(header, sizeof(header),
-			"%s 200 OK\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, data_size);
-	}
-	else
-	{
-		snprintf(header, sizeof(header),
-			"%s 200 OK\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: %s://%s\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, (_is_support_ssl == true) ? "https" : "http"
-			, _cors_origin_url.c_str()
-			, data_size);
+		http_header << "Access-Control-Allow-Credentials: true\r\n"
+			"Access-Control-Allow-Headers: Content-Type, *\r\n";
+		
+		if(_is_support_ssl)
+			http_header << "Access-Control-Allow-Origin: https://" << _cors_origin_url << "\r\n";
+		else
+			http_header << "Access-Control-Allow-Origin: http://" << _cors_origin_url << "\r\n";
 	}
 
-	return SendResponse((int)strlen(header), header, data_size, data);
+	http_header  << "Content-Length: " << body->size() << "\r\n\r\n";
 
+	return HttpResponseObject::SendResponse(http_header.str(), body);
 }
 
 //====================================================================================================
-// Redirect Http응답
+// Http Response 
 //====================================================================================================
-bool HttpResponseObject::SendRedirectResponse(std::string content_type, std::string redirect_url, int data_size, char* data)
+bool HttpResponseObject::SendResponse(const std::string& header, const std::shared_ptr<std::vector<uint8_t>>& body)
 {
-	char 		header[4096] = { 0, };
-	std::string date_time = GetHttpHeaderDateTime().c_str();
+	bool result = false;
 
-	// HTTP 헤더 설정 
-	if (_is_cors_use == false)
-	{
-		snprintf(header, sizeof(header),
-			"%s 302 Found\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Location: %s\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, redirect_url.c_str()
-			, data_size);
-	}
-	else
-	{
-		snprintf(header, sizeof(header),
-			"%s 302 Found\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Location: %s\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: %s://%s\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, redirect_url.c_str()
-			, (_is_support_ssl == true) ? "https" : "http"
-			, _cors_origin_url.c_str()
-			, data_size);
+	auto data = std::make_shared<std::vector<uint8_t>>(header.begin(), header.end());
 
+	if (body != nullptr)
+	{
+		data->insert(data->end(), body->begin(), body->end());
 	}
 
-	return SendResponse((int)strlen(header), header, data_size, data);
+	return PostSend(data);
 }
 
-
 //====================================================================================================
-// Redirect Http응답
-//====================================================================================================
-bool HttpResponseObject::SendRedirectResponse(std::string redirect_url)
-{
-	char header[4096] = { 0, };
-
-	// HTTP 헤더 설정 
-	if (_is_cors_use == false)
-	{
-		snprintf(header, sizeof(header),
-			"%s 302 Found\r\n"\
-			"Location: %s\r\n"\
-			"Content-Length: 0\r\n\r\n"
-			, _http_version.c_str()
-			, redirect_url.c_str());
-	}
-	else
-	{
-		snprintf(header, sizeof(header),
-			"%s 302 Found\r\n"\
-			"Location: %s\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: %s://%s\r\n"\
-			"Content-Length: 0\r\n\r\n"
-			, _http_version.c_str()
-			, redirect_url.c_str()
-			, (_is_support_ssl == true) ? "https" : "http"
-			, _cors_origin_url.c_str());
-
-	}
-
-	return SendResponse((int)strlen(header), header, 0, nullptr);
-}
-
-
-//====================================================================================================
-// Cookie 설정
+// Cookie Setting
 //====================================================================================================
 void HttpResponseObject::SetCookie(std::string name, std::string value, std::string domain, std::string path)
 {

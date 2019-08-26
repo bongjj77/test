@@ -114,7 +114,7 @@ bool Packetyzer::GetPlayList(std::string& playlist)
 // Last (segment count) Video(or Video+Audio) Segments
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_datas)
+bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
 {
 
 	uint32_t begin_index = (_current_video_index >= _segment_count) ?
@@ -136,7 +136,7 @@ bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 	}
 	else
@@ -146,7 +146,7 @@ bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 
 		for (auto item = _video_segment_datas.begin(); item <= _video_segment_datas.begin() + end_index; item++)
@@ -154,7 +154,7 @@ bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 	}
 
@@ -165,7 +165,7 @@ bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 // Last (segment count) Audio Segments
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_datas)
+bool Packetyzer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
 {
 	uint32_t begin_index = (_current_audio_index >= _segment_count) ?
 		(_current_audio_index - _segment_count) :
@@ -186,7 +186,7 @@ bool Packetyzer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 	}
 	else
@@ -196,14 +196,14 @@ bool Packetyzer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 		for (auto item = _audio_segment_datas.begin(); item <= _audio_segment_datas.begin() + end_index; item++)
 		{
 			if (*item == nullptr)
 				return true;
 
-			segment_datas.push_back(*item);
+			segment_list.push_back(*item);
 		}
 	}
 

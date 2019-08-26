@@ -198,7 +198,7 @@ bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 					_media_info.audio_timescale));
 			}
 
-			UpdatePlayList();
+			UpdatePlaylist();
 		}
 	}
 
@@ -244,7 +244,7 @@ bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 		{
 			AudioSegmentWrite(frame->timestamp);
 
-			UpdatePlayList();
+			UpdatePlaylist();
 		}
 	}
 
@@ -258,7 +258,7 @@ bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
 {
 	uint64_t start_timestamp = 0;
-	std::vector<std::shared_ptr<SampleData>> sample_datas;
+	std::vector<std::shared_ptr<SampleData>> sample_data_list;
 
 	while (!_video_frame_list.empty())
 	{
@@ -282,7 +282,7 @@ bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
 			frame->cts,
 			frame->data);
 
-		sample_datas.push_back(sample_data);
+		sample_data_list.push_back(sample_data);
 	}
 	_video_frame_list.clear();
 
@@ -292,7 +292,7 @@ bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
 															VIDEO_TRACK_ID,
 															start_timestamp);
 
-	auto segment_data = fragment_writer->AppendSamples(sample_datas);
+	auto segment_data = fragment_writer->AppendSamples(sample_data_list);
 
 	if (segment_data == nullptr)
 	{
@@ -318,7 +318,7 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 {
 	uint64_t start_timestamp = 0;
 	uint64_t end_timestamp = 0;
-	std::vector<std::shared_ptr<SampleData>> sample_datas;
+	std::vector<std::shared_ptr<SampleData>> sample_data_list;
 
 	//  size > 1  for duration calculation
 	while (_audio_frame_list.size() > 1)
@@ -339,16 +339,16 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 
 		end_timestamp = _audio_frame_list.front()->timestamp;
 
-		sample_datas.push_back(sample_data);
+		sample_data_list.push_back(sample_data);
 	}
 
 	// Fragment write
 	auto fragment_writer = std::make_unique<M4sSegmentWriter>(M4sMediaType::Audio,
-		_audio_sequence_number,
-		AUDIO_TRACK_ID,
-		start_timestamp);
+															_audio_sequence_number,
+															AUDIO_TRACK_ID,
+															start_timestamp);
 
-	auto segment_data = fragment_writer->AppendSamples(sample_datas);
+	auto segment_data = fragment_writer->AppendSamples(sample_data_list);
 
 	if (segment_data == nullptr)
 	{
@@ -358,9 +358,9 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 
 	// m4s save
 	SetSegmentData(string_format("%s_%lld%s", _segment_prefix.c_str(), start_timestamp, DASH_MPD_AUDIO_SUFFIX),
-		end_timestamp - start_timestamp,
-		start_timestamp,
-		segment_data);
+					end_timestamp - start_timestamp,
+					start_timestamp,
+					segment_data);
 
 	return true;
 }
@@ -370,9 +370,9 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 // - video/audio mpd timeline
 //====================================================================================================
 bool DashPacketyzer::GetSegmentPlayInfos(std::string& video_urls,
-	std::string& audio_urls,
-	double& time_shift_buffer_depth,
-	double& minimumUpdatePeriod)
+										std::string& audio_urls,
+										double& time_shift_buffer_depth,
+										double& minimumUpdatePeriod)
 {
 	std::ostringstream video_urls_stream;
 	std::ostringstream audio_urls_stream;
@@ -440,7 +440,7 @@ bool DashPacketyzer::GetSegmentPlayInfos(std::string& video_urls,
 // PlayList(mpd) Update
 // - 차후 자동 인덱싱 사용시 참고 : LSN = floor(now - (availabilityStartTime + PST) / segmentDuration + startNumber - 1)
 //====================================================================================================
-bool DashPacketyzer::UpdatePlayList()
+bool DashPacketyzer::UpdatePlaylist()
 {
 	std::ostringstream play_list_stream;
 	std::string video_urls;
@@ -583,10 +583,10 @@ bool DashPacketyzer::SetSegmentData(std::string file_name,
 		std::unique_lock<std::mutex> lock(_video_segment_guard);
 
 		_video_segment_datas[_current_video_index++] = std::make_shared<SegmentInfo>(_sequence_number++,
-			file_name,
-			duration,
-			timestamp,
-			data);
+																					file_name,
+																					duration,
+																					timestamp,
+																					data);
 
 		if (_segment_save_count <= _current_video_index)
 			_current_video_index = 0;
@@ -603,10 +603,10 @@ bool DashPacketyzer::SetSegmentData(std::string file_name,
 		std::unique_lock<std::mutex> lock(_audio_segment_guard);
 
 		_audio_segment_datas[_current_audio_index++] = std::make_shared<SegmentInfo>(_sequence_number++,
-			file_name,
-			duration,
-			timestamp,
-			data);
+																					file_name,
+																					duration,
+																					timestamp,
+																					data);
 
 		if (_segment_save_count <= _current_audio_index)
 			_current_audio_index = 0;

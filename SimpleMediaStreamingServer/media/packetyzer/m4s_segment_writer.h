@@ -17,24 +17,24 @@ public:
 	~M4sSegmentWriter() final;
 
 public :
-	const std::shared_ptr<std::vector<uint8_t>> AppendSamples(const std::vector<std::shared_ptr<SampleData>> &sample_datas);
+	const std::shared_ptr<std::vector<uint8_t>> AppendSamples(const std::vector<std::shared_ptr<SampleData>> &sample_data_list);
 
 protected :
 
-	int MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_datas);
+	int MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_data_list);
 
 	int MfhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 
-	int TrafBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_datas);
+	int TrafBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_data_list);
 
 	int TfhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 
 	int TfdtBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream);
 
-	int TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_datas);
+	int TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream, const std::vector<std::shared_ptr<SampleData>> &sample_data_list);
 		
 	int MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream,
-					 const std::vector<std::shared_ptr<SampleData>> &sample_datas,
+					 const std::vector<std::shared_ptr<SampleData>> &sample_data_list,
 					 uint32_t total_sample_size);
    
 private :

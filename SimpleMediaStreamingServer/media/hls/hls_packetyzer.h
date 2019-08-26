@@ -37,7 +37,7 @@ public:
 	bool SegmentWrite(uint64_t start_timestamp, uint64_t duration);
 
 protected:
-	bool UpdatePlayList();
+	bool UpdatePlaylist();
 
 protected:
 	std::vector<std::shared_ptr<FrameInfo>> _frame_list;

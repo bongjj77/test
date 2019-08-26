@@ -201,19 +201,19 @@ void Tokenize(const std::string& str, std::vector<std::string>& tokens, const st
 //====================================================================================================
 // string 파싱(빈문자열 추출 가능)  
 //====================================================================================================
-void Tokenize2(const char * pText, std::vector<std::string>& tokens, char delimiter)
+void Tokenize2(const char * text, std::vector<std::string>& tokens, char delimiter)
 {
     do
     {
-        const char * pBegin = pText;
+        const char * begin = text;
 
-        while(*pText != delimiter && *pText)
+        while(*text != delimiter && *text)
         {
-            pText++;
+			text++;
         }	
 
-        tokens.push_back(std::string(pBegin, pText));
-    }while (0 != *pText++);
+        tokens.push_back(std::string(begin, text));
+    }while (0 != *text++);
 }
 
 
