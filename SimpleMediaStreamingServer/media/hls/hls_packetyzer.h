@@ -40,7 +40,7 @@ protected:
 	bool UpdatePlayList();
 
 protected:
-	std::vector<std::shared_ptr<FrameInfo>> _frame_datas;
+	std::vector<std::shared_ptr<FrameInfo>> _frame_list;
 	double _duration_margen;
 
 	time_t _last_video_append_time;

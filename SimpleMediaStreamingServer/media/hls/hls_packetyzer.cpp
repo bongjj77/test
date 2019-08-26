@@ -58,17 +58,17 @@ bool HlsPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 		frame->timescale = _media_info.video_timescale;
 	}
 
-	if (frame->type == FrameType::VideoKeyFrame && !_frame_datas.empty())
+	if (frame->type == FrameType::VideoKeyFrame && !_frame_list.empty())
 	{
-		if ((frame->timestamp - _frame_datas[0]->timestamp) >=
+		if ((frame->timestamp - _frame_list[0]->timestamp) >=
 			((_segment_duration - _duration_margen) * _media_info.video_timescale))
 		{
 			// Segment Write
-			SegmentWrite(_frame_datas[0]->timestamp, frame->timestamp - _frame_datas[0]->timestamp);
+			SegmentWrite(_frame_list[0]->timestamp, frame->timestamp - _frame_list[0]->timestamp);
 		}
 	}
 
-	_frame_datas.push_back(frame);
+	_frame_list.push_back(frame);
 
 	_last_video_append_time = time(nullptr);
 	_video_enable = true;
@@ -90,16 +90,16 @@ bool HlsPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 		frame->timescale = _media_info.audio_timescale;
 	}
 
-	if ((time(nullptr) - _last_video_append_time >= static_cast<uint32_t>(_segment_duration)) && !_frame_datas.empty())
+	if ((time(nullptr) - _last_video_append_time >= static_cast<uint32_t>(_segment_duration)) && !_frame_list.empty())
 	{
-		if ((frame->timestamp - _frame_datas[0]->timestamp) >=
+		if ((frame->timestamp - _frame_list[0]->timestamp) >=
 			((_segment_duration - _duration_margen) * _media_info.audio_timescale))
 		{
-			SegmentWrite(_frame_datas[0]->timestamp, frame->timestamp - _frame_datas[0]->timestamp);
+			SegmentWrite(_frame_list[0]->timestamp, frame->timestamp - _frame_list[0]->timestamp);
 		}
 	}
 
-	_frame_datas.push_back(frame);
+	_frame_list.push_back(frame);
 
 	_last_audio_append_time = time(nullptr);
 	_audio_enable = true;
@@ -117,7 +117,7 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 
 	auto ts_writer = std::make_unique<TsWriter>(_video_enable, _audio_enable);
 
-	for (auto& frame : _frame_datas)
+	for (auto& frame : _frame_list)
 	{
 		// TS(PES) Write
 		ts_writer->WriteSample(frame->type != FrameType::AudioFrame,
@@ -136,7 +136,7 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 		}
 	}
 
-	_frame_datas.clear();
+	_frame_list.clear();
 
 	if (_first_audio_time_stamp != 0 && _first_video_time_stamp != 0)
 		LOG_DEBUG_WRITE(("hls segment video/audio timestamp gap(%lldms)", (_first_video_time_stamp - _first_audio_time_stamp) / 90));
@@ -161,7 +161,7 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 //====================================================================================================
 bool HlsPacketyzer::UpdatePlayList()
 {
-	std::ostringstream play_lis_stream;
+	std::ostringstream play_list_stream;
 	std::ostringstream m3u8_play_list;
 	double max_duration = 0;
 
@@ -180,7 +180,7 @@ bool HlsPacketyzer::UpdatePlayList()
 		}
 	}
 
-	play_lis_stream << "#EXTM3U" << "\r\n"
+	play_list_stream << "#EXTM3U" << "\r\n"
 		<< "#EXT-X-MEDIA-SEQUENCE:" << (_sequence_number - 1) << "\r\n"
 		<< "#EXT-X-VERSION:3" << "\r\n"
 		<< "#EXT-X-ALLOW-CACHE:NO" << "\r\n"
@@ -188,7 +188,7 @@ bool HlsPacketyzer::UpdatePlayList()
 		<< m3u8_play_list.str();
 
 	// Playlist 설정
-	std::string playlist = play_lis_stream.str().c_str();
+	std::string playlist = play_list_stream.str().c_str();
 	SetPlayList(playlist);
 
 	if (_streaming_type == PacketyzerStreamingType::Both && _streaming_start)

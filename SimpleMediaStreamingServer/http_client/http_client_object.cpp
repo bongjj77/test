@@ -86,129 +86,123 @@ bool HttpClientObject::KeepAliveCheck()
 	return true;
 }
 
+//====================================================================================================
+// Agent check
+// - empty : all allow
+//====================================================================================================
+bool HttpClientObject::AgentCheck(const std::string& agent)
+{
+	// Agent Check
+	if (_http_allow_agent.empty() == false && _http_allow_agent.find(agent) == std::string::npos)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+//====================================================================================================
+// RequestUrlParsing
+// - URL 분리
+//  ex) ..../app_name/stream_name/file_name.file_ext?param=param_value
+//====================================================================================================
+std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
+{
+	std::string path;
+	std::string param;
+	std::vector<std::string> tokens;
+	auto pars_info = std::make_shared<UrlParsInfo>(); 
+
+	// path?param
+	tokens.clear();
+	Tokenize(url, tokens, ("?"));
+	if (tokens.size() == 0)
+		return nullptr;
+
+	path = tokens[0];
+	param = tokens.size() == 2 ? tokens[1] : "";
+
+	// ...../app/stream/file.ext 
+	tokens.clear();
+	Tokenize(path, tokens, ("/"));
+	
+	if (tokens.size() < 3)
+		return nullptr;
+
+	pars_info->stream_key.first = tokens[tokens.size() - 3]; // app
+	pars_info->stream_key.second = tokens[tokens.size() - 2]; // stream
+	pars_info->file = tokens[tokens.size() - 1];
+ 
+	// ext
+	tokens.clear();
+	Tokenize(path, tokens, ("."));
+	
+	if (tokens.size() != 2)
+		return nullptr;
+
+	pars_info->ext = tokens[1];
+ 
+	if (pars_info->ext.compare("m3u8") == 0) pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
+	else if (pars_info->ext.compare("mpd") == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else if (pars_info->ext.compare("ts") == 0) pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
+	else if (pars_info->ext.compare("m4s") == 0)
+	{
+		if (pars_info->file.find("audio") >= 0) pars_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
+		else pars_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
+	}
+	else if (pars_info->ext.compare("xml") == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else pars_info->content_type = HTTP_TEXT_HTML_CONTENT_TYPE;
+
+	return pars_info;
+}
+
 
 //====================================================================================================
 // RecvRequest
 //====================================================================================================
-bool HttpClientObject::RecvRequest(std::string& request_page, std::string& agent)
+bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 {
-	bool 						result = false;
-	std::vector<std::string> 	tokens;
-	std::string					pram;
-	std::string					path;
-	std::string					file_name;
-	std::string					folder;
-	std::string					extension;
-	std::string::size_type		file_name_pos = 0;
-	std::string::size_type		extension_pos = 0;
-
-	// Agent Check
-	if (_http_allow_agent.empty() == false)
-	{
-		if (_http_allow_agent.find(agent) == std::string::npos)
-		{
-
-			LOG_ERROR_WRITE(("[%s] RecvRequest - Agent Fail - key(%d) ip(%s) agent(%s)", 
-							_object_name, _index_key, _remote_ip_string, agent.c_str()));
-
-			SendErrorResponse("Bad Request");
-
-			return false;
-		}
-	}
- 
+	bool result = false;
+	
 	_last_packet_time = time(nullptr);
 
-	if (request_page.empty() == true)
+	// Agent Check
+	if (AgentCheck(agent) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - RequestPage Empty - key(%d) ip(%s)",
-			_object_name, _index_key, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] AgentCheck fail - key(%d) ip(%s) agent(%s)",
+						_object_name, _index_key, _remote_ip_string, agent.c_str()));
 
 		SendErrorResponse("Bad Request");
 
 		return false;
 	}
 
-	if (request_page.size() > 4000 || request_page.size() < 3)
-	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - RequestPage Size Error - key(%d) ip(%s) size(%d)",
-			_object_name, _index_key, _remote_ip_string, request_page.size()));
-
-		SendErrorResponse("Bad Request");
-
-		return false;
-	}
+	auto pars_info = UrlPars(request_url);
  
-	tokens.clear();
-	Tokenize2(request_page.c_str(), tokens, '?');
-
-	if (tokens.size() <= 0)
+	if (pars_info == nullptr)
 	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - RequestPage Tokenize Size Error - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] RecvRequest - UrlPars fail - key(%d) ip(%s) url(%s)",
+						_object_name, _index_key, _remote_ip_string));
 
 		SendErrorResponse("Bad Request");
 
 		return false;
 	}
- 
-	path = tokens[0];
- 
-	if (tokens.size() >= 2)
-	{
-		pram = tokens[1];
-	}
+	 
+	if (stricmp(pars_info->file.c_str(), "playlist.m3u8") == 0)
+		result = PlaylistRequest(pars_info, PlaylistType::M3u8);
 
-	// file name
-	file_name_pos = path.rfind('/');
-	if ((file_name_pos == std::string::npos) || (file_name_pos >= (path.size() - 1)))
-	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - FileName Parsing Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
-		SendErrorResponse("Bad Request");
-		return false;
-	}
-	file_name = path.substr(file_name_pos + 1);
-	folder = path.substr(0, file_name_pos);
+	else if (stricmp(pars_info->file.c_str(), "manifest.mpd") == 0)
+		result = PlaylistRequest(pars_info, PlaylistType::Mpd);
 
-	if (file_name.empty() == true)
-	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - FileName Empty Error - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
-		SendErrorResponse("Bad Request");
-		return false;
-	}
+	else if (stricmp(pars_info->ext.c_str(), "ts") == 0)
+		result = SegmentRequest(pars_info, SegmentType::Ts);
 
-	// externsion
-	extension_pos = file_name.rfind('.');
-	if ((extension_pos == std::string::npos) || (extension_pos >= (file_name.size() - 1)))
-	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - FileExtension Parsing Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
-		SendErrorResponse("Bad Request");
-		return false;
-	}
-	extension = file_name.substr(extension_pos + 1);
+	else if (stricmp(pars_info->ext.c_str(), "m4s") == 0)
+		result = SegmentRequest(pars_info, SegmentType::M4s);
 
-	if (extension.empty() == true)
-	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - FileExtension Empty() - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
-		SendErrorResponse("Bad Request");
-		return false;
-	}
-
-	if (stricmp(file_name.c_str(), "playlist.m3u8") == 0)  		
-		result = RecvPlaylistRequest(folder, PlaylistType::M3u8);
-
-	else if (stricmp(file_name.c_str(), "manifest.mpd") == 0)  	
-		result = RecvPlaylistRequest(folder, PlaylistType::Mpd);
-
-	else if (stricmp(extension.c_str(), "ts") == 0) 			
-		result = RecvSegmentRequest(folder, file_name, SegmentType::Ts);
-
-	else if (stricmp(extension.c_str(), "m4s") == 0) 			
-		result = RecvSegmentRequest(folder, file_name, SegmentType::M4s);	
-
-	else if (stricmp(file_name.c_str(), "crossdomain.xml") == 0)
-		result = RecvCrossDomainRequest();
-
+	else if (stricmp(pars_info->file.c_str(), "crossdomain.xml") == 0)
+		result = CrossDomainRequest();
 	else
 	{
 		LOG_ERROR_WRITE(("[%s] RecvRequest - Page Tokenize Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
@@ -225,44 +219,26 @@ bool HttpClientObject::RecvRequest(std::string& request_page, std::string& agent
 }
 
 //====================================================================================================
-// RecvPlaylistRequest
+// PlaylistRequest
 //====================================================================================================
-bool HttpClientObject::RecvPlaylistRequest(std::string& folder, PlaylistType type)
+bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_info, PlaylistType type)
 {
-	StreamKey stream_key;
 	std::string playlist;
-	std::vector<std::string> tokens;
-	std::string app_name;
-	std::string stream_name;
- 
-	tokens.clear();
-	Tokenize2(folder.c_str(), tokens, '/');
-
-	if (tokens.size() < 2)
-	{
-		return false;
-	}
-
-	app_name = tokens[tokens.size() - 2];
-	stream_name = tokens[tokens.size() - 1];
-
-	stream_key.first = app_name;
-	stream_key.second = stream_name;
-	
+			
 	if (!std::static_pointer_cast<IHttpClient>
-		(_object_callback)->OnHttpClientPlaylistRequest(_index_key, _remote_ip, stream_key, type, playlist))
+		(_object_callback)->OnHttpClientPlaylistRequest(_index_key, _remote_ip, pars_info->stream_key, type, playlist))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - OnHttpClientPlaylistRequest Error - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+						_object_name, _index_key, _remote_ip_string));
 
 		SendErrorResponse("Not Found");
 		return false;
 	}
 
-	if (!SendPlaylist(stream_key, playlist))
+	if (!SendPlaylist(pars_info->stream_key, playlist, pars_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - SendPlaylist Fail - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+						_object_name, _index_key, _remote_ip_string));
 
 		return false;
 	}
@@ -271,58 +247,27 @@ bool HttpClientObject::RecvPlaylistRequest(std::string& folder, PlaylistType typ
 }
 
 //====================================================================================================
-// RecvSegmentRequest
+// SegmentRequest
 //====================================================================================================
-bool HttpClientObject::RecvSegmentRequest(std::string& folder, std::string& file_name, SegmentType type)
+bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_info, SegmentType type)
 {
-	StreamKey stream_key;
-	std::vector<std::string> tokens;
-	std::string app_name;
-	std::string stream_name;
- 
-	tokens.clear();
-	Tokenize2(folder.c_str(), tokens, '/');
-
-	if (tokens.size() < 2)
-	{
-		return false;
-	}
-
-	app_name = tokens[tokens.size() - 2];
-	stream_name = tokens[tokens.size() - 1];
-
-	stream_key.first = app_name;
-	stream_key.second = stream_name;
-	 
-	tokens.clear();
-	Tokenize2(folder.c_str(), tokens, '/');
-
-	if (tokens.size() < 2)
-	{
-		return false;
-	}
-
-	app_name = tokens[tokens.size() - 2];
-	stream_name = tokens[tokens.size() - 1];
-
-	stream_key.first = app_name;
-	stream_key.second = stream_name;
- 
 	std::shared_ptr<std::vector<uint8_t>> data = nullptr;
 
 	if (!std::static_pointer_cast<IHttpClient>
-		(_object_callback)->OnHttpClientSegmentRequest(_index_key, _remote_ip, file_name, stream_key, type, data))
+		(_object_callback)->OnHttpClientSegmentRequest(_index_key, _remote_ip, pars_info->file, pars_info->stream_key, type, data))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - OnHttpClientRequest Error - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+						_object_name, _index_key, _remote_ip_string));
+
 		SendErrorResponse("Not Found");
 		return false;
 	}
 	 
-	if (!SendSegmentData(stream_key, data))
+	if (!SendSegmentData(pars_info->stream_key, data, pars_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - SendSegmentData Fail - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+						_object_name, _index_key, _remote_ip_string));
+
 		return false;
 	}
 
@@ -330,9 +275,9 @@ bool HttpClientObject::RecvSegmentRequest(std::string& folder, std::string& file
 }
 
 //====================================================================================================
-// RecvCrossDomainRequest
+// CrossDomainRequest
 //====================================================================================================
-bool HttpClientObject::RecvCrossDomainRequest()
+bool HttpClientObject::CrossDomainRequest()
 {
 	std::string cross_domain_xml = "<?xml version=\"1.0\"?>\r\n"\
 		"<cross-domain-policy>\r\n"\
@@ -340,10 +285,10 @@ bool HttpClientObject::RecvCrossDomainRequest()
 		"	<site-control permitted-cross-domain-policies=\"all\"/>\r\n"\
 		"</cross-domain-policy>";
 
-	if (SendResponse(HTTP_TEXT_XML_CONTENT_TYPE, cross_domain_xml.size(), (char*)cross_domain_xml.c_str()) == false)
+	if (SendContentResponse(HTTP_TEXT_XML_CONTENT_TYPE, cross_domain_xml) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] RecvCrossDomainRequest - crossdomain.xml Data Send Fail - key(%d) ip(%s)",
-				_object_name, _index_key, _remote_ip_string));
+						_object_name, _index_key, _remote_ip_string));
 
 		return false;
 	}
@@ -354,11 +299,12 @@ bool HttpClientObject::RecvCrossDomainRequest()
 //====================================================================================================
 // SendPlaylist 
 //====================================================================================================
-bool HttpClientObject::SendPlaylist(StreamKey& streamkey, std::string& playlist)
+bool HttpClientObject::SendPlaylist(const StreamKey& streamkey, const std::string& playlist, const std::string& content_type)
 {
-	if (!SendContentResponse(HTTP_M3U8_CONTENT_TYPE, playlist.size(), (char*)playlist.c_str(), 1))
+	if (!SendContentResponse(content_type, playlist, 1))
 	{
-		LOG_ERROR_WRITE(("[%s] SendPlayListData - SendResponse Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] SendPlayListData - SendResponse Fail - key(%d) ip(%s)", 
+						_object_name, _index_key, _remote_ip_string));
 		return false;
 	}
 
@@ -368,66 +314,15 @@ bool HttpClientObject::SendPlaylist(StreamKey& streamkey, std::string& playlist)
 //====================================================================================================
 // SendSegmentData
 //====================================================================================================
-bool HttpClientObject::SendSegmentData(StreamKey& streamkey, std::shared_ptr<std::vector<uint8_t>>& data)
+bool HttpClientObject::SendSegmentData(const StreamKey& streamkey, const std::shared_ptr<std::vector<uint8_t>>& data, const std::string& content_type)
 {
-	if (!SendContentResponse(HTTP_VIDE_MPEG_TS_CONTENT_TYPE, data->size(), (char*)data->data(), 30))
+	if (!SendContentResponse(content_type, data, 30))
 	{
-		LOG_ERROR_WRITE(("[%s] SendSegmentData - SendContentResponse Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] SendSegmentData - SendContentResponse Fail - key(%d) ip(%s)", 
+						_object_name, _index_key, _remote_ip_string));
 		return false;
 	}
 
 	return true;
 }
-
-//====================================================================================================
-// SendContentResponse
-//====================================================================================================
-bool HttpClientObject::SendContentResponse(std::string content_type, int data_size, char* data, int max_age)
-{
-	if (data == nullptr)
-	{
-		return false;
-	}
-
-	char header[4096] = { 0, };
-	std::string date_time = GetHttpHeaderDateTime().c_str();
- 
-	if (_is_cors_use == false)
-	{
-		sprintf(header, "%s 200 OK\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Cache-Control: max-age=%d\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, max_age
-			, data_size);
-	}
-	else
-	{
-		sprintf(header, "%s 200 OK\r\n"\
-			"Date: %s\r\n"\
-			"Server: http server\r\n"\
-			"Content-Type: %s\r\n"\
-			"Accept-Ranges: bytes\r\n"\
-			"Cache-Control: max-age=%d\r\n"\
-			"Access-Control-Allow-Credentials: true\r\n"\
-			"Access-Control-Allow-Headers: Content-Type, *\r\n"\
-			"Access-Control-Allow-Origin: http://%s\r\n"\
-			"Content-Length: %d\r\n\r\n"
-			, _http_version.c_str()
-			, date_time.c_str()
-			, content_type.c_str()
-			, max_age
-			, _cors_origin_url.c_str()
-			, data_size);
-	}
-
-	return HttpResponseObject::SendResponse(strlen(header), header, data_size, data);
-}
-
  

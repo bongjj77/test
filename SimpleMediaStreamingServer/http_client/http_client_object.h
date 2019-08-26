@@ -7,6 +7,17 @@
 #include "common/network/protocol_object/HttpResponseObject.h"
 #include "media/media_define.h"
 
+struct UrlParsInfo
+{
+	StreamKey stream_key;
+	std::string file;
+	std::string ext;
+
+	std::string content_type;
+
+};
+
+
 //====================================================================================================
 // Interface
 //====================================================================================================
@@ -40,19 +51,24 @@ public:
 	bool Create(TcpNetworkObjectParam* param);
 	virtual void Destroy();
 
-	bool SendPlaylist(StreamKey& streamkey, std::string& playlist);
-	bool SendSegmentData(StreamKey& streamkey, std::shared_ptr<std::vector<uint8_t>>& data);
+	bool SendPlaylist(const StreamKey& streamkey, const std::string& playlist, const std::string& content_type);
+
+	bool SendSegmentData(const StreamKey& streamkey, 
+						const std::shared_ptr<std::vector<uint8_t>>& data, 
+						const std::string& content_type);
 
 protected:
 	virtual bool StartKeepAliveCheck(uint32_t keepalive_check_time);
 	bool KeepAliveCheck();
 
-	virtual bool RecvRequest(std::string& request_page, std::string& agent);
-	bool RecvPlaylistRequest(std::string& folder, PlaylistType type);
-	bool RecvSegmentRequest(std::string& folder, std::string& file_name, SegmentType type);
-	bool RecvCrossDomainRequest();
+	bool AgentCheck(const std::string & agent); 
 
-	bool SendContentResponse(std::string content_type, int data_size, char* data, int max_age);
+	std::shared_ptr<UrlParsInfo> UrlPars(const std::string& url);
+	
+	virtual bool RecvRequest(std::string& request_url, std::string& agent);
+	bool PlaylistRequest(const std::shared_ptr<UrlParsInfo> & pars_info, PlaylistType type);
+	bool SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_info, SegmentType type);
+	bool CrossDomainRequest();
 
 private:
 
