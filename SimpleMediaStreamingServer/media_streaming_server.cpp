@@ -78,10 +78,10 @@ void SettingPrint( )
 //====================================================================================================
 // 설정 파일 로드 
 //====================================================================================================
-bool LoadConfigFile(char * szProgramPath)
+bool LoadConfigFile(char * program_path)
 {
 	// Confit 파일 경로 설정 
-	char config_file_path[300] = {0, };
+	char config_file_path[MAX_PATH] = {0, };
 		
 #ifndef _WIN32
 	char delimiter = '/';
@@ -89,18 +89,18 @@ bool LoadConfigFile(char * szProgramPath)
 	char delimiter = '\\';
 #endif
 
-	const char* pszAppName = strrchr(szProgramPath, delimiter);
+	const char* application_name = strrchr(program_path, delimiter);
 
-	if (nullptr != pszAppName)
+	if (nullptr != application_name)
 	{
-		int folderlenth = strlen(szProgramPath) - strlen(pszAppName) + 1;
-		strncpy(config_file_path, szProgramPath, folderlenth);
+		int folderlenth = strlen(program_path) - strlen(application_name) + 1;
+		strncpy(config_file_path, program_path, folderlenth);
 	}
-	strcat(config_file_path, DEFAULT_CONFIG_FILE);
-	
 
+	strncat(config_file_path, DEFAULT_CONFIG_FILE, MAX_PATH);
+	
 	// Config 파일 로드 
-	if (CONFIG_PARSER.LoadFile(config_file_path) == false) 
+	if (ConfigParser::GetInstance().LoadFile(config_file_path) == false)
 	{
 		return false;
 	}
@@ -113,7 +113,7 @@ bool LoadConfigFile(char * szProgramPath)
 //====================================================================================================
 int main(int argc, char* argv[])
 {	
-	// 설정 파일 로드 
+	// config file load
 	if (LoadConfigFile(argv[0]) == false) 
 	{
 		fprintf(stderr, "Config file not found \r\n");
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 #endif
  
 	// Log file init
-	if(LOG_INIT(GET_CONFIG_VALUE(CONFIG_LOG_FILE_PATH), atoi(GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR))) == false)
+	if(LogInit(GET_CONFIG_VALUE(CONFIG_LOG_FILE_PATH), atoi(GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR))) == false)
 	{	
 		fprintf(stderr,"%s Log System Error \n", _PROGREAM_NAME_ );  
 		return -1; 
@@ -142,7 +142,8 @@ int main(int argc, char* argv[])
 
 	// setting crate param
 	auto create_param = std::make_unique<CreateParam>();
-	 
+	std::string host_name = GetLocalHostName();
+
 	create_param->version			= GET_CONFIG_VALUE(CONFIG_VERSION);
 	create_param->thread_pool_count	= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
 	create_param->debug_mode		= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
@@ -151,29 +152,21 @@ int main(int argc, char* argv[])
 	create_param->local_ip			= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
 	create_param->rtmp_listen_port	= atoi(GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT));
 	create_param->http_listen_port	= atoi(GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT));
-
-	create_param->start_time = time(nullptr);
-
-	// Real Host Setting 
-	std::string host_name;
-	if (GetLocalHostName(host_name) == true)	create_param->real_host_name = host_name;
-	else										create_param->real_host_name = create_param->host_name;
+	create_param->start_time		= time(nullptr);
+	create_param->real_host_name	= host_name.empty() == false ? host_name : create_param->host_name;
 
 	LOG_INFO_WRITE(("Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
-	auto main_object = std::make_shared<MainObject>();
+	auto main_object = std::make_unique<MainObject>();
 
    	if(main_object->Create(std::move(create_param)) == false)
 	{
 		LOG_WRITE(("[ %s ] MainObject Create Error", _PROGREAM_NAME_));
 		return -1;
 	}
- 
-	std::string time_string; 
-
-	GetStringTime(time_string, 0);
-	LOG_WRITE(("===== [ %s Start(%s)] =====", _PROGREAM_NAME_, time_string.c_str()));
+   
+	LOG_WRITE(("========== [ %s Start(%s)] ==========", _PROGREAM_NAME_, GetStringTime(0).c_str()));
 
 	// process main loop
 	while(g_run == true)
@@ -188,10 +181,9 @@ int main(int argc, char* argv[])
 #endif
 	}
 
-	GetStringTime(time_string, 0);
-	LOG_WRITE(("===== [ %s End(%s) ] =====", _PROGREAM_NAME_, time_string.c_str()));
+	LOG_WRITE(("========== [ %s End(%s) ] ==========", _PROGREAM_NAME_, GetStringTime(0).c_str()));
 	
-	CONFIG_PARSER.UnloadFile();
+	ConfigParser::GetInstance().UnloadFile();
 
     // network release
     ReleaseNetwork();

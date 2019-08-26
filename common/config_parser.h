@@ -7,9 +7,8 @@
 
 #include <list>
 #include <string>
-
-#define CONFIG_PARSER ConfigParser::GetInstance()
-#define GET_CONFIG_VALUE(n) (CONFIG_PARSER.GetValue(n)) ? (CONFIG_PARSER.GetValue(n)) : n##_VALUE
+ 
+#define GET_CONFIG_VALUE(n) (ConfigParser::GetInstance().GetValue(n)) ? (ConfigParser::GetInstance().GetValue(n)) : n##_VALUE
 
 //====================================================================================================
 // ConfigParser

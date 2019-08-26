@@ -142,10 +142,10 @@ std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
 
 	pars_info->ext = tokens[1];
  
-	if (pars_info->ext.compare("m3u8") == 0) pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
-	else if (pars_info->ext.compare("mpd") == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
-	else if (pars_info->ext.compare("ts") == 0) pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
-	else if (pars_info->ext.compare("m4s") == 0)
+	if (pars_info->ext.compare(HLS_PLAYLIST_EXT) == 0) pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
+	else if (pars_info->ext.compare(DASH_PLAYLIST_EXT) == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else if (pars_info->ext.compare(HLS_SEGMENT_EXT) == 0) pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
+	else if (pars_info->ext.compare(DASH_SEGMENT_EXT) == 0)
 	{
 		if (pars_info->file.find("audio") >= 0) pars_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
 		else pars_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
@@ -189,16 +189,16 @@ bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 		return false;
 	}
 	 
-	if (stricmp(pars_info->file.c_str(), "playlist.m3u8") == 0)
+	if (stricmp(pars_info->file.c_str(), HLS_PLAYLIST_FILE_NAME) == 0)
 		result = PlaylistRequest(pars_info, PlaylistType::M3u8);
 
-	else if (stricmp(pars_info->file.c_str(), "manifest.mpd") == 0)
+	else if (stricmp(pars_info->file.c_str(), DASH_PLAYLIST_FILE_NAME) == 0)
 		result = PlaylistRequest(pars_info, PlaylistType::Mpd);
 
-	else if (stricmp(pars_info->ext.c_str(), "ts") == 0)
+	else if (stricmp(pars_info->ext.c_str(), HLS_SEGMENT_EXT) == 0)
 		result = SegmentRequest(pars_info, SegmentType::Ts);
 
-	else if (stricmp(pars_info->ext.c_str(), "m4s") == 0)
+	else if (stricmp(pars_info->ext.c_str(), DASH_SEGMENT_EXT) == 0)
 		result = SegmentRequest(pars_info, SegmentType::M4s);
 
 	else if (stricmp(pars_info->file.c_str(), "crossdomain.xml") == 0)

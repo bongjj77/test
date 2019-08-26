@@ -222,10 +222,11 @@ void Tokenize2(const char * text, std::vector<std::string>& tokens, char delimit
 // 시간 문자 
 // - timer 0 입력시 현재시간 
 //====================================================================================================
-void GetStringTime(std::string & time_string, time_t time_value)
+std::string GetStringTime(time_t time_value)
 {
 	struct tm time_struct;
-	
+	std::string time_string;
+
 	if(time_value == 0)
 	{
 		time_value = time(nullptr);
@@ -238,6 +239,7 @@ void GetStringTime(std::string & time_string, time_t time_value)
 
 	time_string = szBuffer; 
 	
+	return time_string;
 }
 
 //====================================================================================================
@@ -753,18 +755,16 @@ int GetLocalAddress(char *pAddress)
 //====================================================================================================
 // Get Local Hostname
 //====================================================================================================
-bool GetLocalHostName(std::string & host_name)
+std::string GetLocalHostName()
 {
-	char local_host_name[256] = {0,};
+	char local_host_name[MAX_PATH] = {0,};
 
 	if(gethostname(local_host_name, sizeof(local_host_name))  != 0)
 	{
 		return false;
 	}
-
-	host_name = local_host_name;
-
-	return true;
+ 
+	return local_host_name;
 }
 
 //====================================================================================================

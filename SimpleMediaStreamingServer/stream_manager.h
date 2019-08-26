@@ -113,7 +113,6 @@ public:
 		return true;
 	}
 
-
 public:
 	StreamKey		stream_key;
 	time_t			create_time;
@@ -126,8 +125,6 @@ public:
 	MediaInfo		media_info;
 	std::unique_ptr<HlsPacketyzer> hls_packetyzer; 
 	std::unique_ptr<DashPacketyzer> dash_packetyzer;
-
-
 };
 
 #pragma pack()
@@ -156,7 +153,7 @@ public:
 	
 	int	 GarbageCheck(std::vector<StreamKey>& RemoveStreamKeys);
 
-	void GetCountInfo(int& stream_count);
+	int GetStreamCount();
 
 	bool GetPlaylist(const StreamKey& stream_key, PlaylistType type, std::string& playlist);
 

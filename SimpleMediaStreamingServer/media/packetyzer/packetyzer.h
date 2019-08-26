@@ -62,7 +62,7 @@ protected :
 
     uint32_t _sequence_number;
     bool _streaming_start;
-    std::string _play_list;
+    std::string _playlist;
 
     bool _video_init;
     bool _audio_init;

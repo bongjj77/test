@@ -332,9 +332,9 @@ int StreamManager::GarbageCheck(std::vector<StreamKey>& remove_stream_keys)
 //====================================================================================================
 // Count info
 //====================================================================================================
-void StreamManager::GetCountInfo(int& stream_count)
+int StreamManager::GetStreamCount()
 {
 	std::unique_lock<std::mutex> stream_info_map_lock(_stream_list_mutex);
 
-	stream_count = (int)_stream_list.size();
+	return (int)_stream_list.size();
 }

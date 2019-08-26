@@ -90,7 +90,7 @@ void Packetyzer::SetPlayList(std::string& playlist)
 {
 	// playlist mutex
 	std::unique_lock<std::mutex> lock(_play_list_guard);
-	_play_list = playlist;
+	_playlist = playlist;
 }
 
 //====================================================================================================
@@ -105,7 +105,7 @@ bool Packetyzer::GetPlayList(std::string& playlist)
 	// playlist mutex
 	std::unique_lock<std::mutex> lock(_play_list_guard);
 
-	playlist = _play_list;
+	playlist = _playlist;
 
 	return true;
 }

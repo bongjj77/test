@@ -61,9 +61,9 @@ public:
 protected:
 
 	bool GetSegmentPlayInfos(std::string& video_urls,
-		std::string& audio_urls,
-		double& time_shift_buffer_depth,
-		double& minimumUpdatePeriod);
+							std::string& audio_urls,
+							double& time_shift_buffer_depth,
+							double& minimumUpdatePeriod);
 
 	bool UpdatePlaylist();
 

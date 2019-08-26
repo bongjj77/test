@@ -414,12 +414,8 @@ void MainObject::GarbageCheckTimerProc()
 //====================================================================================================
 void MainObject::InfoPrintTimerProc()
 {
-	int rtmp_encoder = _rtmp_encoder_manager->GetCount();
-	int	http_client = _http_client_manager->GetCount();
-	int	stream_count = 0;
-
-	_stream_manager->GetCountInfo(stream_count);
-
 	LOG_INFO_WRITE(("*** Connected - stream(%d) rtmp_encoder(%d) http_client(%d) ***", 
-					stream_count, rtmp_encoder, http_client));
+					_stream_manager->GetStreamCount(), 
+					_rtmp_encoder_manager->GetCount(), 
+					_http_client_manager->GetCount()));
 }

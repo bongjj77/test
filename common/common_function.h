@@ -22,8 +22,6 @@
 #include "log_writer.h" 
 
 //------------------------------ log define ------------------------------ 
-#define LOG_INIT(file_name, nBackupHour) LogInit(file_name, nBackupHour)
-
 #define LOG_WRITE(format)			LogPrint format
 #define LOG_ERROR_WRITE(format)		LogErrorPrint format
 #define LOG_WARNING_WRITE(format)	LogWarningPrint format
@@ -43,7 +41,7 @@ extern std::string	string_format(const char* format, ...);
 extern void			Tokenize(const std::string & str, std::vector<std::string> & tokens, const std::string& delimiters);
 extern void			Tokenize2(const char * text, std::vector<std::string>& tokens, char delimiter);
 extern std::string 	GetStringIP(uint32_t ip); 
-extern void			GetStringTime(std::string & time_string, time_t time_value); 
+extern std::string	GetStringTime(time_t time_value); 
 extern std::string 	GetStringTime2(time_t time_value, bool bDate = true);
 extern std::string 	GetStringDate(time_t time_value, const char * format = nullptr); 
 
@@ -60,7 +58,7 @@ extern void			SleepWait(int nMillisecond);
 extern uint64_t 	GetCurrentTick();
 double				GetCurrentMilliseconds();
 extern int			GetLocalAddress(char * pAddress);
-extern bool			GetLocalHostName(std::string & host_name);
+extern std::string	GetLocalHostName();
 extern std::string	RandomString(uint32_t size);
 extern std::string	RandomNumberString(uint32_t size);
 extern uint32_t Gcd(uint32_t n1, uint32_t n2);

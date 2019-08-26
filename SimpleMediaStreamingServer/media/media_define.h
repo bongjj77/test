@@ -9,12 +9,24 @@
 
 #pragma pack(1)
 
-#define RTMP_TIMESCALE			(1000)
-#define HLS_TIMESCALE			(90000)
-#define DASH_VIDEO_TIMESCALE	(90000)
+#define HLS_SEGMENT_EXT 				"ts"
+#define HLS_PLAYLIST_EXT 				"m3u8"
+#define HLS_PLAYLIST_FILE_NAME  		"playlist.m3u8"
 
-#define AVC_NAL_HEADER_SIZE      (4) // 00 00 00 01  or 00 00 01
-#define ADTS_HEADER_SIZE         (7)
+#define DASH_SEGMENT_EXT 				"m4s"
+#define DASH_PLAYLIST_EXT 				"mpd"
+#define DASH_MPD_VIDEO_SUFFIX    		"_video.m4s"
+#define DASH_MPD_AUDIO_SUFFIX    		"_audio.m4s"
+#define DASH_MPD_VIDEO_INIT_FILE_NAME	"init_video.m4s"
+#define DASH_MPD_AUDIO_INIT_FILE_NAME	"init_audio.m4s"
+#define DASH_PLAYLIST_FILE_NAME  		"manifest.mpd"
+
+#define RTMP_TIMESCALE					(1000)
+#define HLS_TIMESCALE					(90000)
+#define DASH_VIDEO_TIMESCALE			(90000)
+
+#define AVC_NAL_HEADER_SIZE				(4) // 00 00 00 01  or 00 00 01
+#define ADTS_HEADER_SIZE				(7)
 #define MAX_MEDIA_PACKET_SIZE          (20*1024*1024) // 20M
 
 // Avc Nal Header 
@@ -26,7 +38,6 @@ const int g_sample_rate_table[] = { 96000, 88200, 64000, 48000, 44100, 32000, 24
 
 // StreamKey app/stream 
 #define StreamKey std::pair< std::string, std::string> 
-
 
 //===============================================================================================
 // Playlist Type

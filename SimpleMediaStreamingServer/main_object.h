@@ -10,7 +10,6 @@
 #include "http_client/http_client_manager.h"
 #include "stream_manager.h" 
 
-
 enum class NetworkObjectKey
 {
 	RtmpEncoder,
@@ -126,5 +125,4 @@ private:
 	std::shared_ptr<NetworkManager>		_network_table[(int)NetworkObjectKey::Max];
 	std::shared_ptr<RtmpEncoderManager>	_rtmp_encoder_manager;
 	std::shared_ptr<HttpClientManager>	_http_client_manager;
-
 };

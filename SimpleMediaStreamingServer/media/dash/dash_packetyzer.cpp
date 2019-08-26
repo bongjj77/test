@@ -12,14 +12,6 @@
 #define VIDEO_TRACK_ID    (1)
 #define AUDIO_TRACK_ID    (2)
 
-#define DASH_MPD_VIDEO_SUFFIX    		"_video.m4s"
-#define DASH_MPD_AUDIO_SUFFIX    		"_audio.m4s"
-#define DASH_MPD_VIDEO_INIT_FILE_NAME	"init_video.m4s"
-#define DASH_MPD_AUDIO_INIT_FILE_NAME	"init_audio.m4s"
-#define DASH_PLAYLIST_FILE_NAME  		"manifest.mpd"
-#define DASH_SEGMENT_EXT 				"m4s"
-#define DASH_PLAYLIST_EXT 				"mpd"
-
 //====================================================================================================
 // Constructor
 //====================================================================================================
@@ -571,9 +563,9 @@ const std::shared_ptr<SegmentInfo> DashPacketyzer::GetSegmentData(const std::str
 // Set Segment
 //====================================================================================================
 bool DashPacketyzer::SetSegmentData(std::string file_name,
-	uint64_t duration,
-	uint64_t timestamp,
-	std::shared_ptr<std::vector<uint8_t>>& data)
+									uint64_t duration,
+									uint64_t timestamp,
+									std::shared_ptr<std::vector<uint8_t>>& data)
 {
 	const auto& file_type = GetFileType(file_name);
 
