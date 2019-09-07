@@ -4,7 +4,6 @@
 //====================================================================================================
 
 #include "main_object.h"
-#include "openssl/ssl.h"
 #include <iomanip>
 
 //===============================================================================================
@@ -81,7 +80,7 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_context_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_client_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()),
+	if (!_test_tcp_client_manager->Create(std::static_pointer_cast<ITcpNetwork>(this->shared_from_this()),
 										_network_context_pool, 
 										_create_param->test_tcp_client_listen_port, 
 										GetNetworkObjectName(NetworkObjectKey::TestTcpClient)))
@@ -118,7 +117,7 @@ bool MainObject::OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSock
 		_test_tcp_client_manager->AcceptedAdd(socket, 
 											ip, 
 											port, 
-											std::static_pointer_cast<ITestTcpClientCallback>(this->shared_from_this()), 
+											std::static_pointer_cast<ITestTcpClient>(this->shared_from_this()), 
 											index_key);
 	}
 	
@@ -150,25 +149,6 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 		return false; 
 	}
 	
-	return true;
-}
-
-//====================================================================================================
-// Network ConnectedSSL Callback
-//====================================================================================================
-bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
-										NetConnectedResult result,
-										std::shared_ptr<std::vector<uint8_t>> connected_param,
-										std::shared_ptr < NetSocketSSL> socket,
-										unsigned ip,
-										int port)
-{
-	if (object_key >= (int)NetworkObjectKey::Max)
-	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
-		return false;
-	}
-
 	return true;
 }
 

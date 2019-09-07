@@ -5,6 +5,8 @@
 
 #pragma once
 #include "tcp_network_manager.h" 
+#include "tcp_tls_network_object.h"
+
 //====================================================================================================
 // NetworkManager
 //====================================================================================================
@@ -16,7 +18,7 @@ public :
 
 public : 
   
-	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
+	virtual bool CreateSSL(std::shared_ptr<ITlsTcpNetwork> callback,
 						std::shared_ptr<NetworkContextPool> service_pool,
 						std::string 			cert_file,
 						std::string				key_file,
@@ -25,7 +27,7 @@ public :
 						std::string 			object_name, 
 						bool 					private_accepter_service = false);
 
-	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
+	virtual bool CreateSSL(std::shared_ptr<ITlsTcpNetwork> callback,
 							std::shared_ptr<NetworkContextPool> service_pool,
 							std::string object_name)
 	{
@@ -44,7 +46,7 @@ protected :
 	virtual void Release();
 
 	virtual void OnConnectedSSL(const NetErrorCode & error,
-								std::shared_ptr<NetSocketSSL> socket,
+								std::shared_ptr<NetTlsSocket> socket,
 								std::shared_ptr<std::vector<uint8_t>> connected_param,
 								uint32_t ip,
 								int port);
@@ -56,12 +58,12 @@ protected :
 	void OnHandshakeSSL(const NetErrorCode & error);
 
 	void OnHandshakeSSL(const NetErrorCode & error, 
-						std::shared_ptr<NetSocketSSL> socket, 
+						std::shared_ptr<NetTlsSocket> socket, 
 						std::shared_ptr<std::vector<uint8_t>> connected_param, 
 						uint32_t ip, 
 						int port); 
 	
 protected : 
  	std::shared_ptr<boost::asio::ssl::context> _ssl_context;
-	std::shared_ptr<NetSocketSSL> _accept_socket_ssl;	
+	std::shared_ptr<NetTlsSocket> _accept_socket_ssl;	
 }; 

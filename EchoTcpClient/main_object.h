@@ -43,9 +43,9 @@ struct TestTcpServerConnectedParam
 // MainObject
 //====================================================================================================
 class MainObject :	public std::enable_shared_from_this<MainObject>,
-					public ITimerCallback, 
-					public INetworkCallback,
-					public ITestTcpServerCallback
+					public IThreadTimer,
+					public ITcpNetwork,
+					public ITestTcpServer
 {
 public:
 	MainObject(void);
@@ -61,40 +61,18 @@ public:
 		
 private:
 	
-	// INetworkCallback Implement
+	// ITcpNetwork Implement
 	bool OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSocket> socket, uint32_t ip, int port);	
-	
-	bool OnTcpNetworkAcceptedSSL(int object_key, 
-								std::shared_ptr<NetSocketSSL> socket, 
-								uint32_t ip, 
-								int port) { return true; }
 	
 	bool OnTcpNetworkConnected(	int object_key,
 								NetConnectedResult result,
 								std::shared_ptr<std::vector<uint8_t>> connected_param,
 								std::shared_ptr<NetTcpSocket> socket,
 								unsigned ip,
-								int port);
-	
-	bool OnTcpNetworkConnectedSSL(	int object_key,
-									NetConnectedResult result,
-									std::shared_ptr<std::vector<uint8_t>> connected_param,
-									std::shared_ptr<NetSocketSSL> socket,
-									unsigned ip,
-									int port);
+								int port);	
 
 	int  OnNetworkClose(int object_key, int index_key, uint32_t ip, int port); 	
-
-	bool OnUdpNetworkConnected(	int object_key, 
-								NetConnectedResult result, 
-								char * connected_param, 
-								std::shared_ptr<NetUdpSocket> socket, 
-								unsigned ip, 
-								int port) { return true;  }	 
-	
-	int OnUdpNetworkClose(int object_key, int index_key, uint32_t ip, int port) { return 0;  }
-	
-	
+ 		
 	// Connect Proc
 	bool TestTcpServerConnectedProc(NetConnectedResult result_code,
 									TestTcpServerConnectedParam *connected_param, 

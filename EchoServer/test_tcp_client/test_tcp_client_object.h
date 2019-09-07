@@ -10,7 +10,7 @@
 //====================================================================================================
 // Interface
 //====================================================================================================
-class ITestTcpClientCallback : public IObjectCallback
+class ITestTcpClient : public IObjectCallback
 {
 	
 public:	

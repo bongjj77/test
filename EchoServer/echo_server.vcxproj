@@ -37,7 +37,6 @@
     <ClInclude Include="..\common\network\engine\network_context_pool.h" />
     <ClInclude Include="..\common\network\engine\network_manager.h" />
     <ClInclude Include="..\common\network\engine\network_object_header.h" />
-    <ClInclude Include="..\common\network\engine\root_certificates.hpp" />
     <ClInclude Include="..\common\network\engine\tcp_network_manager.h" />
     <ClInclude Include="..\common\network\engine\tcp_network_object.h" />
     <ClInclude Include="..\common\network\engine\udp_network_manager.h" />
@@ -97,14 +96,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./;../;C:\OpenSSL-Win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\OpenSSL-Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

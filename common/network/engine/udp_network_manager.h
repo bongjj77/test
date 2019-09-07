@@ -25,8 +25,8 @@ public :
 	virtual ~UdpNetworkManager();
 
 public : 
-	virtual bool		Create(INetworkCallback * callback, std::shared_ptr<NetworkContextPool> service_pool, int listen_port, std::string object_name);
-	virtual bool		Create(INetworkCallback * callback, std::shared_ptr<NetworkContextPool> service_pool, std::string object_name) { return Create(callback, service_pool, 0, object_name); }
+	virtual bool		Create(ITcpNetwork * callback, std::shared_ptr<NetworkContextPool> service_pool, int listen_port, std::string object_name);
+	virtual bool		Create(ITcpNetwork * callback, std::shared_ptr<NetworkContextPool> service_pool, std::string object_name) { return Create(callback, service_pool, 0, object_name); }
 	
 	void				Close(int index_key){ Remove(index_key); } 
 	bool				FindIndexKey(uint32_t ip, int port, int & index_key); 
@@ -59,5 +59,5 @@ protected :
 	UdpNetworkInfoMap	_network_info_map;
 	std::mutex			_network_info_map_mutex;
 	int					_listen_port; 
-	INetworkCallback	*_network_callback; 	
+	ITcpNetwork	*_network_callback; 	
 }; 

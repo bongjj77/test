@@ -13,7 +13,7 @@
 //====================================================================================================
 // ThreadTimer Interface
 //====================================================================================================
-class ITimerCallback
+class IThreadTimer
 {
 public:
 	virtual void OnThreadTimer(uint32_t timer_id, bool &delete_timer) = 0;
@@ -36,7 +36,7 @@ public:
 	virtual ~ThreadTimer( );
 
 public:
-	bool Create(ITimerCallback *callback, uint32_t interval=100); // 단위ms
+	bool Create(IThreadTimer *callback, uint32_t interval=100); // 단위ms
 	void Destroy( );
 
 	bool SetTimer(uint32_t timer_id, uint32_t Elapse); // 단위는 ms, 이미 있으면 Elapse만 변경
@@ -48,7 +48,7 @@ private:
 
 
 private:
-	ITimerCallback *_timer_interface;
+	IThreadTimer *_timer_interface;
 	uint32_t _interval;
 
 	std::map<uint32_t, std::shared_ptr<TimerInfo>> _timer_map;

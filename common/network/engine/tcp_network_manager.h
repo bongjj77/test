@@ -30,13 +30,13 @@ public :
 	virtual ~TcpNetworkManager();
 
 public : 
-	virtual bool Create(std::shared_ptr<INetworkCallback> callback, 
+	virtual bool Create(std::shared_ptr<ITcpNetwork> callback, 
 						std::shared_ptr<NetworkContextPool>service_pool, 
 						int listen_port, 
 						std::string object_name, 
 						bool private_accepter_service = false);
 
-	virtual bool Create(std::shared_ptr<INetworkCallback> callback, 
+	virtual bool Create(std::shared_ptr<ITcpNetwork> callback, 
 						std::shared_ptr<NetworkContextPool> service_pool, 
 						std::string object_name)
 	{ 
@@ -65,7 +65,7 @@ public :
 	static std::string	GetLocalIP();
 	
 protected :
-	virtual void				Release();
+	virtual void		Release();
 		
 	virtual int			Insert(std::shared_ptr<TcpNetworkObject> object, 
 								bool is_keepalive_check = false, 
@@ -87,18 +87,18 @@ private :
 	
 protected : 
 	
-	bool								_is_private_accepter_service;
+	bool							_is_private_accepter_service;
 		
-	int									_index_key; 
-	uint32_t							_max_createing_count; 
-	TcpNetworkInfoMap					_network_info_map;
-	std::mutex							_network_info_map_mutex;
+	int								_index_key; 
+	uint32_t						_max_createing_count; 
+	TcpNetworkInfoMap				_network_info_map;
+	std::mutex						_network_info_map_mutex;
 
-	int									_listen_port; 
-	std::shared_ptr<NetAcceptor>		_acceptor; 
-	std::shared_ptr<NetTcpSocket>		_accept_socket;
-	std::shared_ptr<NetTimer>			_release_timer;
-	std::shared_ptr<INetworkCallback>	_network_callback;
-	bool								_is_closeing;
+	int								_listen_port; 
+	std::shared_ptr<NetAcceptor>	_acceptor; 
+	std::shared_ptr<NetTcpSocket>	_accept_socket;
+	std::shared_ptr<NetTimer>		_release_timer;
+	std::shared_ptr<ITcpNetwork>	_network_callback;
+	bool							_is_closeing;
 	
 }; 

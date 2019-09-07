@@ -22,7 +22,7 @@ struct TcpNetworkObjectParam
 	std::string object_name;
 
 	std::shared_ptr<NetTcpSocket> socket;	
-	std::shared_ptr<INetworkCallback> network_callback;
+	std::shared_ptr<ITcpNetwork> network_callback;
 };
 
 //====================================================================================================
@@ -85,7 +85,7 @@ protected :
 	int										_object_key = -1; 
 	int										_index_key = -1; 
 	std::shared_ptr<NetTcpSocket>			_socket = nullptr;
-	std::shared_ptr<INetworkCallback>		_network_callback = nullptr; 
+	std::shared_ptr<ITcpNetwork>		_network_callback = nullptr; 
 	std::shared_ptr<IObjectCallback>		_object_callback = nullptr;
 	
 	std::string								_remote_ip_string;

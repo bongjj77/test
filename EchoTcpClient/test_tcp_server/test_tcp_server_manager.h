@@ -17,7 +17,7 @@ public:
 
 public : 
 	bool ConnectedAdd(std::shared_ptr<NetTcpSocket> socket, 
-					std::shared_ptr<ITestTcpServerCallback> callback, 
+					std::shared_ptr<ITestTcpServer> callback, 
 					int &index_key);
 
 	bool SendEchoData(int index_key, int data_size, uint8_t * data);

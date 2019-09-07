@@ -23,7 +23,7 @@ struct UdpNetworkObjectParam
 	uint32_t						remote_ip;
 	int								remote_port;
 	std::shared_ptr<NetUdpSocket>	socket;
-	std::shared_ptr<INetworkCallback> network_callback;
+	std::shared_ptr<ITcpNetwork> network_callback;
 	std::shared_ptr<IObjectCallback> object_callback;
 	std::string						object_name;
 };
@@ -76,7 +76,7 @@ protected :
 	int										_index_key = -1;
 	int										_object_key = -1;
 	std::string								_object_name = "unknown_usp_object";
-	std::shared_ptr<INetworkCallback>		_network_callback = nullptr;
+	std::shared_ptr<ITcpNetwork>		_network_callback = nullptr;
 	std::shared_ptr<IObjectCallback>		_object_callback = nullptr;
 
 	std::string								_remote_ip_string;

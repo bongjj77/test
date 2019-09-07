@@ -3,21 +3,21 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#include "packetyzer.h"
+#include "packetizer.h"
 #include <sstream>
 #include <algorithm>
 
 //====================================================================================================
 // Constructor
 //====================================================================================================
-Packetyzer::Packetyzer(const std::string& app_name,
-	const std::string& stream_name,
-	PacketyzerType packetyzer_type,
-	PacketyzerStreamingType streaming_type,
-	const std::string& segment_prefix,
-	uint32_t segment_duration,
-	uint32_t segment_count,
-	MediaInfo& media_info)
+Packetizer::Packetizer(const std::string& app_name,
+					const std::string& stream_name,
+					PacketizerType packetyzer_type,
+					PacketizerStreamingType streaming_type,
+					const std::string& segment_prefix,
+					uint32_t segment_duration,
+					uint32_t segment_count,
+					MediaInfo& media_info)
 {
 	_app_name = app_name;
 	_stream_name = stream_name;
@@ -42,7 +42,7 @@ Packetyzer::Packetyzer(const std::string& app_name,
 		_video_segment_datas.push_back(nullptr);
 
 		// only dash/cmaf
-		if (_packetyzer_type == PacketyzerType::Dash || _packetyzer_type == PacketyzerType::Cmaf)
+		if (_packetyzer_type == PacketizerType::Dash || _packetyzer_type == PacketizerType::Cmaf)
 			_audio_segment_datas.push_back(nullptr);
 	}
 }
@@ -50,7 +50,7 @@ Packetyzer::Packetyzer(const std::string& app_name,
 //====================================================================================================
 // Destructor
 //====================================================================================================
-Packetyzer::~Packetyzer()
+Packetizer::~Packetizer()
 {
 
 }
@@ -58,7 +58,7 @@ Packetyzer::~Packetyzer()
 //====================================================================================================
 // MakeUtcSecond(second)
 //====================================================================================================
-std::string Packetyzer::MakeUtcSecond(time_t value)
+std::string Packetizer::MakeUtcSecond(time_t value)
 {
 	std::tm* now_tm = gmtime(&value);
 	char buffer[42];
@@ -71,7 +71,7 @@ std::string Packetyzer::MakeUtcSecond(time_t value)
 //====================================================================================================
 // MakeUtcMillisecond(mille second)
 //====================================================================================================
-std::string Packetyzer::MakeUtcMillisecond(double value)
+std::string Packetizer::MakeUtcMillisecond(double value)
 {
 	time_t time_vaule = (time_t)value / 1000;
 	std::tm* now_tm = gmtime(&time_vaule);
@@ -86,7 +86,7 @@ std::string Packetyzer::MakeUtcMillisecond(double value)
 // PlayList
 // - thread safe
 //====================================================================================================
-void Packetyzer::SetPlayList(std::string& playlist)
+void Packetizer::SetPlayList(std::string& playlist)
 {
 	// playlist mutex
 	std::unique_lock<std::mutex> lock(_play_list_guard);
@@ -97,7 +97,7 @@ void Packetyzer::SetPlayList(std::string& playlist)
 // PlayList
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetPlayList(std::string& playlist)
+bool Packetizer::GetPlayList(std::string& playlist)
 {
 	if (!_streaming_start)
 		return false;
@@ -114,7 +114,7 @@ bool Packetyzer::GetPlayList(std::string& playlist)
 // Last (segment count) Video(or Video+Audio) Segments
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
+bool Packetizer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
 {
 
 	uint32_t begin_index = (_current_video_index >= _segment_count) ?
@@ -165,7 +165,7 @@ bool Packetyzer::GetVideoPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>&
 // Last (segment count) Audio Segments
 // - thread safe
 //====================================================================================================
-bool Packetyzer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
+bool Packetizer::GetAudioPlaySegments(std::vector<std::shared_ptr<SegmentInfo>>& segment_list)
 {
 	uint32_t begin_index = (_current_audio_index >= _segment_count) ?
 		(_current_audio_index - _segment_count) :

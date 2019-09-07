@@ -25,7 +25,7 @@ ThreadTimer::~ThreadTimer()
 //====================================================================================================
 // Destructor 
 //====================================================================================================
-bool ThreadTimer::Create(ITimerCallback *callback, uint32_t interval)
+bool ThreadTimer::Create(IThreadTimer *callback, uint32_t interval)
 {
  	if(callback == nullptr) 
 	{ 

@@ -8,21 +8,21 @@
 #include "../media_define.h"
 
 //====================================================================================================
-// Packetyzer
+// Packetizer
 //====================================================================================================
-class Packetyzer
+class Packetizer
 {
 public:
-    Packetyzer(const std::string &app_name,
+    Packetizer(const std::string &app_name,
 			const std::string &stream_name,
-			PacketyzerType packetyzer_type,
-			PacketyzerStreamingType streaming_type,
+			PacketizerType packetyzer_type,
+			PacketizerStreamingType streaming_type,
 			const std::string &segment_prefix,
 			uint32_t segment_duration,
 			uint32_t segment_count,
 			MediaInfo &media_info);
 
-    virtual ~Packetyzer();
+    virtual ~Packetizer();
 
 public :
     virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo> &frame) = 0;
@@ -51,9 +51,9 @@ public :
 protected :
     std::string _app_name;
     std::string _stream_name;
-    PacketyzerType _packetyzer_type;
+    PacketizerType _packetyzer_type;
     std::string _segment_prefix;
-    PacketyzerStreamingType _streaming_type;
+    PacketizerStreamingType _streaming_type;
 
     uint32_t _segment_count;
     uint32_t _segment_save_count;

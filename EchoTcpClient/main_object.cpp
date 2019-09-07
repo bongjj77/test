@@ -89,7 +89,7 @@ bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 	_network_context_pool->Run();  	
 		
 	// create test tcp client
-	if (!_test_tcp_server_manager->Create(std::static_pointer_cast<INetworkCallback>(this->shared_from_this()), 
+	if (!_test_tcp_server_manager->Create(std::static_pointer_cast<ITcpNetwork>(this->shared_from_this()), 
 										_network_context_pool, 
 										GetNetworkObjectName(NetworkObjectKey::TestTcpServer)))
 	{
@@ -144,25 +144,6 @@ bool MainObject::OnTcpNetworkConnected(	int object_key,
 					port));
 	}
 		
-
-	return true;
-}
-
-//====================================================================================================
-// Network ConnectedSSL Callback
-//====================================================================================================
-bool MainObject::OnTcpNetworkConnectedSSL(int object_key,
-										NetConnectedResult result,
-										std::shared_ptr<std::vector<uint8_t>> connected_param,
-										std::shared_ptr<NetSocketSSL> socket,
-										unsigned ip,
-										int port)
-{
-	if (object_key >= (int)NetworkObjectKey::Max)
-	{
-		LOG_ERROR_WRITE(("OnTcpNetworkConnectedSSL - Unkown ObjectKey - Key(%d)", object_key));
-		return false;
-	}
 
 	return true;
 }
@@ -248,7 +229,7 @@ bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
 
 	// Session add
 	if (_test_tcp_server_manager->ConnectedAdd(	socket, 
-												std::static_pointer_cast<ITestTcpServerCallback>(this->shared_from_this()),
+												std::static_pointer_cast<ITestTcpServer>(this->shared_from_this()),
 												index_key) == false)
 	{
 		LOG_ERROR_WRITE(("TestTcpServerConnectedProc - ConnectAdd Fail - TestTcpServer(%s:%d)", GetStringIP(ip).c_str(), port));

@@ -5,6 +5,26 @@
 
 #pragma once
 #include "tcp_network_object.h"
+#include <boost/asio/ssl.hpp>
+#include <openssl/ssl.h>
+
+typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket>  NetTlsSocket;
+
+//====================================================================================================
+// Network Interface 
+//====================================================================================================
+class ITlsTcpNetwork : public ITcpNetwork
+{
+public:
+	virtual bool OnTlsTcpNetworkAccepted(int object_key, std::shared_ptr<NetTlsSocket>  socket_ssl, uint32_t ip, int port) = 0;	// Accepted(SSL)
+
+	virtual bool OnTlsTcpNetworkConnected(int object_key,
+										NetConnectedResult result,
+										std::shared_ptr<std::vector<uint8_t>> connected_param,
+										std::shared_ptr<NetTlsSocket> socket,
+										unsigned ip,
+										int port) = 0;
+};
 
 class TcpTlsNetworkObject;
 
@@ -17,14 +37,14 @@ struct TcpTlsNetworkObjectParam
 	std::shared_ptr<IObjectCallback> object_callback;
 	std::string object_name;
  
-	std::shared_ptr<NetSocketSSL> socket_ssl;
-	std::shared_ptr<INetworkCallback> network_callback;
+	std::shared_ptr<NetTlsSocket> socket_ssl;
+	std::shared_ptr<ITlsTcpNetwork> network_callback;
 };
 
 //====================================================================================================
 // TcpTlsNetworkObject(Session) 
 //====================================================================================================
-class TcpTlsNetworkObject : TcpNetworkObject
+class TcpTlsNetworkObject : public TcpNetworkObject
 {
 public:
 	explicit TcpTlsNetworkObject();
@@ -46,7 +66,7 @@ protected :
 	
 protected : 
 	
-	std::shared_ptr<NetSocketSSL> _socket_ssl = nullptr;
+	std::shared_ptr<NetTlsSocket> _socket_ssl = nullptr;
   	
 };
 

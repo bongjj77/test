@@ -3,7 +3,7 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#include "hls_packetyzer.h"
+#include "hls_packetizer.h"
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
@@ -13,15 +13,15 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-HlsPacketyzer::HlsPacketyzer(const std::string& app_name,
+HlsPacketizer::HlsPacketizer(const std::string& app_name,
 							const std::string& stream_name,
-							PacketyzerStreamingType streaming_type,
+							PacketizerStreamingType streaming_type,
 							const std::string& segment_prefix,
 							uint32_t segment_duration,
 							uint32_t segment_count,
-							MediaInfo& media_info) : Packetyzer(app_name,
+							MediaInfo& media_info) : Packetizer(app_name,
 													stream_name,
-													PacketyzerType::Hls,
+													PacketizerType::Hls,
 													streaming_type,
 													segment_prefix,													
 													(uint32_t)segment_duration,
@@ -38,7 +38,7 @@ HlsPacketyzer::HlsPacketyzer(const std::string& app_name,
 //====================================================================================================
 // AppendVideoFrame
 //====================================================================================================
-bool HlsPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
+bool HlsPacketizer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_video_init)
 	{
@@ -79,7 +79,7 @@ bool HlsPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 //====================================================================================================
 // AppendAudioFrame
 //====================================================================================================
-bool HlsPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
+bool HlsPacketizer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_audio_init)
 		_audio_init = true;
@@ -110,7 +110,7 @@ bool HlsPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 //====================================================================================================
 // Segment Write
 //====================================================================================================
-bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
+bool HlsPacketizer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 {
 	int64_t _first_audio_time_stamp = 0;
 	int64_t _first_video_time_stamp = 0;
@@ -159,14 +159,14 @@ bool HlsPacketyzer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 //====================================================================================================
 // PlayList(M3U8) update 
 //====================================================================================================
-bool HlsPacketyzer::UpdatePlaylist()
+bool HlsPacketizer::UpdatePlaylist()
 {
 	std::ostringstream play_list_stream;
 	std::ostringstream m3u8_play_list;
 	double max_duration = 0;
 
 	std::vector<std::shared_ptr<SegmentInfo>> segment_list;
-	Packetyzer::GetVideoPlaySegments(segment_list);
+	Packetizer::GetVideoPlaySegments(segment_list);
 
 	for (const auto& segment_data : segment_list)
 	{
@@ -191,7 +191,7 @@ bool HlsPacketyzer::UpdatePlaylist()
 	std::string playlist = play_list_stream.str().c_str();
 	SetPlayList(playlist);
 
-	if (_streaming_type == PacketyzerStreamingType::Both && _streaming_start)
+	if (_streaming_type == PacketizerStreamingType::Both && _streaming_start)
 	{
 		if (!_video_enable)
 			LOG_WARNING_WRITE(("Hls video segment problems - %s/%s", _app_name.c_str(), _stream_name.c_str()));
@@ -206,7 +206,7 @@ bool HlsPacketyzer::UpdatePlaylist()
 //====================================================================================================
 // Get Segment
 //====================================================================================================
-const std::shared_ptr<SegmentInfo> HlsPacketyzer::GetSegmentData(const std::string& file_name)
+const std::shared_ptr<SegmentInfo> HlsPacketizer::GetSegmentData(const std::string& file_name)
 {
 	if (!_streaming_start)
 		return nullptr;
@@ -230,7 +230,7 @@ const std::shared_ptr<SegmentInfo> HlsPacketyzer::GetSegmentData(const std::stri
 //====================================================================================================
 // Set Segment
 //====================================================================================================
-bool HlsPacketyzer::SetSegmentData(std::string file_name,
+bool HlsPacketizer::SetSegmentData(std::string file_name,
 	uint64_t duration,
 	uint64_t timestamp,
 	std::shared_ptr<std::vector<uint8_t>>& data)

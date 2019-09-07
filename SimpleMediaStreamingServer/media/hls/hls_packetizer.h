@@ -4,23 +4,23 @@
 //====================================================================================================
 
 #pragma once
-#include "../packetyzer/ts_writer.h"
+#include "../packetizer/ts_writer.h"
 
 //====================================================================================================
-// HlsPacketyzer
+// HlsPacketizer
 //====================================================================================================
-class HlsPacketyzer : public Packetyzer
+class HlsPacketizer : public Packetizer
 {
 public:
-	HlsPacketyzer(const std::string& app_name,
+	HlsPacketizer(const std::string& app_name,
 				const std::string& stream_name,
-				PacketyzerStreamingType streaming_type,
+				PacketizerStreamingType streaming_type,
 				const std::string& segment_prefix,
 				uint32_t segment_duration,
 				uint32_t segment_count,
 				MediaInfo& media_info);
 
-	~HlsPacketyzer() = default;
+	~HlsPacketizer() = default;
 
 public:
 	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame) override;

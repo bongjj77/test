@@ -5,7 +5,6 @@
 
 #include "tcp_network_manager.h"
 
-#include "root_certificates.hpp"
 
 #ifndef WIN32
 #include <fcntl.h>
@@ -127,7 +126,7 @@ void TcpNetworkManager::Release()
 // 생성 
 // - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
 //====================================================================================================
-bool TcpNetworkManager::Create(std::shared_ptr<INetworkCallback> callback, 
+bool TcpNetworkManager::Create(std::shared_ptr<ITcpNetwork> callback, 
 								std::shared_ptr<NetworkContextPool> service_pool, 
 								int listen_port, 
 								std::string object_name, 

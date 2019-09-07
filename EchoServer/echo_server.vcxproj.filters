@@ -99,9 +99,6 @@
     <ClInclude Include="..\common\network\engine\network_object_header.h">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\network\engine\root_certificates.hpp">
-      <Filter>network</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\network\engine\tcp_network_manager.h">
       <Filter>network</Filter>
     </ClInclude>

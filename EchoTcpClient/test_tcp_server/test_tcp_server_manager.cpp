@@ -17,7 +17,7 @@ TestTcpServerManager::TestTcpServerManager(int object_key) : TcpNetworkManager(o
 // Add object(Connected)
 //====================================================================================================
 bool TestTcpServerManager::ConnectedAdd(std::shared_ptr<NetTcpSocket> socket, 
-										std::shared_ptr<ITestTcpServerCallback> callback, 
+										std::shared_ptr<ITestTcpServer> callback, 
 										int &index_key)
 {
 	 

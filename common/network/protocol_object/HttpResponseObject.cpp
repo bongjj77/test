@@ -295,9 +295,9 @@ bool HttpResponseObject::SendContentResponse(const std::string& content_type, co
 		http_header << "Access-Control-Allow-Credentials: true\r\n"
 			"Access-Control-Allow-Headers: Content-Type, *\r\n";
 		
-		if(_is_support_ssl)
-			http_header << "Access-Control-Allow-Origin: https://" << _cors_origin_url << "\r\n";
-		else
+		//if(_is_support_ssl)
+		//	http_header << "Access-Control-Allow-Origin: https://" << _cors_origin_url << "\r\n";
+		//else
 			http_header << "Access-Control-Allow-Origin: http://" << _cors_origin_url << "\r\n";
 	}
 

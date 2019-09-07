@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "../packetyzer/packetyzer.h"
-#include "../packetyzer/m4s_init_writer.h"
-#include "../packetyzer/m4s_segment_writer.h"
+#include "../packetizer/packetizer.h"
+#include "../packetizer/m4s_init_writer.h"
+#include "../packetizer/m4s_segment_writer.h"
 
 enum class DashFileType : int32_t
 {
@@ -20,20 +20,20 @@ enum class DashFileType : int32_t
 };
 
 //====================================================================================================
-// DashPacketyzer
+// DashPacketizer
 //====================================================================================================
-class DashPacketyzer : public Packetyzer
+class DashPacketizer : public Packetizer
 {
 public:
-	DashPacketyzer(const std::string& app_name,
+	DashPacketizer(const std::string& app_name,
 				const std::string& stream_name,
-				PacketyzerStreamingType stream_type,
+				PacketizerStreamingType stream_type,
 				const std::string& segment_prefix,
 				uint32_t segment_duration,
 				uint32_t segment_count,
 				MediaInfo& media_info);
 
-	~DashPacketyzer() final;
+	~DashPacketizer() final;
 
 public:
 

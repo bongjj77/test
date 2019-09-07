@@ -57,7 +57,7 @@ void TcpTlsNetworkManager::Release()
 // SSL 생성 
 // - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
 //====================================================================================================
-bool TcpTlsNetworkManager::CreateSSL(	std::shared_ptr<INetworkCallback> callback,
+bool TcpTlsNetworkManager::CreateSSL(std::shared_ptr<ITlsTcpNetwork> callback,
 									std::shared_ptr<NetworkContextPool>service_pool,
 									std::string cert_file,
 									std::string key_file,
@@ -98,7 +98,7 @@ bool TcpTlsNetworkManager::CreateSSL(	std::shared_ptr<INetworkCallback> callback
 		_ssl_context->set_verify_mode(boost::asio::ssl::verify_peer);
 	}
 		
-	result = Create(callback, service_pool, listen_port, object_name, private_accepter_service);
+	result = Create(std::static_pointer_cast<ITcpNetwork>(callback), service_pool, listen_port, object_name, private_accepter_service);
 
 	return result;
 }
@@ -114,7 +114,7 @@ bool TcpTlsNetworkManager::PostConnect(uint32_t ip, std::string host, int port, 
 	ip = boost::asio::detail::socket_ops::network_to_host_long(ip);
 	ip_string = NetAddress_v4(ip).to_string();
 	
-	auto socket = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
+	auto socket = std::make_shared<NetTlsSocket>(*(_context_pool->GetContext()), *_ssl_context);
 	
 	socket->set_verify_callback(
 		boost::bind(&TcpTlsNetworkManager::VerifyCallback, this, _1, _2));
@@ -158,7 +158,7 @@ bool TcpTlsNetworkManager::VerifyCallback(bool preverified, boost::asio::ssl::ve
 // Connected 결과   
 //====================================================================================================
 void TcpTlsNetworkManager::OnConnectedSSL(	const NetErrorCode & error, 
-										std::shared_ptr<NetSocketSSL> socket, 
+										std::shared_ptr<NetTlsSocket> socket, 
 										std::shared_ptr<std::vector<uint8_t>> connected_param, 
 										uint32_t ip, 
 										int port)
@@ -206,7 +206,7 @@ void TcpTlsNetworkManager::OnConnectedSSL(	const NetErrorCode & error,
 // SSL HandShake 핸들러(client) 
 //====================================================================================================
 void TcpTlsNetworkManager::OnHandshakeSSL(	const NetErrorCode & error, 
-										std::shared_ptr<NetSocketSSL> socket, 
+										std::shared_ptr<NetTlsSocket> socket, 
 										std::shared_ptr<std::vector<uint8_t>> connected_param, 
 										uint32_t ip, 
 										int port)
@@ -242,7 +242,7 @@ void TcpTlsNetworkManager::OnHandshakeSSL(	const NetErrorCode & error,
 
 	
 	// 연결 콜백 호출 
-	if (_network_callback->OnTcpNetworkConnectedSSL(_object_key, result, connected_param, socket, ip, port) == false)
+	if (std::static_pointer_cast<ITlsTcpNetwork>(_network_callback)->OnTlsTcpNetworkConnected(_object_key, result, connected_param, socket, ip, port) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] TcpTlsNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - ip(%s) Port(%d)",
 			_object_name.c_str(),
@@ -293,7 +293,7 @@ bool TcpTlsNetworkManager::PostAccept()
 		_accept_socket_ssl = nullptr; 
 	}
 		
-	_accept_socket_ssl = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
+	_accept_socket_ssl = std::make_shared<NetTlsSocket>(*(_context_pool->GetContext()), *_ssl_context);
 
 	_acceptor->async_accept(_accept_socket_ssl->lowest_layer(), boost::bind(&TcpTlsNetworkManager::OnAccept, this, boost::asio::placeholders::error));
 		
@@ -406,9 +406,9 @@ void TcpTlsNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
 		return;
 	}
 
-	if(_network_callback->OnTcpNetworkAcceptedSSL(_object_key, _accept_socket_ssl, ip, port) == false)
+	if(std::static_pointer_cast<ITlsTcpNetwork>(_network_callback)->OnTlsTcpNetworkAccepted(_object_key, _accept_socket_ssl, ip, port) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] TcpTlsNetworkManager::OnHandshakeSSL -  OnTcpNetworkAcceptedSSL return false", 
+		LOG_ERROR_WRITE(("[%s] TcpTlsNetworkManager::OnHandshakeSSL -  OnTlsTcpNetworkAccepted return false", 
 				_object_name.c_str()));
 		
 		if(_accept_socket_ssl != nullptr)

@@ -93,14 +93,14 @@ enum class CodecType : int32_t
 //===============================================================================================
 // Codec Type
 //===============================================================================================
-enum class PacketyzerStreamingType : int32_t
+enum class PacketizerStreamingType : int32_t
 {
 	Both,		// Video + Audio
 	VideoOnly,
 	AudioOnly,
 };
 
-enum class PacketyzerType : int32_t
+enum class PacketizerType : int32_t
 {
 	Dash,
 	Hls,

@@ -8,14 +8,12 @@
 #include "media/media_define.h"
 #include <mutex>
 #include <memory>
-#include <media/hls/hls_packetyzer.h>
-#include <media/dash/dash_packetyzer.h>
+#include <media/hls/hls_packetizer.h>
+#include <media/dash/dash_packetizer.h>
 
 #pragma pack(1)
 
 class MainObject;
-
-
 
 enum class StreamStatus
 {
@@ -64,28 +62,28 @@ public:
 		error_code = StreamError::None;
 		provider_index_key = provider_index_key_;
 		provider_ip = provider_ip_;
-		// hls_packetyzer = nullptr;
-		dash_packetyzer = nullptr;
+		// hls_packetizer = nullptr;
+		dash_packetizer = nullptr;
 	}
 
-	bool CreatePacketyzer(MediaInfo	media_info_, 
+	bool CreatePacketizer(MediaInfo	media_info_, 
 						std::string segment_prefix_, 
 						uint32_t segment_duration_,
 						uint32_t segment_count_)
 	{
 		/*
-		hls_packetyzer = std::make_unique<HlsPacketyzer>(stream_key.first.c_str(), 
+		hls_packetizer = std::make_unique<HlsPacketizer>(stream_key.first.c_str(), 
 														stream_key.second.c_str(),
-														PacketyzerStreamingType::Both,
+														PacketizerStreamingType::Both,
 														segment_prefix_,
 														segment_duration_,
 														segment_count_,
 														media_info_);
 														*/
 		
-		dash_packetyzer = std::make_unique<DashPacketyzer>(stream_key.first.c_str(),
+		dash_packetizer = std::make_unique<DashPacketizer>(stream_key.first.c_str(),
 														stream_key.second.c_str(),
-														PacketyzerStreamingType::Both,
+														PacketizerStreamingType::Both,
 														segment_prefix_,
 														segment_duration_,
 														segment_count_,
@@ -101,13 +99,13 @@ public:
 	{
 		if (frame->type != FrameType::AudioFrame)
 		{
-			//hls_packetyzer->AppendVideoFrame(frame);
-			dash_packetyzer->AppendVideoFrame(frame);
+			//hls_packetizer->AppendVideoFrame(frame);
+			dash_packetizer->AppendVideoFrame(frame);
 		}
 		else
 		{
-			//hls_packetyzer->AppendAudioFrame(frame);
-			dash_packetyzer->AppendAudioFrame(frame);
+			//hls_packetizer->AppendAudioFrame(frame);
+			dash_packetizer->AppendAudioFrame(frame);
 		}
 		
 		return true;
@@ -123,8 +121,8 @@ public:
 	uint32_t		provider_ip;
 
 	MediaInfo		media_info;
-	std::unique_ptr<HlsPacketyzer> hls_packetyzer; 
-	std::unique_ptr<DashPacketyzer> dash_packetyzer;
+	std::unique_ptr<HlsPacketizer> hls_packetizer; 
+	std::unique_ptr<DashPacketizer> dash_packetizer;
 };
 
 #pragma pack()

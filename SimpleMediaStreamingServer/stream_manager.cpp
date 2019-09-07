@@ -63,8 +63,8 @@ bool StreamManager::SetCompleteState(const StreamKey& stream_key, MediaInfo& med
 	{
 		auto stream_info = item->second;
 
-		// temp(hls packetyzer create)
-		stream_info->CreatePacketyzer(media_info, "test", 5, 3);
+		// temp(hls packetizer create)
+		stream_info->CreatePacketizer(media_info, "test", 5, 3);
 
 		stream_info->state_code = StreamStatus::Complete;
 
@@ -192,7 +192,7 @@ bool StreamManager::GetPlaylist(const StreamKey& stream_key, PlaylistType type, 
 
 	if (stream_info != nullptr)
 	{
-		return stream_info->dash_packetyzer->GetPlayList(playlist);
+		return stream_info->dash_packetizer->GetPlayList(playlist);
 	}
 
 	return false;
@@ -210,7 +210,7 @@ bool StreamManager::GetSegmentData(const StreamKey& stream_key,
 
 	if (stream_info != nullptr)
 	{
-		auto segment = stream_info->dash_packetyzer->GetSegmentData(file_name); 
+		auto segment = stream_info->dash_packetizer->GetSegmentData(file_name); 
 		if (segment != nullptr)
 		{
 			data = segment->data;

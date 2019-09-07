@@ -3,7 +3,7 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#include "dash_packetyzer.h"
+#include "dash_packetizer.h"
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
@@ -15,15 +15,15 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-DashPacketyzer::DashPacketyzer(const std::string& app_name,
+DashPacketizer::DashPacketizer(const std::string& app_name,
 							const std::string& stream_name,
-							PacketyzerStreamingType stream_type,
+							PacketizerStreamingType stream_type,
 							const std::string& segment_prefix,
 							uint32_t segment_duration,
 							uint32_t segment_count,
-							MediaInfo& media_info) : Packetyzer(app_name,
+							MediaInfo& media_info) : Packetizer(app_name,
 																stream_name,
-																PacketyzerType::Dash,
+																PacketizerType::Dash,
 																stream_type,
 																segment_prefix,
 																segment_duration,
@@ -58,7 +58,7 @@ DashPacketyzer::DashPacketyzer(const std::string& app_name,
 //====================================================================================================
 // Destructor
 //====================================================================================================
-DashPacketyzer::~DashPacketyzer()
+DashPacketizer::~DashPacketizer()
 {
 	_video_frame_list.clear();
 	_audio_frame_list.clear();
@@ -67,7 +67,7 @@ DashPacketyzer::~DashPacketyzer()
 //====================================================================================================
 // Dash File Type
 //====================================================================================================
-DashFileType DashPacketyzer::GetFileType(const std::string& file_name)
+DashFileType DashPacketizer::GetFileType(const std::string& file_name)
 {
 	if (file_name == DASH_MPD_VIDEO_INIT_FILE_NAME)
 		return DashFileType::VideoInit;
@@ -89,7 +89,7 @@ DashFileType DashPacketyzer::GetFileType(const std::string& file_name)
 // - sps/pps
 // - init m4s create
 //====================================================================================================
-bool DashPacketyzer::VideoInit(const std::shared_ptr<std::vector<uint8_t>>& frame_data)
+bool DashPacketizer::VideoInit(const std::shared_ptr<std::vector<uint8_t>>& frame_data)
 {
 	
 	// Video init m4s Create
@@ -125,7 +125,7 @@ bool DashPacketyzer::VideoInit(const std::shared_ptr<std::vector<uint8_t>>& fram
 // - channels
 // - init m4s create
 //====================================================================================================
-bool DashPacketyzer::AudioInit()
+bool DashPacketizer::AudioInit()
 {
 	std::shared_ptr<std::vector<uint8_t>> temp = nullptr;
 
@@ -160,7 +160,7 @@ bool DashPacketyzer::AudioInit()
 // Video Frame Append
 // - Video(Audio) Segment m4s Create
 //====================================================================================================
-bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
+bool DashPacketizer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_video_init)
 	{
@@ -209,7 +209,7 @@ bool DashPacketyzer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 // Audio Frame Append
 // - Audio Segment m4s Create
 //====================================================================================================
-bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
+bool DashPacketizer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 {
 	if (!_audio_init)
 	{
@@ -247,7 +247,7 @@ bool DashPacketyzer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 // Video Segment Write
 // - Duration/Key Frame 확인 이후 이전 데이터 까지 생성
 //====================================================================================================
-bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
+bool DashPacketizer::VideoSegmentWrite(uint64_t max_timestamp)
 {
 	uint64_t start_timestamp = 0;
 	std::vector<std::shared_ptr<SampleData>> sample_data_list;
@@ -306,7 +306,7 @@ bool DashPacketyzer::VideoSegmentWrite(uint64_t max_timestamp)
 // - 비디오 Segment 생성이후 생성 or Audio Only 에서 생성
 //====================================================================================================
 #define AAC_SAMPLES_PER_FRAME (1024)
-bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
+bool DashPacketizer::AudioSegmentWrite(uint64_t max_timestamp)
 {
 	uint64_t start_timestamp = 0;
 	uint64_t end_timestamp = 0;
@@ -361,7 +361,7 @@ bool DashPacketyzer::AudioSegmentWrite(uint64_t max_timestamp)
 // GetSegmentPlayInfos
 // - video/audio mpd timeline
 //====================================================================================================
-bool DashPacketyzer::GetSegmentPlayInfos(std::string& video_urls,
+bool DashPacketizer::GetSegmentPlayInfos(std::string& video_urls,
 										std::string& audio_urls,
 										double& time_shift_buffer_depth,
 										double& minimumUpdatePeriod)
@@ -375,8 +375,8 @@ bool DashPacketyzer::GetSegmentPlayInfos(std::string& video_urls,
 	std::vector<std::shared_ptr<SegmentInfo>> video_segment_datas;
 	std::vector<std::shared_ptr<SegmentInfo>> audio_segment_datas;
 
-	Packetyzer::GetVideoPlaySegments(video_segment_datas);
-	Packetyzer::GetAudioPlaySegments(audio_segment_datas);
+	Packetizer::GetVideoPlaySegments(video_segment_datas);
+	Packetizer::GetAudioPlaySegments(audio_segment_datas);
 
 	for (uint32_t index = 0; index < video_segment_datas.size(); index++)
 	{
@@ -432,7 +432,7 @@ bool DashPacketyzer::GetSegmentPlayInfos(std::string& video_urls,
 // PlayList(mpd) Update
 // - 차후 자동 인덱싱 사용시 참고 : LSN = floor(now - (availabilityStartTime + PST) / segmentDuration + startNumber - 1)
 //====================================================================================================
-bool DashPacketyzer::UpdatePlaylist()
+bool DashPacketizer::UpdatePlaylist()
 {
 	std::ostringstream play_list_stream;
 	std::string video_urls;
@@ -499,7 +499,7 @@ bool DashPacketyzer::UpdatePlaylist()
 	std::string playlist = play_list_stream.str().c_str();
 	SetPlayList(playlist);
 
-	if (_streaming_type == PacketyzerStreamingType::Both && _streaming_start)
+	if (_streaming_type == PacketizerStreamingType::Both && _streaming_start)
 	{
 		if (video_urls.empty())
 			LOG_WARNING_WRITE(("Dash video segment urls empty - stream(%s/%s)", _app_name.c_str(), _stream_name.c_str()));
@@ -514,7 +514,7 @@ bool DashPacketyzer::UpdatePlaylist()
 //====================================================================================================
 // Get Segment
 //====================================================================================================
-const std::shared_ptr<SegmentInfo> DashPacketyzer::GetSegmentData(const std::string& file_name)
+const std::shared_ptr<SegmentInfo> DashPacketizer::GetSegmentData(const std::string& file_name)
 {
 	if (!_streaming_start)
 		return nullptr;
@@ -562,7 +562,7 @@ const std::shared_ptr<SegmentInfo> DashPacketyzer::GetSegmentData(const std::str
 //====================================================================================================
 // Set Segment
 //====================================================================================================
-bool DashPacketyzer::SetSegmentData(std::string file_name,
+bool DashPacketizer::SetSegmentData(std::string file_name,
 									uint64_t duration,
 									uint64_t timestamp,
 									std::shared_ptr<std::vector<uint8_t>>& data)

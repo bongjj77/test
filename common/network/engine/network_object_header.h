@@ -13,14 +13,10 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
 #include <vector>
-
 #include <deque>
 #include <mutex>
-#include <boost/asio/ssl.hpp>
-#include <openssl/ssl.h>
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
 #include "../../common_header.h"
 
 #define DEAUULT_SOCKET_BUFFER_SZIE						(8192)
@@ -53,8 +49,6 @@ typedef boost::asio::ip::tcp::acceptor	NetAcceptor;
 typedef boost::asio::ip::tcp::resolver	NetResolver;
 typedef boost::asio::ip::tcp::endpoint	NetTcpEndPoint;
 typedef boost::asio::steady_timer		NetTimer;
-typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket>  NetSocketSSL;
-
 typedef boost::asio::ip::udp::socket 	NetUdpSocket;
 typedef boost::asio::ip::udp::endpoint	NetUdpEndPoint;
 
@@ -94,12 +88,10 @@ static int64_t GetCurrentMilliSecond()
 //====================================================================================================
 // Network Interface 
 //====================================================================================================
-class INetworkCallback
+class ITcpNetwork
 {
 public:
 	virtual bool OnTcpNetworkAccepted(int object_key, std::shared_ptr<NetTcpSocket> socket, uint32_t ip, int port) = 0;			// Accepted
-	
-	virtual bool OnTcpNetworkAcceptedSSL(int object_key, std::shared_ptr<NetSocketSSL>  socket_ssl, uint32_t ip, int port) = 0;	// Accepted(SSL)
 	 
 	virtual bool OnTcpNetworkConnected(	int object_key,
 										NetConnectedResult result,
@@ -107,15 +99,6 @@ public:
 										std::shared_ptr<NetTcpSocket> socket,
 										unsigned ip,
 										int port) = 0;
-	
-	virtual bool OnTcpNetworkConnectedSSL(	int object_key,
-											NetConnectedResult result,
-											std::shared_ptr<std::vector<uint8_t>> connected_param,
-											std::shared_ptr<NetSocketSSL> socket,
-											unsigned ip,
-											int port) = 0;
-
-
 	virtual int OnNetworkClose(int object_key, int index_key, uint32_t ip, int port) = 0;
 
 };
