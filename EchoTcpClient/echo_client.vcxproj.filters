@@ -42,6 +42,12 @@
     <ClCompile Include="..\common\network\engine\udp_network_object.cpp">
       <Filter>network</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_tls_network_object.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\network\engine\tcp_tls_network_manager.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">
@@ -113,6 +119,12 @@
     </ClInclude>
     <ClInclude Include="..\common\network\protocol\test_protocol.h">
       <Filter>test_tcp_server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_tls_network_object.h">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\network\engine\tcp_tls_network_manager.h">
+      <Filter>network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

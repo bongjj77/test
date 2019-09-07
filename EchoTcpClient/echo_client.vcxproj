@@ -19,6 +19,8 @@
     <ClCompile Include="..\common\network\engine\network_manager.cpp" />
     <ClCompile Include="..\common\network\engine\tcp_network_manager.cpp" />
     <ClCompile Include="..\common\network\engine\tcp_network_object.cpp" />
+    <ClCompile Include="..\common\network\engine\tcp_tls_network_manager.cpp" />
+    <ClCompile Include="..\common\network\engine\tcp_tls_network_object.cpp" />
     <ClCompile Include="..\common\network\engine\udp_network_manager.cpp" />
     <ClCompile Include="..\common\network\engine\udp_network_object.cpp" />
     <ClCompile Include="..\common\thread_timer.cpp" />
@@ -39,6 +41,8 @@
     <ClInclude Include="..\common\network\engine\root_certificates.hpp" />
     <ClInclude Include="..\common\network\engine\tcp_network_manager.h" />
     <ClInclude Include="..\common\network\engine\tcp_network_object.h" />
+    <ClInclude Include="..\common\network\engine\tcp_tls_network_manager.h" />
+    <ClInclude Include="..\common\network\engine\tcp_tls_network_object.h" />
     <ClInclude Include="..\common\network\engine\udp_network_manager.h" />
     <ClInclude Include="..\common\network\engine\udp_network_object.h" />
     <ClInclude Include="..\common\network\protocol\test_protocol.h" />

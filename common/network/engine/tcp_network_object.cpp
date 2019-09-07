@@ -15,15 +15,10 @@
 TcpNetworkObject::TcpNetworkObject() 
 {
 	_recv_buffer				= std::make_shared<std::vector<uint8_t>>(DEAUULT_SOCKET_BUFFER_SZIE, 0);
-	
 	_create_time				= time(nullptr);
-		
 	_traffic_check_time			= GetCurrentMilliSecond();
-	
 	_max_send_data_size			= DEFAULT_MAX_WAIT_SEND_DATA_SIZE;
-	
-	_post_close_time_interval 	= DEFAULT_NETWORK_POST_CLOSE_TIMER_INTERVAL;
-	
+	_post_close_time_interval 	= DEFAULT_NETWORK_POST_CLOSE_TIMER_INTERVAL;	
 }
 
 //====================================================================================================
@@ -62,12 +57,7 @@ TcpNetworkObject::~TcpNetworkObject()
 	{
 		_socket = nullptr; 
 	}
-
-	if(_socket_ssl != nullptr)
-	{
-		_socket_ssl = nullptr; 
-	}
-
+ 
 	_network_callback 	= nullptr; 
 	_object_callback = nullptr; 
 
@@ -78,59 +68,27 @@ TcpNetworkObject::~TcpNetworkObject()
 //====================================================================================================
 bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 {
-		
-	if(param->socket == nullptr && param->enable_ssl == true)
+	if(param->socket == nullptr)
 	{
-		if(param->socket_ssl == nullptr)
-		{
-			return false; 
-		}
-
-		_is_support_ssl = true; 
-		_socket_ssl = param->socket_ssl;
-
-		try
-		{
-			_object_key			= param->object_key;
-			_object_name		= param->object_name;
-			_remote_ip_string	= _socket_ssl->lowest_layer().remote_endpoint().address().to_v4().to_string();
-			_remote_ip			= boost::asio::detail::socket_ops::network_to_host_long(_socket_ssl->lowest_layer().remote_endpoint().address().to_v4().to_ulong()); 
-			_remote_port		= _socket_ssl->lowest_layer().remote_endpoint().port();		
-		}
-		catch (std::exception& error)
-		{
-			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Create - Socket Exception - ip(%s)", 
-						param->object_name, _remote_ip_string.c_str())); 
-
-			return false;
-		}
-	
+		return false; 
 	}
-	else
+
+	_socket = param->socket;
+	_object_key = param->object_key;
+	_object_name = param->object_name;
+
+	try
 	{
-		if(param->socket == nullptr)
-		{
-			return false; 
-		}
+		_remote_ip_string = _socket->remote_endpoint().address().to_v4().to_string();
+		_remote_ip = boost::asio::detail::socket_ops::network_to_host_long(_socket->remote_endpoint().address().to_v4().to_ulong()); 
+		_remote_port = _socket->remote_endpoint().port();			
+	}
+	catch (const std::exception& e)
+	{
+		LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Create - Socket Exception - ip(%s) Error(%s)", 
+					param->object_name, _remote_ip_string.c_str(), e.what())); 
 
-		_socket = param->socket;
-
-		try
-		{
-			_object_key			= param->object_key;
-			_object_name		= param->object_name;
-			_remote_ip_string	= _socket->remote_endpoint().address().to_v4().to_string();
-			_remote_ip			= boost::asio::detail::socket_ops::network_to_host_long(_socket->remote_endpoint().address().to_v4().to_ulong()); 
-			_remote_port		= _socket->remote_endpoint().port();			
-		}
-		catch (const std::exception& e)
-		{
-			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Create - Socket Exception - ip(%s) Error(%s)", 
-						param->object_name, _remote_ip_string.c_str(), e.what())); 
-
-			return false;
-		}
-	
+		return false;
 	}
 	
 	_network_callback	= param->network_callback;
@@ -140,6 +98,58 @@ bool TcpNetworkObject::Create(TcpNetworkObjectParam *param)
 	return true;
 
 }
+
+
+//====================================================================================================
+// IsOpened  
+//====================================================================================================
+bool TcpNetworkObject::IsOpened()
+{
+	return _socket->is_open();
+}
+
+//====================================================================================================
+// SocketClose  
+//====================================================================================================
+void TcpNetworkObject::SocketClose()
+{
+	_socket->close();
+}
+
+//====================================================================================================
+// GetIoContext  
+//====================================================================================================
+boost::asio::io_context& TcpNetworkObject::GetIoContext()
+{
+	return (boost::asio::io_context&)_socket->get_executor().context();
+};
+
+//====================================================================================================
+// AsyncRead  
+//====================================================================================================
+void TcpNetworkObject::AsyncRead()
+{
+	_socket->async_read_some(boost::asio::buffer(*_recv_buffer),
+		boost::bind(&TcpNetworkObject::OnReceive,
+			shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
+//====================================================================================================
+// AsyncWrite  
+//====================================================================================================
+void TcpNetworkObject::AsyncWrite(std::shared_ptr<std::vector<uint8_t>> data)
+{
+	boost::asio::async_write(*_socket,
+		boost::asio::buffer(*(data)),
+		boost::bind(&TcpNetworkObject::OnSend,
+			shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
+
 
 //====================================================================================================
 // 전송 데이터 큐 정리 
@@ -160,39 +170,15 @@ void TcpNetworkObject::ClearSendDataQueue()
 //====================================================================================================
 bool TcpNetworkObject::Start()
 {
-	// 비동기 패킷 수신 
+	if(IsOpened() == false)
+	{
+		LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Start SocketClose - key(%s) ip(%s)", 
+					_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+		return false; 
+	}
+	
+	AsyncRead();
 
-	if(_is_support_ssl == true)
-	{
-		if(_socket_ssl->lowest_layer().is_open() == false)
-		{
-			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Start SocketClose - key(%s) ip(%s)", 
-						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
-			return false; 
-		}
-		
-		_socket_ssl->async_read_some(boost::asio::buffer(*_recv_buffer),
-			boost::bind( &TcpNetworkObject::OnReceive,
-				shared_from_this(),
-				boost::asio::placeholders::error, 
-				boost::asio::placeholders::bytes_transferred));
-	}
-	else
-	{
-		if(_socket->is_open() == false)
-		{
-			LOG_ERROR_WRITE(("[%s] TcpNetworkObject::Start SocketClose - key(%s) ip(%s)", 
-						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
-			return false; 
-		}
-		
-		_socket->async_read_some(boost::asio::buffer(*_recv_buffer), 
-			boost::bind( &TcpNetworkObject::OnReceive, 
-				shared_from_this(),  
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::bytes_transferred));
-	}
- 
 	return true; 
 }
 
@@ -212,8 +198,7 @@ void TcpNetworkObject::PostClose()
 		return; 
 	}
 	
-	_post_close_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? (boost::asio::io_context&)_socket->get_executor().context() :
-		(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_post_close_timer = std::make_shared<NetTimer>(GetIoContext());
 	
 	_post_close_timer->expires_from_now(std::chrono::nanoseconds(_post_close_time_interval * 1000000));
 
@@ -268,7 +253,8 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 
 	auto send_data = std::make_shared<NetSendData>();
 
-	send_data->sned_time		= 0; 
+	send_data->sned_time = 0;
+
 	if (is_data_copy) 
 		send_data->data = std::make_shared<std::vector<uint8_t>>(data->begin(), data->end()); 
 	else	
@@ -283,35 +269,13 @@ bool TcpNetworkObject::PostSend(std::shared_ptr<std::vector<uint8_t>> data, bool
 	if(_send_data_queue.size() == 1 && _is_closeing == false)
 	{
 		auto send_data = _send_data_queue.front();
+				
+		if(IsOpened() == true)
+		{
+			send_data->sned_time = time(nullptr);
 
-		//패킷 전송 이벤트 설정 
-		if(_is_support_ssl == true)
-		{
-			if(_socket_ssl->lowest_layer().is_open() == true)
-			{
-				send_data->sned_time = time(nullptr); 
-				boost::asio::async_write(*_socket_ssl, 
-					boost::asio::buffer(*(send_data->data)), 
-					boost::bind( &TcpNetworkObject::OnSend, 
-								shared_from_this(),  
-								boost::asio::placeholders::error, 
-								boost::asio::placeholders::bytes_transferred));
-			}
-		}
-		else
-		{
-			if(_socket->is_open() == true)
-			{
-				send_data->sned_time = time(nullptr); 
-				boost::asio::async_write(*_socket, 
-					boost::asio::buffer(*(send_data->data)), 
-					boost::bind( &TcpNetworkObject::OnSend, 
-								shared_from_this(),  
-								boost::asio::placeholders::error, 
-								boost::asio::placeholders::bytes_transferred));
-			}
-		}
-	
+			AsyncWrite(send_data->data);
+		}	
 	}
 	
 	return true; 
@@ -427,30 +391,12 @@ void TcpNetworkObject::OnReceive(const  NetErrorCode & error, size_t data_size)
 		
 	
 
-	//데이터 수신 이벤트 재설정 
-	if(_is_support_ssl == true)
-	{
-		if(_is_closeing == false && _socket_ssl->lowest_layer().is_open() == true)
-		{
-			_socket_ssl->async_read_some(boost::asio::buffer(*_recv_buffer), 
-				boost::bind( &TcpNetworkObject::OnReceive, 
-					shared_from_this(),  
-					boost::asio::placeholders::error, 
-					boost::asio::placeholders::bytes_transferred));
-		}
-	}
-	else
-	{
-		if(_is_closeing == false && _socket->is_open() == true)
-		{
-			_socket->async_read_some(boost::asio::buffer(*_recv_buffer), 
-				boost::bind( &TcpNetworkObject::OnReceive, 
-					shared_from_this(),  
-					boost::asio::placeholders::error, 
-					boost::asio::placeholders::bytes_transferred));
-		}
-	}
 	
+	if(_is_closeing == false && IsOpened() == true)
+	{
+		AsyncRead();
+	}
+		
 	//Traffic Rate 
 	current_time	= time(nullptr); 
 	_recv_traffic 	+= process_size*8;	
@@ -535,35 +481,14 @@ void TcpNetworkObject::OnSend(const  NetErrorCode & error, size_t data_size)
 			if(_is_closeing == false)
 			{
 				auto send_data = _send_data_queue.front();
+								
+				if(send_data->data != nullptr && IsOpened() == true)
+				{
+					send_data->sned_time = time(nullptr); 
+
+					AsyncWrite(send_data->data);
+				}
 				
-				if(_is_support_ssl == true)
-				{
-					if(send_data->data != nullptr && _socket_ssl->lowest_layer().is_open() == true)
-					{
-						send_data->sned_time = time(nullptr); 
-
-						boost::asio::async_write(*_socket_ssl, 
-							boost::asio::buffer(*(send_data->data)), 
-							boost::bind(&TcpNetworkObject::OnSend, 
-								shared_from_this(), 
-								boost::asio::placeholders::error, 
-								boost::asio::placeholders::bytes_transferred));
-					}
-				}
-				else
-				{
-					if(send_data->data != nullptr && _socket->is_open() == true)
-					{
-						send_data->sned_time = time(nullptr); 
-
-						boost::asio::async_write(*_socket, 
-							boost::asio::buffer(*(send_data->data)), 
-							boost::bind(&TcpNetworkObject::OnSend, 
-								shared_from_this(), 
-								boost::asio::placeholders::error, 
-								boost::asio::placeholders::bytes_transferred));
-					}
-				}
 				
 			}
 		}
@@ -594,9 +519,7 @@ void TcpNetworkObject::SetKeepAliveSendTimer(int interval, TcpKeepaliveSendCallb
 		_keep_alive_send_timer = nullptr; 
 	}
 	
-	_keep_alive_send_timer = std::make_shared<NetTimer>(_is_support_ssl == false ?
-										(boost::asio::io_context&)_socket->get_executor().context() : 
-										(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_keep_alive_send_timer = std::make_shared<NetTimer>(GetIoContext());
 
 	_keepalive_send_callback 	= callback; 
 	SetNetworkTimer(_keep_alive_send_timer, (int)NetworkTimer::KeepaliveSend, interval);
@@ -614,9 +537,7 @@ void TcpNetworkObject::SetKeepAliveCheckTimer(int interval, TcpKeepAliveCheckCal
 		_keepalive_check_timer = nullptr; 
 	}
 	
-	_keepalive_check_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? 
-												(boost::asio::io_context&)_socket->get_executor().context() :
-												(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_keepalive_check_timer = std::make_shared<NetTimer>(GetIoContext());
 	_keepalive_check_callbak 	= callback; 
 	SetNetworkTimer(_keepalive_check_timer, (int)NetworkTimer::KeepaliveCheck, interval);
 }
@@ -633,9 +554,7 @@ void TcpNetworkObject::SetCloseTimer()
 		_close_timer = nullptr; 
 	}
 	
-	_close_timer = std::make_shared<NetTimer>(_is_support_ssl == false ? 
-											(boost::asio::io_context&)_socket->get_executor().context() :
-											(boost::asio::io_context&)_socket_ssl->lowest_layer().get_executor().context());
+	_close_timer = std::make_shared<NetTimer>(GetIoContext());
 	SetNetworkTimer(_close_timer, (int)NetworkTimer::Close, DEFAULT_NETWORK_CLOSE_TIMER_INTERVAL);
 }
 
@@ -755,36 +674,10 @@ bool TcpNetworkObject::PostCloseTimerProc()
 	if(_keepalive_check_timer != nullptr)	_keepalive_check_timer->cancel(); 	// KeepAlive 체크 타이머 종료 
  	if(_close_timer != nullptr)			_close_timer->cancel(); 			//종료 타이머 종료 
 	if(_post_close_timer != nullptr)		_post_close_timer->cancel(); 		//Post 종료 타이머 종료 
-		
-	if(_is_support_ssl == true)
-	{
-		_socket_ssl->lowest_layer().close();
-	}
-	else
-	{
-		_socket->close();
-	}
+
+	SocketClose();
 	
 	return true;
-}
-
-//====================================================================================================
-// IsOpened
-//====================================================================================================
-bool TcpNetworkObject::IsOpened()
-{ 
-	bool result = false; 
-
-	if(_is_support_ssl == true)
-	{
-		result =  _socket_ssl->lowest_layer().is_open();
-	}
-	else
-	{
-		result =  _socket->is_open();
-	}
-
-	return result;
 }
 
 //====================================================================================================

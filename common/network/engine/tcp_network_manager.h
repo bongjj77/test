@@ -43,34 +43,8 @@ public :
 		return Create(callback, service_pool, 0, object_name); 
 	}
 
-	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
-						std::shared_ptr<NetworkContextPool> service_pool,
-						std::string 			cert_file,
-						std::string				key_file,
-						std::string				verify_file,	
-						int 					listen_port, 
-						std::string 			object_name, 
-						bool 					private_accepter_service = false,
-						int						timeout_request			= 5, 
-						long 					timeout_content			= 300);
-
-	virtual bool CreateSSL(std::shared_ptr<INetworkCallback> callback,
-							std::shared_ptr<NetworkContextPool> service_pool,
-							std::string object_name)
-	{
-		std::string cert_file;
-		std::string key_file;
-		std::string verify_file;
-
-		return CreateSSL(callback, service_pool, cert_file, key_file, verify_file, 0, object_name);
-	}
-
-	bool				PostConnect(uint32_t ip, int port, std::shared_ptr<std::vector<uint8_t>> connected_param);
-	bool				PostConnect(std::string & ip_string, int port, std::shared_ptr<std::vector<uint8_t>> connected_param);
-	bool				PostConnectSSL(uint32_t ip, std::string host, int port, std::shared_ptr < std::vector<uint8_t>> connected_param);
-
-	bool				VerifyCallback(bool preverified, boost::asio::ssl::verify_context& ctx);
-
+	virtual bool		PostConnect(uint32_t ip, int port, std::shared_ptr<std::vector<uint8_t>> connected_param);
+	virtual bool		PostConnect(std::string & ip_string, int port, std::shared_ptr<std::vector<uint8_t>> connected_param);
 	
 	void				Close(int index_key){ Remove(index_key); } 
 	bool				FindIndexKey(uint32_t ip, int port, int & index_key); 
@@ -91,7 +65,7 @@ public :
 	static std::string	GetLocalIP();
 	
 protected :
-	void				Release();
+	virtual void				Release();
 		
 	virtual int			Insert(std::shared_ptr<TcpNetworkObject> object, 
 								bool is_keepalive_check = false, 
@@ -99,32 +73,15 @@ protected :
 
 	std::shared_ptr<TcpNetworkObject> Find(int index_key, bool erase = false);
 
-	bool PostAccept(); 
+	virtual bool PostAccept(); 
 
-	void OnAccept(const NetErrorCode & error);
+	virtual void OnAccept(const NetErrorCode & error);
 
 	virtual void OnConnected(const NetErrorCode& error,
 							std::shared_ptr<NetTcpSocket> socket,
 							std::shared_ptr<std::vector<uint8_t>> connected_param,
 							uint32_t ip,
 							int port);
-	
-	virtual void OnConnectedSSL(const NetErrorCode & error,
-								std::shared_ptr<NetSocketSSL> socket,
-								std::shared_ptr<std::vector<uint8_t>> connected_param,
-								uint32_t ip,
-								int port);
-
-	void OnAcceptSSL(const NetErrorCode & error);
-
-	void OnHandshakeSSL(const NetErrorCode & error);
-
-	void OnHandshakeSSL(const NetErrorCode & error, 
-						std::shared_ptr<NetSocketSSL> socket, 
-						std::shared_ptr<std::vector<uint8_t>> connected_param, 
-						uint32_t ip, 
-						int port);
-
 private : 
 	bool TimeoutConnect(const char * host,int port, int timeout, SOCKET & socket_handle);
 	
@@ -143,9 +100,5 @@ protected :
 	std::shared_ptr<NetTimer>			_release_timer;
 	std::shared_ptr<INetworkCallback>	_network_callback;
 	bool								_is_closeing;
-	bool								_is_support_ssl;
-	std::shared_ptr<boost::asio::ssl::context> _ssl_context;
-	int									_timeout_request;
-	int									_timeout_content;
-	std::shared_ptr<NetSocketSSL>		_accept_socket_ssl;	
+	
 }; 

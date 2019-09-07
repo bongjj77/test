@@ -232,7 +232,7 @@ bool MainObject::RemoveNetwork(int object_key, std::vector<int> & IndexKeys)
 // SignallingServer 연결 이후 처리 
 //====================================================================================================
 bool MainObject::TestTcpServerConnectedProc(NetConnectedResult result_code,
-											TestTcpServerConnectedParam* onnected_param,
+											TestTcpServerConnectedParam* connected_param,
 											std::shared_ptr<NetTcpSocket> socket,
 											uint32_t ip,
 											int port)

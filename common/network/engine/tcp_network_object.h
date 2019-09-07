@@ -21,9 +21,7 @@ struct TcpNetworkObjectParam
 	std::shared_ptr<IObjectCallback> object_callback;
 	std::string object_name;
 
-	std::shared_ptr<NetTcpSocket> socket;
-	bool enable_ssl;
-	std::shared_ptr<NetSocketSSL> socket_ssl;
+	std::shared_ptr<NetTcpSocket> socket;	
 	std::shared_ptr<INetworkCallback> network_callback;
 };
 
@@ -45,8 +43,7 @@ public:
 		
 	void			SetIndexKey(int index_key){ _index_key = index_key; } 
 	int				GetIndexKey(){ return _index_key; } 
-  	virtual bool	IsOpened();
-
+  	
 	uint32_t		GetRemoteIP(){ return _remote_ip; }
 	int				GetRemotePort(){ return _remote_port; }
 	std::string &	GetRemoteStringIP(){ return _remote_ip_string; }
@@ -59,7 +56,7 @@ public:
 
 	void			SetPostCloseTimerInterval(int nMilliSecond){ _post_close_time_interval = nMilliSecond; } 
 	bool			GetTrafficRate(double &send_bitrate, double &recv_bitrate);
-
+	virtual bool	IsOpened();
 protected :
 	virtual void 	OnReceive(const  NetErrorCode & error, size_t data_size);
 	void 			OnSend(const  NetErrorCode & error, size_t data_size);
@@ -78,6 +75,11 @@ protected :
 	// interface 
 	virtual int		RecvHandler(std::shared_ptr<std::vector<uint8_t>> &data) = 0;   
 
+	virtual void	SocketClose();
+	virtual boost::asio::io_context& GetIoContext();
+	virtual void	AsyncRead();
+	virtual void	AsyncWrite(std::shared_ptr<std::vector<uint8_t>> data);
+  
 protected : 
 	
 	int										_object_key = -1; 
@@ -85,10 +87,7 @@ protected :
 	std::shared_ptr<NetTcpSocket>			_socket = nullptr;
 	std::shared_ptr<INetworkCallback>		_network_callback = nullptr; 
 	std::shared_ptr<IObjectCallback>		_object_callback = nullptr;
-
-	bool									_is_support_ssl = false;
-	std::shared_ptr<NetSocketSSL>			_socket_ssl = nullptr;
-
+	
 	std::string								_remote_ip_string;
 	uint32_t 								_remote_ip = 0; 
 	int										_remote_port = 0; 

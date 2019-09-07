@@ -97,7 +97,7 @@ private:
 	
 	// Connect Proc
 	bool TestTcpServerConnectedProc(NetConnectedResult result_code,
-									TestTcpServerConnectedParam *onnected_param, 
+									TestTcpServerConnectedParam *connected_param, 
 									std::shared_ptr<NetTcpSocket> socket,
 									uint32_t ip, 
 									int port);

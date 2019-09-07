@@ -23,7 +23,6 @@
 //====================================================================================================
 TcpNetworkManager::TcpNetworkManager(int object_key) : NetworkManager(object_key)
 {
-	
 	_index_key 					= 0;
 	_max_createing_count 		= 0;
 	_network_info_map.clear();
@@ -33,15 +32,7 @@ TcpNetworkManager::TcpNetworkManager(int object_key) : NetworkManager(object_key
 	_release_timer				= nullptr;
 	_acceptor					= nullptr;
 	_accept_socket				= nullptr; 
-	_network_info_map.clear();
-
-
-	_is_support_ssl				= false;
-	_ssl_context				= nullptr;
-	_timeout_request			= 0;
-	_timeout_content			= 0;
-	_accept_socket_ssl			= nullptr;
-
+	_network_info_map.clear();  
 }
 
 //====================================================================================================
@@ -60,12 +51,6 @@ TcpNetworkManager::~TcpNetworkManager( )
 	{
 		_accept_socket = nullptr; 
 	}
-	
-	if(_accept_socket_ssl != nullptr)
-	{
-		_accept_socket_ssl = nullptr; 
-	}	
- 
 }
 
 //====================================================================================================
@@ -135,17 +120,7 @@ void TcpNetworkManager::Release()
 			_accept_socket->close(); 
 		}
 	}
-
-
-	if(_accept_socket_ssl != nullptr)
-	{
-		//if(_accept_socket_ssl->lowest_layer().is_open() == true)
-		{
-			_accept_socket_ssl->lowest_layer().close(); 
-		}
-	}	
-
-
+	 
 }
  
 //====================================================================================================
@@ -175,65 +150,7 @@ bool TcpNetworkManager::Create(std::shared_ptr<INetworkCallback> callback,
 
 	return true;
 }
-
-//====================================================================================================
-// SSL 생성 
-// - private_accepter_service : 연결 개수 가 많은 Network에서 사용(전용 Service 할당)  
-//====================================================================================================
-bool TcpNetworkManager::CreateSSL(	std::shared_ptr<INetworkCallback> callback,
-									std::shared_ptr<NetworkContextPool>service_pool,
-									std::string 		cert_file,
-									std::string			key_file,
-									std::string			verify_file,	
-									int 				listen_port, 
-									std::string			object_name, 
-									bool 				private_accepter_service,
-									int					timeout_request, 
-									long 				timeout_content) 
-{
-	bool result = false;
-	
-	// SSL 설정
-	_is_support_ssl = true;
-
-	// server
-	if (listen_port != 0)
-	{
-		_ssl_context = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
-
-		if (!cert_file.empty())
-			_ssl_context->use_certificate_chain_file(cert_file);
-
-		if (!key_file.empty())
-			_ssl_context->use_private_key_file(key_file, boost::asio::ssl::context::pem);
-
-		if (!verify_file.empty())
-		{
-			_ssl_context->load_verify_file(verify_file);
-			_ssl_context->set_verify_mode(boost::asio::ssl::verify_peer | boost::asio::ssl::verify_fail_if_no_peer_cert | boost::asio::ssl::verify_client_once);
-		}
-
-	}
-	// client 
-	else
-	{
-		_ssl_context = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12_client);
-	
-		// This holds the root certificate used for verification
-		load_root_certificates(*_ssl_context);
-
-		// Verify the remote server's certificate
-		_ssl_context->set_verify_mode(boost::asio::ssl::verify_peer);
-	}
-	
-	_timeout_request = timeout_request;
-	_timeout_content = timeout_content;
-	
-	result = Create(callback, service_pool, listen_port, object_name, private_accepter_service);
-
-	return result;
-}
-
+ 
 
 //====================================================================================================
 //삽입 
@@ -376,59 +293,7 @@ bool TcpNetworkManager::PostConnect(std::string & ip_string, int port, std::shar
 
 	return true;
 }
-
-//====================================================================================================
-// 연결(비동기 방식) 
-//====================================================================================================
-bool TcpNetworkManager::PostConnectSSL(uint32_t ip, std::string host, int port, std::shared_ptr < std::vector<uint8_t>> connected_param)
-{
-	std::string ip_string;
-
-	//Network Address -> host Address
-	ip = boost::asio::detail::socket_ops::network_to_host_long(ip);
-	ip_string = NetAddress_v4(ip).to_string();
-
-
-	auto socket = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
-	
-	socket->set_verify_callback(
-		boost::bind(&TcpNetworkManager::VerifyCallback, this, _1, _2));
-
-	/*
-	if (!SSL_set_tlsext_host_name(socket->native_handle(), host.c_str()))
-	{
-		return false;;
-	}
-	*/
-
-	boost::asio::ip::tcp::endpoint endPoint(boost::asio::ip::address::from_string(ip_string.c_str()), port);
-
-	socket->lowest_layer().async_connect(endPoint, boost::bind(&TcpNetworkManager::OnConnectedSSL, 
-																this, 
-																boost::asio::placeholders::error, 
-																socket, 
-																connected_param, 
-																inet_addr(ip_string.c_str()), port));
-
-	return true;
-}
-
-bool TcpNetworkManager::VerifyCallback(bool preverified, boost::asio::ssl::verify_context& ctx)
-{
-	// The verify callback can be used to check whether the certificate that is
-	// being presented is valid for the peer. For example, RFC 2818 describes
-	// the steps involved in doing this for HTTPS. Consult the OpenSSL
-	// documentation for more details. Note that the callback is called once
-	// for each certificate in the certificate chain, starting from the root
-	// certificate authority.
-	char subject_name[256];
-	X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
-	X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-	std::cout << "Verifying " << subject_name << "\n";
-
-	return true;
-}
-
+ 
 //====================================================================================================
 // Connected 결과   
 //====================================================================================================
@@ -474,107 +339,7 @@ void TcpNetworkManager::OnConnected(const NetErrorCode & error,
 			_object_name.c_str(), GetStringIP(ip).c_str(), port));
 	}
 }
-
-//====================================================================================================
-// Connected 결과   
-//====================================================================================================
-void TcpNetworkManager::OnConnectedSSL(	const NetErrorCode & error, 
-										std::shared_ptr<NetSocketSSL> socket, 
-										std::shared_ptr<std::vector<uint8_t>> connected_param, 
-										uint32_t ip, 
-										int port)
-{
-	NetConnectedResult result = NetConnectedResult::Success;
-
-	// 에러 
-	if (error)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnConnectedSSL - ip(%s) Port(%d) Error(%d) Message(%s) ",
-			_object_name.c_str(),
-			GetStringIP(ip).c_str(),
-			port,
-			error.value(),
-			error.message().c_str()));
-
-
-		if (socket != nullptr)
-		{
-			socket->lowest_layer().close();
-			socket = nullptr;
-		}
-
-
-		result = NetConnectedResult::Fail;
-
-	}
-	else
-	{
-		result = NetConnectedResult::Success;
-
-	}
-
-	
-	socket->async_handshake( boost::asio::ssl::stream_base::client, 
-							boost::bind(&TcpNetworkManager::OnHandshakeSSL,
-								this,
-								boost::asio::placeholders::error,
-								socket,
-								connected_param,
-								ip, 
-								port));
-	
-}
-
-//====================================================================================================
-// SSL HandShake 핸들러(client) 
-//====================================================================================================
-void TcpNetworkManager::OnHandshakeSSL(	const NetErrorCode & error, 
-										std::shared_ptr<NetSocketSSL> socket, 
-										std::shared_ptr<std::vector<uint8_t>> connected_param, 
-										uint32_t ip, 
-										int port)
-{
-	NetConnectedResult result = NetConnectedResult::Success;
-
-	// 에러 
-	if (error)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - ip(%s) Port(%d) Error(%d) Message(%s) ",
-			_object_name.c_str(),
-			GetStringIP(ip).c_str(),
-			port,
-			error.value(),
-			error.message().c_str()));
-
-
-		if (socket != nullptr)
-		{
-			socket->lowest_layer().close();
-			socket = nullptr;
-		}
-
-
-		result = NetConnectedResult::Fail;
-
-	}
-	else
-	{
-		result = NetConnectedResult::Success;
-
-	}
-
-	
-	// 연결 콜백 호출 
-	if (_network_callback->OnTcpNetworkConnectedSSL(_object_key, result, connected_param, socket, ip, port) == false)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - OnTcpNetworkConnected fail - ip(%s) Port(%d)",
-			_object_name.c_str(),
-			GetStringIP(ip).c_str(),
-			port));
-	}
-}
-
-
+ 
 //====================================================================================================
 // Accept 이벤트 설정  
 //====================================================================================================
@@ -602,45 +367,22 @@ bool TcpNetworkManager::PostAccept()
 				_object_name.c_str(), e.what()));
 			return false; 
 		}
-	}	
-	
-	if(_is_support_ssl == true)
-	{
-		if(_accept_socket_ssl != nullptr)
-		{
-			LOG_WARNING_WRITE(("[%s] TcpNetworkManager::PostAccept - _accept_socket_ssl not nullptr",
-				_object_name.c_str()));
-			
-			//if(_accept_socket_ssl->is_open() == true)
-			{
-				_accept_socket_ssl->lowest_layer().close();
-			}
-			_accept_socket_ssl = nullptr; 
-		}
-		
-		_accept_socket_ssl = std::make_shared<NetSocketSSL>(*(_context_pool->GetContext()), *_ssl_context);
-
-		_acceptor->async_accept(_accept_socket_ssl->lowest_layer(), boost::bind(&TcpNetworkManager::OnAcceptSSL, this, boost::asio::placeholders::error));
 	}
-	else
-	{
-
-		if(_accept_socket != nullptr)
-		{
-			LOG_WARNING_WRITE(("[%s] TcpNetworkManager::PostAccept - _accept_socket not nullptr", _object_name.c_str()));
-			
-			//if(_accept_socket->is_open() == true)
-			{
-				_accept_socket->close();
-			}
-			_accept_socket = nullptr; 
-		}
-		
-		_accept_socket  = std::make_shared<NetTcpSocket>(*(_context_pool->GetContext())); 
-		_acceptor->async_accept(*_accept_socket, boost::bind(&TcpNetworkManager::OnAccept, this, boost::asio::placeholders::error));
-	}
-
 	
+	if(_accept_socket != nullptr)
+	{
+		LOG_WARNING_WRITE(("[%s] TcpNetworkManager::PostAccept - _accept_socket not nullptr", _object_name.c_str()));
+			
+		//if(_accept_socket->is_open() == true)
+		{
+			_accept_socket->close();
+		}
+		_accept_socket = nullptr; 
+	}
+		
+	_accept_socket  = std::make_shared<NetTcpSocket>(*(_context_pool->GetContext())); 
+	_acceptor->async_accept(*_accept_socket, boost::bind(&TcpNetworkManager::OnAccept, this, boost::asio::placeholders::error));
+ 	
 	return true; 
 
 }
@@ -743,143 +485,7 @@ void TcpNetworkManager::OnAccept(const NetErrorCode & error)
 	PostAccept();
 	
 	return; 
-}	
-
-
-//====================================================================================================
-// SSL Accept Handler 
-//====================================================================================================
-void TcpNetworkManager::OnAcceptSSL(const NetErrorCode & error)
-{
-	// 에러 
-	if(error)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnSSLAccept - Error(%d) Message(%s)", 
-				_object_name.c_str(), error.value(), error.message().c_str()));
-				
-		if(_accept_socket_ssl != nullptr)
-		{
-			//if(_accept_socket_ssl->lowest_layer().is_open() == true)
-			{
-				_accept_socket_ssl->lowest_layer().close(); 
-			}
-			_accept_socket_ssl 		= nullptr;
-		}
-
-		if(_is_closeing == false)
-		{
-			PostAccept();
-		}
-		
-		return; 
-	}
-
-	if(_is_closeing == true)
-	{
-		return; 
-	}
-	
-	boost::asio::ip::tcp::no_delay option(true); 
-	_accept_socket_ssl->lowest_layer().set_option(option);
-
-	//auto timer = boost::get_timeout_timer(_accept_socket, _timeout_request);
-
-	_accept_socket_ssl->async_handshake(boost::asio::ssl::stream_base::server, boost::bind(&TcpNetworkManager::OnHandshakeSSL, this, boost::asio::placeholders::error));
-
-
-	return; 
 }
-
-
-//====================================================================================================
-// SSL HandShake Handler(accepter)
-//====================================================================================================
-void TcpNetworkManager::OnHandshakeSSL(const NetErrorCode & error)
-{
-	uint32_t	ip 		= 0; 
-	int 		port	= 0; 
-		
-	// 에러 
-	if(error)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Error(%d) Message(%s)", 
-				_object_name.c_str(), error.value(), error.message().c_str()));
-				
-		if(_accept_socket_ssl != nullptr)
-		{
-			//if(_accept_socket_ssl->lowest_layer().is_open() == true)
-			{
-				_accept_socket_ssl->lowest_layer().close(); 
-			}
-			_accept_socket_ssl = nullptr;
-		}
-
-		if(_is_closeing == false)
-		{
-			PostAccept();
-		}
-		
-		return; 
-	}
-
-	if(_is_closeing == true)
-	{
-		return; 
-	}
-		
-	// IP/Port Setting 
-	try
-	{
-		ip 	= boost::asio::detail::socket_ops::network_to_host_long(_accept_socket_ssl->lowest_layer().remote_endpoint().address().to_v4().to_ulong()); 
-		port	= _accept_socket_ssl->lowest_layer().remote_endpoint().port();	
-	}	
-	catch (std::exception& error)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Socket Exception", _object_name.c_str()));
-		
-		if(_accept_socket_ssl != nullptr)
-		{
-			//if(_accept_socket_ssl->lowest_layer().is_open() == true)
-			{
-				_accept_socket_ssl->lowest_layer().close(); 
-			}
-
-			_accept_socket_ssl = nullptr;
-		}
-
-		if(_is_closeing == false)
-		{
-			PostAccept();
-		}
-		
-		return;
-	}
-
-	if(_network_callback->OnTcpNetworkAcceptedSSL(_object_key, _accept_socket_ssl, ip, port) == false)
-	{
-		LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL -  OnTcpNetworkAcceptedSSL return false", 
-				_object_name.c_str()));
-		
-		if(_accept_socket_ssl != nullptr)
-		{
-			LOG_ERROR_WRITE(("[%s] TcpNetworkManager::OnHandshakeSSL - Socket Not nullptr", _object_name.c_str()));
-			
-			//if(_accept_socket_ssl->lowest_layer().is_open() == true)
-			{
-				_accept_socket_ssl->lowest_layer().close(); 
-			}
-			_accept_socket_ssl = nullptr; 
-		}
-	}
-
-	_accept_socket_ssl = nullptr; 
-	
-	PostAccept();
-		
-	return;
-}
-
-
 
 //====================================================================================================
 // 검색(IP,Port)

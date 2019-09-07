@@ -101,7 +101,7 @@ bool LoadConfigFile(char * szProgramPath)
 	
 
 	// Config 파일 로드 
-	if (CONFIG_PARSER.LoadFile(config_file_path) == false) 
+	if (ConfigParser::GetInstance().LoadFile(config_file_path) == false)
 	{
 		return false;
 	}
@@ -114,7 +114,7 @@ bool LoadConfigFile(char * szProgramPath)
 //====================================================================================================
 int main(int argc, char* argv[])
 {	
-	// 설정 파일 로드 
+	// config file load
 	if (LoadConfigFile(argv[0]) == false) 
 	{
 		fprintf(stderr, "Config file not found \r\n");
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 #endif
  
 	// Log file init
-	if(LOG_INIT(GET_CONFIG_VALUE(CONFIG_LOG_FILE_PATH), atoi(GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR))) == false)
+	if(LogInit(GET_CONFIG_VALUE(CONFIG_LOG_FILE_PATH), atoi(GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR))) == false)
 	{	
 		fprintf(stderr,"%s Log System Error \n", _PROGREAM_NAME_ );  
 		//return -1; 
@@ -143,7 +143,8 @@ int main(int argc, char* argv[])
 
 	// setting crate param
 	auto create_param = std::make_unique<CreateParam>();
-	 
+	std::string host_name = GetLocalHostName();
+
 	create_param->version				= GET_CONFIG_VALUE(CONFIG_VERSION);
 	create_param->thread_pool_count		= atoi(GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT));
 	create_param->debug_mode			= atoi(GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)) == 1 ? true : false;
@@ -152,15 +153,8 @@ int main(int argc, char* argv[])
 	create_param->local_ip				= inet_addr(GET_CONFIG_VALUE(CONFIG_LOCAL_IP));
 	create_param->test_tcp_server_ip	= inet_addr(GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_IP));
 	create_param->test_tcp_server_port	= atoi(GET_CONFIG_VALUE(CONFIG_TEST_TCP_SERVER_PORT));
-
+	create_param->real_host_name = host_name.empty() == false ? host_name : create_param->host_name;
 	create_param->start_time = time(nullptr);
-
-	// Real Host Setting 
-	std::string host_name;
-	if (GetLocalHostName(host_name) == true)	create_param->real_host_name = host_name;
-	else										create_param->real_host_name = create_param->host_name;
-
-	LOG_INFO_WRITE(("Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
 	auto main_object = std::make_shared<MainObject>();;
@@ -170,11 +164,8 @@ int main(int argc, char* argv[])
 		LOG_WRITE(("[ %s ] MainObject Create Error", _PROGREAM_NAME_));
 		return -1;
 	}
- 
-	std::string time_string; 
-
-	GetStringTime(time_string, 0);
-	LOG_WRITE(("===== [ %s Start(%s)] =====", _PROGREAM_NAME_, time_string.c_str()));
+  
+	LOG_WRITE(("===== [ %s Start(%s)] =====", _PROGREAM_NAME_, GetStringTime(0).c_str()));
 
 	// process main loop
 	while(g_run == true)
@@ -188,11 +179,10 @@ int main(int argc, char* argv[])
         }
 #endif
 	}
-
-	GetStringTime(time_string, 0);
-	LOG_WRITE(("===== [ %s End(%s) ] =====", _PROGREAM_NAME_, time_string.c_str()));
+ 
+	LOG_WRITE(("===== [ %s End(%s) ] =====", _PROGREAM_NAME_, GetStringTime(0).c_str()));
 	
-	CONFIG_PARSER.UnloadFile();
+	ConfigParser::GetInstance().UnloadFile();
 
     // network release 
     ReleaseNetwork();
