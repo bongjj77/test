@@ -4,7 +4,6 @@
 //====================================================================================================
 
 #include "main_object.h"
-#include "openssl/ssl.h"
 #include <iomanip>
 
 enum class Timer

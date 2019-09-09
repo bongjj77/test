@@ -26,6 +26,9 @@ Source
 Windows build
 
 		- boost 1.70 install
+		   visual studio 64bit cmd windows
+		   $ boostrap.bat
+		   $ toolset=msvc-14.2 address-model=64 link=static threading=multi runtime-link=shared 
     
 		- open ssl
 
