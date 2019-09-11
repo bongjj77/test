@@ -71,7 +71,7 @@ public:
 						uint32_t segment_duration_,
 						uint32_t segment_count_)
 	{
-		/*
+		
 		hls_packetizer = std::make_unique<HlsPacketizer>(stream_key.first.c_str(), 
 														stream_key.second.c_str(),
 														PacketizerStreamingType::Both,
@@ -79,8 +79,9 @@ public:
 														segment_duration_,
 														segment_count_,
 														media_info_);
-														*/
+														
 		
+		/*
 		dash_packetizer = std::make_unique<DashPacketizer>(stream_key.first.c_str(),
 														stream_key.second.c_str(),
 														PacketizerStreamingType::Both,
@@ -89,6 +90,8 @@ public:
 														segment_count_,
 														media_info_);
 
+		*/
+		
 
 		media_info = media_info_;
 
@@ -97,15 +100,20 @@ public:
 
 	bool AppendFrame(std::shared_ptr<FrameInfo>& frame)
 	{
+		
 		if (frame->type != FrameType::AudioFrame)
 		{
-			//hls_packetizer->AppendVideoFrame(frame);
-			dash_packetizer->AppendVideoFrame(frame);
+			auto copy_frame = std::make_shared<FrameInfo>(frame);
+
+			hls_packetizer->AppendVideoFrame(copy_frame);
+			// dash_packetizer->AppendVideoFrame(frame);
 		}
 		else
 		{
-			//hls_packetizer->AppendAudioFrame(frame);
-			dash_packetizer->AppendAudioFrame(frame);
+			auto copy_frame = std::make_shared<FrameInfo>(frame);
+
+			hls_packetizer->AppendAudioFrame(copy_frame);
+			// dash_packetizer->AppendAudioFrame(frame);
 		}
 		
 		return true;

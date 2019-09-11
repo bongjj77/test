@@ -120,6 +120,8 @@ enum class SegmentDataType : int32_t
 struct FrameInfo
 {
 public:
+
+	
 	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, int size_, uint8_t* data_)
 	{
 		timestamp = timestamp_;
@@ -129,6 +131,7 @@ public:
 		timescale = 0;
 	}
 
+	// reference data
 	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, std::shared_ptr<std::vector<uint8_t>> data_)
 	{
 		timestamp = timestamp_;
@@ -136,6 +139,16 @@ public:
 		type = type_;
 		data = data_;
 		timescale = 0;
+	}
+
+	// Copy data
+	FrameInfo(const std::shared_ptr<FrameInfo> &frame)
+	{
+		timestamp = frame->timestamp;
+		cts = frame->cts;
+		type = frame->type;
+		timescale = frame->timescale;
+		data = std::make_shared<std::vector<uint8_t>>(frame->data->begin(), frame->data->end());
 	}
 
 public:

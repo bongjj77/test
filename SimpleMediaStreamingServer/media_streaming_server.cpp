@@ -6,7 +6,7 @@
 #ifdef WIN32
 
 	#ifndef VC_EXTRALEAN
-		#define VC_EXTRALEAN		// Windows 헤더에서 거의 사용되지 않는 내용을 제외시킵니다.
+		#define VC_EXTRALEAN
 	#endif
 
 	#ifdef _DEBUG 
@@ -58,7 +58,7 @@ void SignalHandler(int sig)
 }
 
 //====================================================================================================
-// 기본 설정 정보 출력 
+// Config Info Print
 //====================================================================================================
 void SettingPrint( )
 {
@@ -76,11 +76,10 @@ void SettingPrint( )
 }
 
 //====================================================================================================
-// 설정 파일 로드 
+// Config File Load
 //====================================================================================================
 bool LoadConfigFile(char * program_path)
 {
-	// Confit 파일 경로 설정 
 	char config_file_path[MAX_PATH] = {0, };
 		
 #ifndef _WIN32
@@ -104,6 +103,17 @@ bool LoadConfigFile(char * program_path)
 	{
 		return false;
 	}
+
+	LOG_WRITE(("===================================================================================================="));
+	LOG_WRITE(("[ %s Config]", _PROGREAM_NAME_));
+	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, GET_CONFIG_VALUE(CONFIG_VERSION)));
+	LOG_WRITE(("    - %s : %s", CONFIG_THREAD_POOL_COUNT, GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
+	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME, GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
+	LOG_WRITE(("    - %s : %s", CONFIG_RTMP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HTTP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT)));
+	LOG_WRITE(("===================================================================================================="));
 
 	return true; 
 }
@@ -136,10 +146,7 @@ int main(int argc, char* argv[])
 	 
 	// network init
     InitNetwork();
-
-	// setting info out
-	SettingPrint( );
-
+ 
 	// setting crate param
 	auto create_param = std::make_unique<CreateParam>();
 	std::string host_name = GetLocalHostName();

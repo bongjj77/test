@@ -33,6 +33,14 @@ HlsPacketizer::HlsPacketizer(const std::string& app_name,
 	_video_enable = false;
 	_audio_enable = false;
 	_duration_margen = _segment_duration * 0.1;
+
+
+	_key_frame_header = std::make_unique<std::vector<uint8_t>>();
+	_key_frame_header->insert(_key_frame_header->end(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
+	_key_frame_header->insert(_key_frame_header->end(), media_info.avc_sps->begin(), media_info.avc_sps->end());
+	_key_frame_header->insert(_key_frame_header->end(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
+	_key_frame_header->insert(_key_frame_header->end(), media_info.avc_pps->begin(), media_info.avc_pps->end());
+
 }
 
 //====================================================================================================
@@ -68,6 +76,12 @@ bool HlsPacketizer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 		}
 	}
 
+	// header add 
+	if (frame->type == FrameType::VideoKeyFrame)
+		frame->data->insert(frame->data->begin(), _key_frame_header->begin(), _key_frame_header->end()); 
+	else
+		frame->data->insert(frame->data->begin(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
+
 	_frame_list.push_back(frame);
 
 	_last_video_append_time = time(nullptr);
@@ -98,6 +112,9 @@ bool HlsPacketizer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 			SegmentWrite(_frame_list[0]->timestamp, frame->timestamp - _frame_list[0]->timestamp);
 		}
 	}
+
+	// adts add 
+	
 
 	_frame_list.push_back(frame);
 
