@@ -69,6 +69,12 @@ bool LogWriter::Open(char *file_name)
 //====================================================================================================
 void LogWriter::LogWrite(LogType type, const char *format, ...)
 {
+	// level
+	if (type < _level_type)
+	{
+		return; 
+	}
+
     va_list vl;
 
     va_start(vl, format);

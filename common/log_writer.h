@@ -44,19 +44,21 @@ public:
     void LogWrite(LogType type, const char *format, ...);
 	void WriteLogV(LogType type, const char* format, va_list vl);
     void SetDailyBackupTime(int hour);
+	void SetLogLevel(LogType level_type) { _level_type = level_type; }
+	LogType GetLogLevel(LogType level_type) { return _level_type; }
 
 private:
 
-    FILE *		_log_file;
-    char *		_file_name;
+    FILE * _log_file;
+    char * _file_name;
 
-	time_t		_current_time;
-	time_t		_last_write_file;
+	time_t _current_time;
+	time_t _last_write_file;
 
-    int			_last_backup_day;
-    int			_dayily_backup_hour;
+    int _last_backup_day;
+    int _dayily_backup_hour;
 	std::mutex	_log_lock;
-
+	LogType _level_type = LogType::Custom;
 };
 
 
