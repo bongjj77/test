@@ -138,11 +138,11 @@ bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr
 }
 
 //====================================================================================================
-// KeepAlive Check 占쏙옙占쏙옙 
+// KeepAlive Check  
 //====================================================================================================
 bool RtmpEncoderObject::StartKeepAliveCheck(uint32_t keepalive_check_time)
 {
-	//KeepAlive 占쏙옙占쏙옙
+	//KeepAlive  
 	_keepalive_check_time = keepalive_check_time;
 
 	SetKeepAliveCheckTimer((uint32_t)(_keepalive_check_time * 1000 / 2), static_cast<bool (TcpNetworkObject::*)()>(&RtmpEncoderObject::KeepAliveCheck));
@@ -169,7 +169,7 @@ bool RtmpEncoderObject::KeepAliveCheck()
 		{
 			if (_log_lock == false)
 			{
-				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%s) ip(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string, time_gap));
+				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%d) ip(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string, time_gap));
 			}
 
 			if (_network_callback != nullptr)

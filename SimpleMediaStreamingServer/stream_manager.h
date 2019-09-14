@@ -67,18 +67,22 @@ public:
 	}
 
 	bool CreatePacketizer(MediaInfo	media_info_, 
-						std::string segment_prefix_, 
+						const std::string & segment_prefix_, 
 						uint32_t segment_duration_,
 						uint32_t segment_count_)
 	{
-		
+		media_info = media_info_;
+
+		media_info.video_timescale = HLS_TIMESCALE;
+		media_info.audio_timescale = HLS_TIMESCALE;
+				
 		hls_packetizer = std::make_unique<HlsPacketizer>(stream_key.first.c_str(), 
 														stream_key.second.c_str(),
 														PacketizerStreamingType::Both,
 														segment_prefix_,
 														segment_duration_,
-														segment_count_,
-														media_info_);
+														segment_count_, 
+														media_info);
 														
 		
 		/*
@@ -88,13 +92,10 @@ public:
 														segment_prefix_,
 														segment_duration_,
 														segment_count_,
-														media_info_);
+														media_info);
 
 		*/
 		
-
-		media_info = media_info_;
-
 		return true;
 	}
 

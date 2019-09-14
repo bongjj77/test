@@ -853,7 +853,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 		return true; 
 	}
 
-	auto frame = std::make_shared<FrameInfo>(header->timestamp, 0, FrameType::AudioFrame, frame_size, frame_data);
+	auto frame = std::make_shared<FrameInfo>(header->timestamp, 0, RTMP_TIMESCALE,FrameType::AudioFrame, frame_size, frame_data);
 
 	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame);
 }
@@ -976,7 +976,7 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 		return false; 
 	}
 	
-	auto frame = std::make_shared<FrameInfo>(header->timestamp, cts, frame_type, frame_size, frame_data);
+	auto frame = std::make_shared<FrameInfo>(header->timestamp, cts, RTMP_TIMESCALE, frame_type, frame_size, frame_data);
 	return ((IRtmpChunkStream *)_stream_interface)->OnChunkStreamData(_stream_key, frame);
 }
 

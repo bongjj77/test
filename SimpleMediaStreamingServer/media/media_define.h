@@ -122,23 +122,23 @@ struct FrameInfo
 public:
 
 	
-	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, int size_, uint8_t* data_)
+	FrameInfo(uint64_t timestamp_, uint64_t cts_, uint32_t timescale_, FrameType type_, int size_, uint8_t* data_)
 	{
 		timestamp = timestamp_;
 		cts = cts_;
-		type = type_;
-		data = std::make_shared<std::vector<uint8_t>>(data_, data_ + size_);
-		timescale = 0;
+		timescale = timescale_;
+		type = type_;		
+		data = std::make_shared<std::vector<uint8_t>>(data_, data_ + size_);		
 	}
 
 	// reference data
-	FrameInfo(uint32_t timestamp_, int cts_, FrameType type_, std::shared_ptr<std::vector<uint8_t>> data_)
+	FrameInfo(uint64_t timestamp_, uint64_t cts_, uint32_t timescale_, FrameType type_, std::shared_ptr<std::vector<uint8_t>> data_)
 	{
 		timestamp = timestamp_;
 		cts = cts_;
+		timescale = timescale_;
 		type = type_;
-		data = data_;
-		timescale = 0;
+		data = data_;		
 	}
 
 	// Copy data
@@ -146,16 +146,16 @@ public:
 	{
 		timestamp = frame->timestamp;
 		cts = frame->cts;
-		type = frame->type;
 		timescale = frame->timescale;
+		type = frame->type;
 		data = std::make_shared<std::vector<uint8_t>>(frame->data->begin(), frame->data->end());
 	}
 
 public:
 	uint64_t	timestamp; // dts or pts 
 	uint64_t	cts; // cts;
+	uint32_t	timescale;
 	FrameType	type;
-	uint32_t	timescale; 
 	std::shared_ptr<std::vector<uint8_t>> data;
 };
 

@@ -136,7 +136,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		//최소 토큰 개수 확인( GET/[Page]/HTTP) 
 		if (tokens.size() < 3)
 		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - key(%s) ip(%s)", 
+			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - key(%d) ip(%s)", 
 				_object_name, _index_key, _remote_ip_string));
 			return -1;
 		}
@@ -146,7 +146,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 
 		if (_http_version.size() > HTTP_VERSION_MAX_SIZE)
 		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - key(%s) ip(%s) Size(%d:%d)",
+			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - key(%d) ip(%s) Size(%d:%d)",
 				_object_name, _index_key, _remote_ip_string, _http_version.size(), HTTP_VERSION_MAX_SIZE));
 
 			return -1;
@@ -254,7 +254,9 @@ bool HttpResponseObject::SendErrorResponse(std::string error)
 		<< "Content-Length: " << http_body.str().size() << "\r\n\r\n"
 		<< http_body.str();
 
-	auto send_data = std::make_shared<std::vector<uint8_t>>(http_data.str().begin(), http_data.str().end());
+	const auto & data_string = http_data.str(); 
+
+	auto send_data = std::make_shared<std::vector<uint8_t>>(data_string.begin(), data_string.end());
 
 	return PostSend(send_data);
 }

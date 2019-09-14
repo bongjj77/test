@@ -142,16 +142,16 @@ std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
 
 	pars_info->ext = tokens[1];
  
-	if (pars_info->ext.compare(HLS_PLAYLIST_EXT) == 0) pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
-	else if (pars_info->ext.compare(DASH_PLAYLIST_EXT) == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
-	else if (pars_info->ext.compare(HLS_SEGMENT_EXT) == 0) pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
+	if (pars_info->ext.compare(HLS_PLAYLIST_EXT) == 0)			pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
+	else if (pars_info->ext.compare(DASH_PLAYLIST_EXT) == 0)	pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else if (pars_info->ext.compare(HLS_SEGMENT_EXT) == 0)		pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
 	else if (pars_info->ext.compare(DASH_SEGMENT_EXT) == 0)
 	{
-		if (pars_info->file.find("audio") >= 0) pars_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
-		else pars_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
+		if (pars_info->file.find("audio") >= 0)					pars_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
+		else													pars_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
 	}
-	else if (pars_info->ext.compare("xml") == 0) pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
-	else pars_info->content_type = HTTP_TEXT_HTML_CONTENT_TYPE;
+	else if (pars_info->ext.compare("xml") == 0)				pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else														pars_info->content_type = HTTP_TEXT_HTML_CONTENT_TYPE;
 
 	return pars_info;
 }

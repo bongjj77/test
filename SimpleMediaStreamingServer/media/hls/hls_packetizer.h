@@ -50,7 +50,7 @@ protected:
 	bool _audio_enable;
 	bool _video_enable;
 
-	// 0001 + sps + 0001 + pps
+	// 0001 + sps + 0001 + pps + 0001
 	std::unique_ptr<std::vector<uint8_t>> _key_frame_header = nullptr;
 };
 

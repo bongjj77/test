@@ -80,14 +80,13 @@ HlsPacketizer::HlsPacketizer(const std::string& app_name,
 	_video_enable = false;
 	_audio_enable = false;
 	_duration_margen = _segment_duration * 0.1;
-
-
+	
 	_key_frame_header = std::make_unique<std::vector<uint8_t>>();
 	_key_frame_header->insert(_key_frame_header->end(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
 	_key_frame_header->insert(_key_frame_header->end(), media_info.avc_sps->begin(), media_info.avc_sps->end());
 	_key_frame_header->insert(_key_frame_header->end(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
 	_key_frame_header->insert(_key_frame_header->end(), media_info.avc_pps->begin(), media_info.avc_pps->end());
-
+	_key_frame_header->insert(_key_frame_header->end(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
 }
 
 //====================================================================================================
@@ -109,7 +108,11 @@ bool HlsPacketizer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 	if (frame->timescale != _media_info.video_timescale)
 	{
 		frame->timestamp = ConvertTimescale(frame->timestamp, frame->timescale, _media_info.video_timescale);
-		frame->cts = ConvertTimescale(frame->cts, frame->timescale, _media_info.video_timescale);
+		if (frame->cts != 0)
+		{
+			frame->cts = ConvertTimescale(frame->cts, frame->timescale, _media_info.video_timescale);
+		}
+		
 		frame->timescale = _media_info.video_timescale;
 	}
 
@@ -126,7 +129,7 @@ bool HlsPacketizer::AppendVideoFrame(std::shared_ptr<FrameInfo>& frame)
 	// header add 
 	if (frame->type == FrameType::VideoKeyFrame)
 		frame->data->insert(frame->data->begin(), _key_frame_header->begin(), _key_frame_header->end()); 
-	else
+	else 
 		frame->data->insert(frame->data->begin(), g_avc_nal_header, g_avc_nal_header + sizeof(g_avc_nal_header));
 
 	_frame_list.push_back(frame);
@@ -145,9 +148,9 @@ bool HlsPacketizer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 	if (!_audio_init)
 		_audio_init = true;
 
-	if (frame->timescale == _media_info.audio_timescale)
+	if (frame->timescale != _media_info.audio_timescale)
 	{
-		frame->timestamp = ConvertTimescale(frame->timestamp, frame->timescale, _media_info.video_timescale);
+		frame->timestamp = ConvertTimescale(frame->timestamp, frame->timescale, _media_info.audio_timescale);
 		frame->timescale = _media_info.audio_timescale;
 	}
 
@@ -254,7 +257,7 @@ bool HlsPacketizer::UpdatePlaylist()
 		<< m3u8_play_list.str();
 
 	// Playlist 설정
-	std::string playlist = play_list_stream.str().c_str();
+	std::string playlist = play_list_stream.str();
 	SetPlayList(playlist);
 
 	if (_streaming_type == PacketizerStreamingType::Both && _streaming_start)
@@ -265,6 +268,9 @@ bool HlsPacketizer::UpdatePlaylist()
 		if (!_audio_enable)
 			LOG_WARNING_WRITE(("Hls audio segment problems - %s/%s", _app_name.c_str(), _stream_name.c_str()));
 	}
+
+	LOG_DEBUG_WRITE(("Hls playlist updqte - %s/%s", _app_name.c_str(), _stream_name.c_str()));
+
 
 	return true;
 }
@@ -282,7 +288,7 @@ const std::shared_ptr<SegmentInfo> HlsPacketizer::GetSegmentData(const std::stri
 
 	auto item = std::find_if(_video_segment_datas.begin(), _video_segment_datas.end(), [&](std::shared_ptr<SegmentInfo> const& value) -> bool
 							{
-								return value != nullptr ? value->file_name == file_name : false;
+								return value != nullptr ? (value->file_name == file_name) : false;
 							});
 
 	if (item == _video_segment_datas.end())

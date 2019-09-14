@@ -2,7 +2,7 @@
 
 Skill
 
-- c++14 / asio(boost 1.70) / network / visual studio 2019 / linux / windows
+- c++14 / asio(boost 1.70) / network / visual studio 2017/ linux / windows
 
 - Rtmp / HLS / Mpeg-Dash / Cmaf / http(s) / fMP4 / TS / Ultra Low Latency
 
@@ -28,7 +28,7 @@ Windows build
 		- boost 1.70 install
 		   visual studio 64bit cmd windows
 		   $ boostrap.bat
-		   $ toolset=msvc-14.2 address-model=64 link=static threading=multi runtime-link=shared 
+		   $ b2 toolset=msvc-14.1 address-model=64 link=static threading=multi runtime-link=shared 
     
 		- open ssl
 

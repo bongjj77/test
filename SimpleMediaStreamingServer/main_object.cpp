@@ -50,9 +50,7 @@ MainObject::MainObject()
 	_http_client_manager = std::make_shared<HttpClientManager>((int)NetworkObjectKey::HttpClient);
 
 	_network_table[(int)NetworkObjectKey::RtmpEncoder] = _rtmp_encoder_manager;
-	_network_table[(int)NetworkObjectKey::HttpClient] = _http_client_manager;
-
-	_stream_manager = std::make_shared<StreamManager>(shared_from_this());
+	_network_table[(int)NetworkObjectKey::HttpClient] = _http_client_manager;	
 }
 
 //====================================================================================================
@@ -92,6 +90,9 @@ void MainObject::Destroy()
 bool MainObject::Create(std::unique_ptr<CreateParam> create_param)
 {
 	_create_param = std::move(create_param);
+
+	// stream manager
+	_stream_manager = std::make_shared<StreamManager>(shared_from_this());
 
 	// IoService start
 	_network_context_pool = std::make_shared<NetworkContextPool>(_create_param->thread_pool_count);
@@ -204,7 +205,7 @@ int MainObject::OnNetworkClose(int object_key, int index_key, uint32_t ip, int p
 		return 0;
 	}
 
-	LOG_INFO_WRITE(("[%s] OnNetworkClose - key(%s) ip(%s) Port(%d)",
+	LOG_INFO_WRITE(("[%s] OnNetworkClose - key(%d) ip(%s) Port(%d)",
 		GetNetworkObjectName((NetworkObjectKey)object_key).c_str(), index_key, GetStringIP(ip).c_str(), port));
 
 	// remove session 
@@ -301,8 +302,8 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame)
 {
-	LOG_INFO_WRITE(("Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
-					stream_key.first.c_str(), stream_key.second.c_str(), frame->type, frame->timestamp));
+	//LOG_INFO_WRITE(("Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
+	//				stream_key.first.c_str(), stream_key.second.c_str(), frame->type, frame->timestamp));
 
 	if (!_stream_manager->AppendStreamData(stream_key, frame))
 	{

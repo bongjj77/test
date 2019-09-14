@@ -104,23 +104,13 @@ bool LoadConfigFile(char * program_path)
 		return false;
 	}
 
-	LOG_WRITE(("===================================================================================================="));
-	LOG_WRITE(("[ %s Config]", _PROGREAM_NAME_));
-	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, GET_CONFIG_VALUE(CONFIG_VERSION)));
-	LOG_WRITE(("    - %s : %s", CONFIG_THREAD_POOL_COUNT, GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
-	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
-	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
-	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME, GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
-	LOG_WRITE(("    - %s : %s", CONFIG_RTMP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT)));
-	LOG_WRITE(("    - %s : %s", CONFIG_HTTP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT)));
-	LOG_WRITE(("===================================================================================================="));
-
 	return true; 
 }
 
 //====================================================================================================
 // Main
 //====================================================================================================
+#include <vector>
 int main(int argc, char* argv[])
 {	
 	// config file load
@@ -143,7 +133,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr,"%s Log System Error \n", _PROGREAM_NAME_ );  
 		return -1; 
 	}
-	 
+			 
 	// network init
     InitNetwork();
  
@@ -165,7 +155,7 @@ int main(int argc, char* argv[])
 	LOG_INFO_WRITE(("Host Name - %s(%s) ", create_param->host_name.c_str(), create_param->real_host_name.c_str()));
  
 	// Main object create
-	auto main_object = std::make_unique<MainObject>();
+	auto main_object = std::make_shared<MainObject>();
 
    	if(main_object->Create(std::move(create_param)) == false)
 	{
@@ -173,6 +163,18 @@ int main(int argc, char* argv[])
 		return -1;
 	}
    
+
+	LOG_WRITE(("===================================================================================================="));
+	LOG_WRITE(("[ %s Config]", _PROGREAM_NAME_));
+	LOG_WRITE(("    - %s : %s", CONFIG_VERSION, GET_CONFIG_VALUE(CONFIG_VERSION)));
+	LOG_WRITE(("    - %s : %s", CONFIG_THREAD_POOL_COUNT, GET_CONFIG_VALUE(CONFIG_THREAD_POOL_COUNT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_DEBUG_MODE, GET_CONFIG_VALUE(CONFIG_DEBUG_MODE)));
+	LOG_WRITE(("    - %s : %s", CONFIG_SYS_LOG_BACKUP_HOUR, GET_CONFIG_VALUE(CONFIG_SYS_LOG_BACKUP_HOUR)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HOST_NAME, GET_CONFIG_VALUE(CONFIG_HOST_NAME)));
+	LOG_WRITE(("    - %s : %s", CONFIG_RTMP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_RTMP_LISTEN_PORT)));
+	LOG_WRITE(("    - %s : %s", CONFIG_HTTP_LISTEN_PORT, GET_CONFIG_VALUE(CONFIG_HTTP_LISTEN_PORT)));
+	LOG_WRITE(("==================================================================================================== \n"));
+
 	LOG_WRITE(("========== [ %s Start(%s)] ==========", _PROGREAM_NAME_, GetStringTime(0).c_str()));
 
 	// process main loop
