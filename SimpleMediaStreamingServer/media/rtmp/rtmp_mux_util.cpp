@@ -7,38 +7,37 @@
 
 uint8_t RtmpMuxUtil::ReadInt8(void * data)
 {
-	auto *data_pointer = (uint8_t *)data;
 	uint8_t return_value;
 
-	return_value = data_pointer[0];
+	return_value = ((uint8_t*)data)[0];
 
 	return return_value;
 }
 
 uint16_t RtmpMuxUtil::ReadInt16(void * data)
 {
-	auto * data_pointer = (uint8_t *)data;
-    uint16_t return_value;
+	uint16_t return_value;
 
-	return_value = (data_pointer[0] << 8) | data_pointer[1];
+	return_value = (((uint8_t*)data)[0] << 8) | ((uint8_t*)data)[1];
+
 	return return_value;
 }
 
 uint32_t RtmpMuxUtil::ReadInt24(void * data)
 {
-	auto * data_pointer = (uint8_t *)data;
 	uint32_t return_value;
 
-	return_value = (data_pointer[0] << 16) | (data_pointer[1] << 8) | data_pointer[2];
+	return_value = (((uint8_t*)data)[0] << 16) | (((uint8_t*)data)[1] << 8) | ((uint8_t*)data)[2];
 
 	return return_value;
 }
 
 uint32_t RtmpMuxUtil::ReadInt32(void * data)
 {
-	auto * data_pointer = (uint8_t *)data;
 	uint32_t return_value;
-	return_value = (data_pointer[0] << 24) | (data_pointer[1] << 16) | (data_pointer[2] << 8) | data_pointer[3];
+
+	return_value = (((uint8_t*)data)[0] << 24) | (((uint8_t*)data)[1] << 16) | (((uint8_t*)data)[2] << 8) | ((uint8_t*)data)[3];
+
 	return return_value;
 }
 
@@ -53,40 +52,32 @@ int RtmpMuxUtil::ReadInt32LE(void * data)
 
 int RtmpMuxUtil::WriteInt8(void * output, uint8_t value)
 {
-	auto *out_pointer = (uint8_t*)output;
-
-	out_pointer[0] = value;
+	((uint8_t*)output)[0] = value;
 
 	return sizeof(uint8_t);
 }
 
 int RtmpMuxUtil::WriteInt16(void * output, int16_t value)
 {
-	auto * out_pointer = (uint8_t*)output;
-
-	out_pointer[1] = (uint8_t)(value & 0xff);
-	out_pointer[0] = (uint8_t)(value >> 8);
+	((uint8_t*)output)[1] = (uint8_t)(value & 0xff);
+	((uint8_t*)output)[0] = (uint8_t)(value >> 8);
 	return sizeof(int16_t);
 }
 
 int RtmpMuxUtil::WriteInt24(void * output, int value)
 {
-	auto * out_pointer = (uint8_t*)output;
-
-	out_pointer[2] = (uint8_t)(value & 0xff);
-	out_pointer[1] = (uint8_t)(value >> 8);
-	out_pointer[0] = (uint8_t)(value >> 16);
+	((uint8_t*)output)[2] = (uint8_t)(value & 0xff);
+	((uint8_t*)output)[1] = (uint8_t)(value >> 8);
+	((uint8_t*)output)[0] = (uint8_t)(value >> 16);
 	return 3;
 }
 
 int RtmpMuxUtil::WriteInt32(void * output, int value)
 {
-	auto * out_pointer = (uint8_t*)output;
-
-	out_pointer[3] = (uint8_t)(value & 0xff);
-	out_pointer[2] = (uint8_t)(value >> 8);
-	out_pointer[1] = (uint8_t)(value >> 16);
-	out_pointer[0] = (uint8_t)(value >> 24);
+	((uint8_t*)output)[3] = (uint8_t)(value & 0xff);
+	((uint8_t*)output)[2] = (uint8_t)(value >> 8);
+	((uint8_t*)output)[1] = (uint8_t)(value >> 16);
+	((uint8_t*)output)[0] = (uint8_t)(value >> 24);
 	return sizeof(int);
 }
 

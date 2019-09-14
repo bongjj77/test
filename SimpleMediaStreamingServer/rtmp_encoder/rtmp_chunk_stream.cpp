@@ -780,18 +780,17 @@ bool RtmpChunkStream::SendAmfOnStatus(uint32_t chunk_stream_id, uint32_t stream_
 	return SendAmfCommand(message_header, document);
 }
 
-
 //====================================================================================================
 // ReceiveAudioMessage
 //====================================================================================================
 bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &message)
 {
-	int 				frame_size		= 0; 
-	uint8_t				*data			= nullptr;
-	uint8_t				*frame_data			= nullptr; 
-	int 				data_size 		= 0; 
-	uint8_t				control_header	= 0; 
-	bool				sequence_data	= false; 
+	int 		frame_size		= 0; 
+	uint8_t	*	data			= nullptr;
+	uint8_t	*	frame_data		= nullptr; 
+	int 		data_size 		= 0; 
+	uint8_t		control_header	= 0; 
+	bool		sequence_data	= false; 
 	CodecType	codec_type		= _media_info.audio_codec_type;
 
 	std::shared_ptr<RtmpMuxMessageHeader>	header = message->message_header;
@@ -822,7 +821,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 		
 		int sample_index 	= 0; 
 		int samplerate 	= 0; 
-		int nChannel		= 0;
+		int channels		= 0;
 			
 		sample_index 	+= ((data[2] & 0x07)<<1);
 		sample_index 	+= (data[3]>>7);
@@ -831,13 +830,13 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 			samplerate 	= g_sample_rate_table[sample_index];
 		}
 			
-		nChannel  =  data[3]>>3 & 0x0f;
+		channels  =  data[3]>>3 & 0x0f;
 			
-		LOG_WRITE(("*** INFO : RtmpChunkStream - RecvAudioMessage Sequence Parsing- SampleRate(%d) Channel(%d) ***", samplerate, nChannel));	
+		LOG_WRITE(("*** INFO : RtmpChunkStream - RecvAudioMessage Sequence Parsing- SampleRate(%d) Channel(%d) ***", samplerate, channels));	
 				
 		_media_info.audio_samplerate 	= samplerate;
 		_media_info.audio_sampleindex 	= sample_index;
-		_media_info.audio_channels = nChannel;
+		_media_info.audio_channels		= channels;
 
 		_audio_sequence_load = true;
 

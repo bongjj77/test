@@ -268,10 +268,7 @@ bool HlsPacketizer::UpdatePlaylist()
 		if (!_audio_enable)
 			LOG_WARNING_WRITE(("Hls audio segment problems - %s/%s", _app_name.c_str(), _stream_name.c_str()));
 	}
-
-	LOG_DEBUG_WRITE(("Hls playlist updqte - %s/%s", _app_name.c_str(), _stream_name.c_str()));
-
-
+ 
 	return true;
 }
 

@@ -75,7 +75,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 	{
 		SendErrorResponse("Bad Request");
 		LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - param Fail - key(%d) ip(%s) size(%d)", 
-						_object_name, _index_key, _remote_ip_string, data_size));
+						_object_name, _index_key, _remote_ip_string.c_str(), data_size));
 		return -1;
 	}
   
@@ -119,7 +119,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		if (tokens.size() < 3)
 		{
 			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - key(%d) ip(%s)", 
-				_object_name, _index_key, _remote_ip_string));
+				_object_name, _index_key, _remote_ip_string.c_str()));
 			return -1;
 		}
 
@@ -129,7 +129,7 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 		if (_http_version.size() > HTTP_VERSION_MAX_SIZE)
 		{
 			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - key(%d) ip(%s) Size(%d:%d)",
-				_object_name, _index_key, _remote_ip_string, _http_version.size(), HTTP_VERSION_MAX_SIZE));
+				_object_name, _index_key, _remote_ip_string.c_str(), _http_version.size(), HTTP_VERSION_MAX_SIZE));
 
 			return -1;
 		}

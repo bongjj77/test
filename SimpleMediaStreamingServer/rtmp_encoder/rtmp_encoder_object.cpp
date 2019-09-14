@@ -76,7 +76,7 @@ bool RtmpEncoderObject::OnChunkStreamSend(int data_size, char* data)
 
 	if (PostSend(send_data) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamSend - Post Sned Fail - ip(%s)", _object_name, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamSend - Post Sned Fail - ip(%s)", _object_name, _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -91,7 +91,7 @@ bool RtmpEncoderObject::OnChunkStreamStart(StreamKey& stream_key)
 	// Callback 호占쏙옙	
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStart(_index_key, _remote_ip, stream_key) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamStart - OnRtmpProviderStart - ip(%s)", _object_name, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamStart - OnRtmpProviderStart - ip(%s)", _object_name, _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -109,7 +109,7 @@ bool RtmpEncoderObject::OnChunkStreamReadyComplete(StreamKey& stream_key, MediaI
 	// Callback  	
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderReadyComplete(_index_key, _remote_ip, stream_key, media_info) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamReadyComplete - OnRtmpProviderReadyComplete - ip(%s)", _object_name, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamReadyComplete - OnRtmpProviderReadyComplete - ip(%s)", _object_name, _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -130,7 +130,7 @@ bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr
 	// Callback  
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStreamData(_index_key, _remote_ip, stream_key, frame) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamData - OnRtmpProviderStreamData - ip(%s)", _object_name, _remote_ip_string));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamData - OnRtmpProviderStreamData - ip(%s)", _object_name, _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -169,7 +169,7 @@ bool RtmpEncoderObject::KeepAliveCheck()
 		{
 			if (_log_lock == false)
 			{
-				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%d) ip(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string, time_gap));
+				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%d) ip(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string.c_str(), time_gap));
 			}
 
 			if (_network_callback != nullptr)
