@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <vector>
+
 //====================================================================================================
 // BitWriter
 //====================================================================================================
@@ -15,14 +17,12 @@ public :
     ~BitWriter();
 	
 public : 	
-	void 			Write(uint32_t bit_count, uint32_t value);
-    uint32_t 		GetBitCount(){ return _bit_count; }
-    const uint8_t*	GetData(){ return _data; }
-	uint32_t		GetDataSize(){ return _data_size; } 
-	
+	void  Write(uint32_t bit_count, uint32_t value);
+    uint32_t GetBitCount(){ return _bit_count; }
+	std::shared_ptr<std::vector<uint8_t>> GetData() { return _data;}	 
+  	
 private :
-    uint8_t		*_data;
-   	uint32_t   	_data_size;
-    uint32_t  	_bit_count;
+	std::shared_ptr<std::vector<uint8_t>> _data; 
+	uint32_t _bit_count;
 };
 

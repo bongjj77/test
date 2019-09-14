@@ -74,8 +74,7 @@ protected :
 
 	bool WriteData(const std::shared_ptr<std::vector<uint8_t>> &data, std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	bool WriteData(const std::vector<uint8_t>& data, std::shared_ptr<std::vector<uint8_t>>& data_stream);
-  	bool WriteData(const uint8_t *data,  int data_size, std::shared_ptr<std::vector<uint8_t>> &data_stream);
-	bool WriteText(std::string value, std::shared_ptr<std::vector<uint8_t>> &data_stream);
+  	bool WriteText(std::string value, std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	bool WriteInit(uint8_t value, int init_size, std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	bool WriteUint64(uint64_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream);
 	bool WriteUint32(uint32_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream);

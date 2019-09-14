@@ -11,6 +11,53 @@
 #include <algorithm>
 
 //====================================================================================================
+//Adts Header 설정 
+//Adts 쓰기 (Adts Header + Frame)
+// AAAAAAAA AAAABCCD EEFFFFGH HHIJKLMM MMMMMMMM MMMOOOOO OOOOOOPP (QQQQQQQQ QQQQQQQQ) 
+// Header consists of 7 or 9 bytes (without or with CRC). 
+// Letter  Length (bits)  Description  
+// A  12  syncword 0xFFF, all bits must be 1  
+// B  1  MPEG Version: 0 for MPEG-4, 1 for MPEG-2  
+// C  2  Layer: always 0  
+// D  1  protection absent, Warning, set to 1 if there is no CRC and 0 if there is CRC  
+// E  2  profile, the MPEG-4 Audio Object Type minus 1  
+// F  4  MPEG-4 Sampling Frequency Index (15 is forbidden)  
+// G  1  private stream, set to 0 when encoding, ignore when decoding  
+// H  3  MPEG-4 Channel Configuration (in the case of 0, the channel configuration is sent via an inband PCE)  
+// I  1  originality, set to 0 when encoding, ignore when decoding  
+// J  1  home, set to 0 when encoding, ignore when decoding  
+// K  1  copyrighted stream, set to 0 when encoding, ignore when decoding  
+// L  1  copyright start, set to 0 when encoding, ignore when decoding  
+// M  13  frame length, this value must include 7 or 9 bytes of header length: FrameLength = (ProtectionAbsent == 1 ? 7 : 9) + size(AACFrame)  
+// O  11  Buffer fullness  
+// P  2  Number of AAC frames (RDBs) in ADTS frame minus 1, for maximum compatibility always use 1 AAC frame per ADTS frame  
+// Q  16  CRC if protection absent is 0  
+//====================================================================================================
+std::shared_ptr<std::vector<uint8_t>> HlsPacketizer::MakeAdtsHeader(int sample_index, int channel, int frame_size)
+{
+	BitWriter bit_writer(ADTS_HEADER_SIZE);
+
+	//Adts Header 설정 
+	bit_writer.Write(12, 0xfff);		// syncword 
+	bit_writer.Write(1, 0);        		// mpeg ver
+	bit_writer.Write(2, 0);       		// layer
+	bit_writer.Write(1, 1);        		// no crc
+	bit_writer.Write(2, 1); 			//  profile
+	bit_writer.Write(4, sample_index);	// sampling freq index
+	bit_writer.Write(1, 0);       	 	// private stream (enc = 0)
+	bit_writer.Write(3, channel); 		// channel config
+	bit_writer.Write(1, 0);        		// originality (enc = 0)
+	bit_writer.Write(1, 0);        		// home
+	bit_writer.Write(1, 0);        		// copyrighted
+	bit_writer.Write(1, 0);        		//copright start
+	bit_writer.Write(13, frame_size + ADTS_HEADER_SIZE); // frame length (inc. header)
+	bit_writer.Write(11, 0x7ff);   		// buffer fullness
+	bit_writer.Write(2, 0);
+
+	return bit_writer.GetData();
+}
+
+//====================================================================================================
 // Constructor
 //====================================================================================================
 HlsPacketizer::HlsPacketizer(const std::string& app_name,
@@ -114,7 +161,9 @@ bool HlsPacketizer::AppendAudioFrame(std::shared_ptr<FrameInfo>& frame)
 	}
 
 	// adts add 
-	
+	auto adts_header = MakeAdtsHeader(_media_info.audio_sampleindex, _media_info.audio_channels, frame->data->size());
+
+	frame->data->insert(frame->data->begin(), adts_header->begin(), adts_header->end());
 
 	_frame_list.push_back(frame);
 
@@ -248,9 +297,9 @@ const std::shared_ptr<SegmentInfo> HlsPacketizer::GetSegmentData(const std::stri
 // Set Segment
 //====================================================================================================
 bool HlsPacketizer::SetSegmentData(std::string file_name,
-	uint64_t duration,
-	uint64_t timestamp,
-	std::shared_ptr<std::vector<uint8_t>>& data)
+								uint64_t duration,
+								uint64_t timestamp,
+								std::shared_ptr<std::vector<uint8_t>>& data)
 {
 	auto segment_data = std::make_shared<SegmentInfo>(_sequence_number++,
 		file_name,

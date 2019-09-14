@@ -32,15 +32,6 @@ bool M4sWriter::WriteData(const std::vector<uint8_t> &data, std::shared_ptr<std:
 }
 
 //====================================================================================================
-// Data Write
-//====================================================================================================
-bool M4sWriter::WriteData(const uint8_t *data, int data_size, std::shared_ptr<std::vector<uint8_t>> &data_stream)
-{
-	data_stream->insert(data_stream->end(), data, data + data_size);
-	return true;
-}
-
-//====================================================================================================
 // write init
 //====================================================================================================
 bool M4sWriter::WriteInit(uint8_t value, int init_size, std::shared_ptr<std::vector<uint8_t>> &data_stream)

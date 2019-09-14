@@ -523,7 +523,7 @@ int M4sInitWriter::EsdsBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 	WriteUint8(5, data);						// tag
 	WriteUint8(2, data);						// tag size
 
-	WriteData(bit_writer.GetData(), (int)bit_writer.GetDataSize(), data);    //
+	WriteData(bit_writer.GetData(), data);    //
 
 	// sl config(1)
 	WriteUint8(6, data);	// tag

@@ -33,12 +33,7 @@ protected:
 	static uint32_t	MakeCrc(const uint8_t* data, uint32_t data_size);
 	bool WritePAT();
 	bool WritePMT();
-	bool MakePesHeader(int data_size,
-					bool is_video,
-					uint64_t timestamp,
-					uint64_t cts,
-					uint8_t* header,
-					uint32_t& header_size);
+	std::shared_ptr<std::vector<uint8_t>> MakePesHeader(int data_size, bool is_video, uint64_t timestamp, uint64_t cts);
 
 	bool MakeTsHeader(int pid,
 					uint32_t continuity_count,
@@ -48,7 +43,10 @@ protected:
 					uint64_t pcr,
 					bool is_keyframe);
 
-	bool WriteDataStream(int data_size, const uint8_t* dat);
+
+	bool WriteDataStream(int data_size, const uint8_t* data);
+
+	bool WriteDataStream(const std::shared_ptr<std::vector<uint8_t>> & data);
 
 protected:
 	bool _video_enable;

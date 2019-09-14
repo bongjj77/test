@@ -23,6 +23,8 @@ public:
 	~HlsPacketizer() = default;
 
 public:
+	std::shared_ptr<std::vector<uint8_t>> HlsPacketizer::MakeAdtsHeader(int sample_index, int channel, int frame_size);
+
 	virtual bool AppendVideoFrame(std::shared_ptr<FrameInfo>& frame) override;
 
 	virtual bool AppendAudioFrame(std::shared_ptr<FrameInfo>& frame) override;
