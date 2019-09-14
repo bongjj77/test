@@ -318,41 +318,50 @@ AmfProperty::AmfProperty(bool boolean)
 //====================================================================================================
 // AmfProperty - AmfProperty
 //====================================================================================================
-AmfProperty::AmfProperty(const char *string) // 스트링은 내부에서 메모리 할당해서 복사
+AmfProperty::AmfProperty(const char * string) // 스트링은 내부에서 메모리 할당해서 복사
 {
     Initialize();
 
-    if (!string) { return; }
+    if (string == nullptr)
+	{ 
+		return; 
+	}
 
-    _string = new char[strlen(string) + 1];
-    strcpy(_string, string);
+    _string = std::make_shared<std::vector<char>>(strlen(string) + 1, 0);
+    strcpy(_string->data(), string);
     _amf_data_type = AmfDataType::String;
 }
 
 //====================================================================================================
 // AmfProperty - AmfProperty
 //====================================================================================================
-AmfProperty::AmfProperty(AmfArray *pArray) // array 는 파라미터 포인터를 그대로 저장
+AmfProperty::AmfProperty(std::shared_ptr<AmfArray> array) // array 는 파라미터 포인터를 그대로 저장
 {
     Initialize();
 
-    if (!pArray) { return; }
+    if (!array) 
+	{ 
+		return; 
+	}
 
     _amf_data_type = AmfDataType::Array;
-    _array = pArray;
+    _array = array;
 }
 
 //====================================================================================================
 // AmfProperty - AmfProperty
 //====================================================================================================
-AmfProperty::AmfProperty(AmfObject *pObject) // object 는 파라미터 포인터를 그대로 저장
+AmfProperty::AmfProperty(std::shared_ptr<AmfObject> object) // object 는 파라미터 포인터를 그대로 저장
 {
     Initialize();
 
-    if (!pObject) { return; }
+    if (!object) 
+	{ 
+		return; 
+	}
 
     _amf_data_type = AmfDataType::Object;
-    _object = pObject;
+    _object = object;
 }
 
 //====================================================================================================
@@ -360,23 +369,7 @@ AmfProperty::AmfProperty(AmfObject *pObject) // object 는 파라미터 포인�
 //====================================================================================================
 AmfProperty::~AmfProperty()
 {
-    if (_string)
-    {
-        delete [] _string;
-        _string = nullptr;
-    }
-
-    if (_array)
-    {
-        delete _array;
-        _array = nullptr;
-    }
-
-    if (_object)
-    {
-        delete _object;
-        _object = nullptr;
-    }
+  
 }
 
 //====================================================================================================
@@ -465,7 +458,7 @@ int AmfProperty::Encode(void *data)
             break;
         case AmfDataType::String:
             if (!_string) { break; }
-            output += EncodeString(output, _string);
+            output += EncodeString(output, _string->data());
             break;
         case AmfDataType::Array:
             if (!_array) { break; }
@@ -525,47 +518,33 @@ int AmfProperty::Decode(void *data, int data_length)
             break;
         case AmfTypeMarker::String:
             if (data_length < (1 + 3)) { return 0; }
-            if (_string)
-            {
-                delete [] _string;
-                _string = nullptr;
-            }
-            _string = new char[ReadInt16(pt_in + 1) + 1];
-            size = DecodeString(pt_in, _string);
+			
+			_string = std::make_shared<std::vector<char>>(ReadInt16(pt_in + 1) + 1, 0);
+
+            size = DecodeString(pt_in, _string->data());
+
             if (!size)
             {
-                delete [] _string;
                 _string = nullptr;
             }
             _amf_data_type = AmfDataType::String;
             break;
         case AmfTypeMarker::EcmaArray:
-            if (_array)
-            {
-                delete _array;
-                _array = nullptr;
-            }
-            _array = new AmfArray;
+            _array = std::make_shared<AmfArray>();
             size = _array->Decode(pt_in, data_length);
             if (!size)
             {
-                delete _array;
                 _array = nullptr;
             }
             _amf_data_type = AmfDataType::Array;
             break;
         case AmfTypeMarker::Object:
-            if (_object)
-            {
-                delete _object;
-                _object = nullptr;
-            }
-            _object = new AmfObject;
+             
+            _object = std::make_shared<AmfObject>();
             size = _object->Decode(pt_in, data_length);
             if (!size)
             {
-                delete _object;
-                _object = nullptr;
+				_object = nullptr;
             }
             _amf_data_type = AmfDataType::Object;
             break;
@@ -582,7 +561,7 @@ int AmfProperty::Decode(void *data, int data_length)
 AmfObjectArray::AmfObjectArray(AmfDataType Type)
 {
     _amf_data_type = Type;
-    _amf_property_pairs.clear();
+    _amf_property_pair_list.clear();
 }
 
 //====================================================================================================
@@ -590,20 +569,7 @@ AmfObjectArray::AmfObjectArray(AmfDataType Type)
 //====================================================================================================
 AmfObjectArray::~AmfObjectArray()
 {
-    for (int index = 0; index < (int) _amf_property_pairs.size(); index++)
-    {
-        if (_amf_property_pairs[index])
-        {
-            if (_amf_property_pairs[index]->_property)
-            {
-                delete _amf_property_pairs[index]->_property;
-                _amf_property_pairs[index]->_property = nullptr;
-            }
-            delete _amf_property_pairs[index];
-            _amf_property_pairs[index] = nullptr;
-        }
-    }
-    _amf_property_pairs.clear();
+    _amf_property_pair_list.clear();
 }
 
 //====================================================================================================
@@ -613,17 +579,17 @@ void AmfObjectArray::Dump(std::string &dump_string)
 {
     char text[1024] = {0,};
 
-    for (int index = 0; index < (int) _amf_property_pairs.size(); index++)
+    for (int index = 0; index < (int) _amf_property_pair_list.size(); index++)
     {
-        sprintf(text, "%s : ", _amf_property_pairs[index]->_name);
+        sprintf(text, "%s : ", _amf_property_pair_list[index]->_name);
         dump_string += text;
 
-        if (_amf_property_pairs[index]->_property->GetType() == AmfDataType::Array ||
-            _amf_property_pairs[index]->_property->GetType() == AmfDataType::Object)
+        if (_amf_property_pair_list[index]->_property->GetType() == AmfDataType::Array ||
+            _amf_property_pair_list[index]->_property->GetType() == AmfDataType::Object)
         {
             dump_string += ("\n");
         }
-        _amf_property_pairs[index]->_property->Dump(dump_string);
+        _amf_property_pair_list[index]->_property->Dump(dump_string);
     }
 }
 
@@ -639,7 +605,7 @@ int AmfObjectArray::Encode(void *data)
     start_marker = (uint8_t) (_amf_data_type == AmfDataType::Object ? AmfTypeMarker::Object : AmfTypeMarker::EcmaArray);
     end_marker = (uint8_t) AmfTypeMarker::ObjectEnd;
 
-    if (_amf_property_pairs.empty())
+    if (_amf_property_pair_list.empty())
     {
         return 0;
     }
@@ -651,19 +617,21 @@ int AmfObjectArray::Encode(void *data)
         output += WriteInt32(output, 0); /* 0=infinite */
     }
 
-	for (int index = 0; index < (int) _amf_property_pairs.size(); index++)
+	for (int index = 0; index < (int) _amf_property_pair_list.size(); index++)
     {
-        PairProperty *property_pair = nullptr;
+        auto property_pair = _amf_property_pair_list[index];
 
-        property_pair = _amf_property_pairs[index];
-        if (!property_pair) { continue; }
+        if (!property_pair) 
+		{
+			continue; 
+		}
 
         // property 가 invalid check
         //if( property_pair->_property->GetType() == AmfDataType::Null ) { continue; }
 
-        output += WriteInt16(output, (uint16_t) strlen(property_pair->_name));
-        memcpy((void *)output, (const void *)property_pair->_name, strlen(property_pair->_name));
-        output += strlen(property_pair->_name);
+        output += WriteInt16(output, (uint16_t)property_pair->_name.size());
+        memcpy((void *)output, (const void *)(property_pair->_name.c_str()), property_pair->_name.size());
+        output += property_pair->_name.size();
  
         output += property_pair->_property->Encode(output);
     }
@@ -696,7 +664,6 @@ int AmfObjectArray::Decode(void *data, int data_length)
  
     while (true)
     {
-        PairProperty *property_pair = nullptr;
         int len;
  
         if (ReadInt8(pt_in) == end_marker)
@@ -712,28 +679,27 @@ int AmfObjectArray::Decode(void *data, int data_length)
             continue;
         }
  
-        property_pair = new PairProperty;
-        property_pair->_property = new AmfProperty;
- 
-        strncpy(property_pair->_name, (char *) pt_in, len);
-        pt_in += len;
-        property_pair->_name[len] = '\0';
+		char name[256] = { 0, };
+		strncpy(name, (char *)pt_in, len);
+
+		auto property_pair = std::make_shared<PairProperty>(name);
+		property_pair->_property = std::make_shared<AmfProperty>();
+        
+		pt_in += len;
+        
  
         len = property_pair->_property->Decode(pt_in, data_length - (int) (pt_in - (uint8_t *) data));
         pt_in += len;
 
         // value check
         //if( !len || property_pair->_property->GetType() == AmfDataType::Null )
-        if (len == 0) {
-            delete property_pair->_property;
-            property_pair->_property = nullptr;
-
-            delete property_pair;
-            property_pair = nullptr;
+        if (len == 0) 
+		{
+           
             return 0;
         }
  
-        _amf_property_pairs.push_back(property_pair);
+        _amf_property_pair_list.push_back(property_pair);
         property_pair = nullptr;
     }
 
@@ -745,7 +711,7 @@ int AmfObjectArray::Decode(void *data, int data_length)
 //====================================================================================================
 bool AmfObjectArray::AddProperty(const char *name, AmfDataType type)
 {
-    PairProperty *property_pair = nullptr;
+     
  
     if (!name) 
 	{ 
@@ -757,11 +723,10 @@ bool AmfObjectArray::AddProperty(const char *name, AmfDataType type)
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(type);
+    auto property_pair = std::make_shared<PairProperty>(name);     
+    property_pair->_property = std::make_shared <AmfProperty>(type);
  
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -772,18 +737,15 @@ bool AmfObjectArray::AddProperty(const char *name, AmfDataType type)
 //====================================================================================================
 bool AmfObjectArray::AddProperty(const char *name, double number)
 {
-    PairProperty *property_pair = nullptr;
-	 
     if (!name) 
 	{ 
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(number);
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared<AmfProperty>(number);
  
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -794,18 +756,15 @@ bool AmfObjectArray::AddProperty(const char *name, double number)
 //====================================================================================================
 bool AmfObjectArray::AddProperty(const char *name, bool boolean)
 {
-    PairProperty *property_pair = nullptr;
- 
     if (!name) 
 	{ 
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(boolean);
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared <AmfProperty>(boolean);
  
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -816,18 +775,15 @@ bool AmfObjectArray::AddProperty(const char *name, bool boolean)
 //====================================================================================================
 bool AmfObjectArray::AddProperty(const char *name, const char *string)
 {
-    PairProperty *property_pair = nullptr;
- 
     if (!name) 
 	{ 
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(string);
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared <AmfProperty>(string);
 	 
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -836,20 +792,17 @@ bool AmfObjectArray::AddProperty(const char *name, const char *string)
 //====================================================================================================
 // AmfObjectArray - AddProperty
 //====================================================================================================
-bool AmfObjectArray::AddProperty(const char *name, AmfArray *array)
+bool AmfObjectArray::AddProperty(const char *name, std::shared_ptr<AmfArray> array)
 {
-    PairProperty *property_pair = nullptr;
- 
     if (!name) 
 	{ 
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(array);
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared <AmfProperty>(array);
  
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -858,20 +811,17 @@ bool AmfObjectArray::AddProperty(const char *name, AmfArray *array)
 //====================================================================================================
 // AmfObjectArray - AddProperty
 //====================================================================================================
-bool AmfObjectArray::AddProperty(const char *name, AmfObject *object)
+bool AmfObjectArray::AddProperty(const char *name, std::shared_ptr<AmfObject> object)
 {
-    PairProperty *property_pair = nullptr;
-	 
     if (!name) 
 	{ 
 		return false; 
 	}
 
-	property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty(object);
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared <AmfProperty>(object);
  
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -882,18 +832,15 @@ bool AmfObjectArray::AddProperty(const char *name, AmfObject *object)
 //====================================================================================================
 bool AmfObjectArray::AddNullProperty(const char *name)
 {
-    PairProperty *property_pair = nullptr;
- 
     if (!name) 
 	{ 
 		return false; 
 	}
  
-    property_pair = new PairProperty;
-    strcpy(property_pair->_name, name);
-    property_pair->_property = new AmfProperty();
+	auto property_pair = std::make_shared<PairProperty>(name);
+    property_pair->_property = std::make_shared <AmfProperty>();
 
-    _amf_property_pairs.push_back(property_pair);
+    _amf_property_pair_list.push_back(property_pair);
     property_pair = nullptr;
 
     return true;
@@ -902,19 +849,14 @@ bool AmfObjectArray::AddNullProperty(const char *name)
 //====================================================================================================
 // AmfObjectArray - GetPair
 //====================================================================================================
-AmfObject::PairProperty *AmfObjectArray::GetPair(int index)
+std::shared_ptr<AmfObject::PairProperty> AmfObjectArray::GetPair(int index)
 { 
-    if (index < 0) 
+    if ((index < 0) || (index >= (int)_amf_property_pair_list.size()))
 	{ 
 		return nullptr; 
 	}
 
-    if (index >= (int) _amf_property_pairs.size()) 
-	{ 
-		return nullptr; 
-	}
-
-    return _amf_property_pairs[index];
+    return _amf_property_pair_list[index];
 }
 
 //====================================================================================================
@@ -928,9 +870,9 @@ int AmfObjectArray::FindName(const char *name)
 		return -1; 
 	}
 	 
-    for (int index = 0; index < (int) _amf_property_pairs.size(); index++)
+    for (int index = 0; index < (int) _amf_property_pair_list.size(); index++)
     {
-        if (!strcmp(_amf_property_pairs[index]->_name, name))
+        if (!strcmp(_amf_property_pair_list[index]->_name.c_str(), name))
         {
             return index;
         }
@@ -942,14 +884,16 @@ int AmfObjectArray::FindName(const char *name)
 //====================================================================================================
 // AmfObjectArray - GetName
 //====================================================================================================
-char *AmfObjectArray::GetName(int index)
+const char * AmfObjectArray::GetName(int index)
 {
-    PairProperty *property_pair = nullptr;
-	 
-    property_pair = GetPair(index);
-    if (!property_pair) { return nullptr; }
+	auto property_pair = GetPair(index);
+    
+	if (!property_pair) 
+	{ 
+		return nullptr; 
+	}
 
-    return property_pair->_name;
+    return property_pair->_name.c_str();
 }
 
 //====================================================================================================
@@ -957,10 +901,12 @@ char *AmfObjectArray::GetName(int index)
 //====================================================================================================
 AmfDataType AmfObjectArray::GetType(int index)
 {
-    PairProperty *property_pair = nullptr;
-	 
-    property_pair = GetPair(index);
-    if (!property_pair) { return AmfDataType::Null; }
+	auto property_pair = GetPair(index);
+    
+	if (!property_pair) 
+	{ 
+		return AmfDataType::Null; 
+	}
 
     return property_pair->_property->GetType();
 }
@@ -970,10 +916,12 @@ AmfDataType AmfObjectArray::GetType(int index)
 //====================================================================================================
 double AmfObjectArray::GetNumber(int index)
 {
-    PairProperty *property_pair = nullptr;
- 
-    property_pair = GetPair(index);
-    if (!property_pair) { return 0; }
+    auto property_pair = GetPair(index);
+    
+	if (!property_pair) 
+	{ 
+		return 0; 
+	}
 
     return property_pair->_property->GetNumber();
 }
@@ -983,10 +931,12 @@ double AmfObjectArray::GetNumber(int index)
 //====================================================================================================
 bool AmfObjectArray::GetBoolean(int index)
 {
-    PairProperty *property_pair = nullptr;
-	 
-    property_pair = GetPair(index);
-    if (!property_pair) { return false; }
+    auto property_pair = GetPair(index);
+    
+	if (!property_pair) 
+	{ 
+		return false; 
+	}
 
     return property_pair->_property->GetBoolean();
 }
@@ -996,9 +946,7 @@ bool AmfObjectArray::GetBoolean(int index)
 //====================================================================================================
 char *AmfObjectArray::GetString(int index)
 {
-    PairProperty *property_pair = nullptr;
-	 
-    property_pair = GetPair(index);
+    auto property_pair = GetPair(index);
 
     if (!property_pair) 
 	{ 
@@ -1011,12 +959,14 @@ char *AmfObjectArray::GetString(int index)
 //====================================================================================================
 // AmfObjectArray - GetArray
 //====================================================================================================
-AmfArray *AmfObjectArray::GetArray(int index)
+std::shared_ptr<AmfArray> AmfObjectArray::GetArray(int index)
 {
-    PairProperty *property_pair = nullptr;
- 
-    property_pair = GetPair(index);
-    if (!property_pair) { return nullptr; }
+	auto property_pair = GetPair(index);
+    
+	if (!property_pair) 
+	{ 
+		return nullptr; 
+	}
 
     return property_pair->_property->GetArray();
 }
@@ -1024,12 +974,14 @@ AmfArray *AmfObjectArray::GetArray(int index)
 //====================================================================================================
 // AmfObjectArray - GetObject
 //====================================================================================================
-AmfObject *AmfObjectArray::GetObject(int index)
+std::shared_ptr<AmfObject> AmfObjectArray::GetObject(int index)
 {
-    PairProperty *property_pair = nullptr;
- 
-    property_pair = GetPair(index);
-    if (!property_pair) { return nullptr; }
+	auto property_pair = GetPair(index);
+
+	if (!property_pair)
+	{
+		return nullptr;
+	}
 
     return property_pair->_property->GetObject();
 }
@@ -1075,7 +1027,7 @@ void AmfObject::Dump(std::string &dump_string)
 //====================================================================================================
 AmfDocument::AmfDocument()
 {
-    _amf_propertys.clear();
+    _amf_property_list.clear();
 }
 
 //====================================================================================================
@@ -1083,16 +1035,7 @@ AmfDocument::AmfDocument()
 //====================================================================================================
 AmfDocument::~AmfDocument()
 {
-  
-	for (int index = 0; index < (int) _amf_propertys.size(); index++)
-    {
-        if (_amf_propertys[index])
-        {
-            delete _amf_propertys[index];
-            _amf_propertys[index] = nullptr;
-        }
-    }
-    _amf_propertys.clear();
+    _amf_property_list.clear();
 }
 
 //====================================================================================================
@@ -1101,9 +1044,9 @@ AmfDocument::~AmfDocument()
 void AmfDocument::Dump(std::string &dump_string)
 {
     dump_string += ("\n======= DUMP START =======\n");
-    for (int index = 0; index < (int) _amf_propertys.size(); index++)
+    for (int index = 0; index < (int) _amf_property_list.size(); index++)
     {
-        _amf_propertys[index]->Dump(dump_string);
+        _amf_property_list[index]->Dump(dump_string);
     }
     dump_string += ("\n======= DUMP END =======\n");
 }
@@ -1116,9 +1059,9 @@ int AmfDocument::Encode(void *data)
 {
     auto *output = (uint8_t *) data;
     
-    for (int index = 0; index < (int) _amf_propertys.size(); index++)
+    for (int index = 0; index < (int) _amf_property_list.size(); index++)
     {
-        output += _amf_propertys[index]->Encode(output);
+        output += _amf_property_list[index]->Encode(output);
     }
 
     return (int) (output - (uint8_t *) data);
@@ -1136,23 +1079,18 @@ int AmfDocument::Decode(void *data, int data_length)
  
     while (total_length < data_length)
     {
-        AmfProperty *pt_item = nullptr;
- 
-        pt_item = new AmfProperty;
- 
-        return_length = pt_item->Decode(pt_in, data_length - total_length);
+        auto item = std::make_shared<AmfProperty>();
+  
+        return_length = item->Decode(pt_in, data_length - total_length);
         if (!return_length)
         {
-            delete pt_item;
-            pt_item = nullptr;
             break;
         }
  
         pt_in += return_length;
         total_length += return_length;
  
-        _amf_propertys.push_back(pt_item);
-        pt_item = nullptr;
+        _amf_property_list.push_back(item);        
     }
 
     return (int) (pt_in - (uint8_t *) data);
@@ -1165,7 +1103,7 @@ bool AmfDocument::AddProperty(AmfDataType type)
 { 
     if (type != AmfDataType::Null && type != AmfDataType::Undefined) { return false; }
  
-    _amf_propertys.push_back(new AmfProperty(type));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(type));
 
     return true;
 }
@@ -1175,7 +1113,7 @@ bool AmfDocument::AddProperty(AmfDataType type)
 //====================================================================================================
 bool AmfDocument::AddProperty(double number)
 {
-    _amf_propertys.push_back(new AmfProperty(number));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(number));
 
     return true;
 }
@@ -1185,7 +1123,7 @@ bool AmfDocument::AddProperty(double number)
 //====================================================================================================
 bool AmfDocument::AddProperty(bool boolean)
 {  
-    _amf_propertys.push_back(new AmfProperty(boolean));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(boolean));
 
     return true;
 }
@@ -1200,7 +1138,7 @@ bool AmfDocument::AddProperty(const char *string)
 		return false; 
 	}
  
-    _amf_propertys.push_back(new AmfProperty(string));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(string));
 
     return true;
 }
@@ -1208,14 +1146,14 @@ bool AmfDocument::AddProperty(const char *string)
 //====================================================================================================
 // AmfDocument - AddProperty
 //====================================================================================================
-bool AmfDocument::AddProperty(AmfArray *array)
+bool AmfDocument::AddProperty(std::shared_ptr<AmfArray> array)
 {
     if (!array) 
 	{ 
 		return false; 
 	}
 
-    _amf_propertys.push_back(new AmfProperty(array));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(array));
 
     return true;
 }
@@ -1223,14 +1161,14 @@ bool AmfDocument::AddProperty(AmfArray *array)
 //====================================================================================================
 // AmfDocument - AddProperty
 //====================================================================================================
-bool AmfDocument::AddProperty(AmfObject *object)
+bool AmfDocument::AddProperty(std::shared_ptr<AmfObject> object)
 {
     if (!object) 
 	{ 
 		return false; 
 	}
 
-    _amf_propertys.push_back(new AmfProperty(object));
+    _amf_property_list.push_back(std::make_shared<AmfProperty>(object));
 
     return true;
 }
@@ -1240,7 +1178,7 @@ bool AmfDocument::AddProperty(AmfObject *object)
 //====================================================================================================
 int AmfDocument::GetPropertyCount()
 {
-    return (int) _amf_propertys.size();
+    return (int) _amf_property_list.size();
 }
 
 //====================================================================================================
@@ -1254,15 +1192,15 @@ int AmfDocument::GetPropertyIndex(char *name)
         return -1;
     }
 
-    if (_amf_propertys.empty())
+    if (_amf_property_list.empty())
     {
         return -1;
     }
 
-	for (int index = 0; index < (int) _amf_propertys.size(); index++)
+	for (int index = 0; index < (int) _amf_property_list.size(); index++)
     {
-        if (_amf_propertys[index]->GetType() != AmfDataType::String) { continue; }
-        if (strcmp(_amf_propertys[index]->GetString(), name)) { continue; }
+        if (_amf_property_list[index]->GetType() != AmfDataType::String) { continue; }
+        if (strcmp(_amf_property_list[index]->GetString(), name)) { continue; }
 
         return index;
     }
@@ -1273,17 +1211,12 @@ int AmfDocument::GetPropertyIndex(char *name)
 //====================================================================================================
 // AmfDocument - GetProperty
 //====================================================================================================
-AmfProperty * AmfDocument::GetProperty(int index)
+std::shared_ptr<AmfProperty> AmfDocument::GetProperty(int index)
 {
-	if (index < 0) 
+	if ((index < 0) || (index >= (int)_amf_property_list.size()))
 	{ 
 		return nullptr; 
 	}
 
-    if (index >= (int) _amf_propertys.size()) 
-	{ 
-		return nullptr; 
-	}
-
-    return _amf_propertys[index];
+    return _amf_property_list[index];
 }

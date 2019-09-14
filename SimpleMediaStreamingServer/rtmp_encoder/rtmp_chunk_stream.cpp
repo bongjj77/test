@@ -431,8 +431,8 @@ void RtmpChunkStream::OnAmfConnect(std::shared_ptr<RtmpMuxMessageHeader> &messag
 
 	if (document.GetProperty(2) != nullptr &&  document.GetProperty(2)->GetType() == AmfDataType::Object)
 	{
-		AmfObject	* 	object = document.GetProperty(2)->GetObject();
-		int32_t			index;
+		auto object = document.GetProperty(2)->GetObject();
+		int32_t index;
 
 		// object encoding  
 		if ((index = object->FindName("objectEncoding")) >= 0 && object->GetType(index) == AmfDataType::Number)
@@ -572,7 +572,7 @@ bool RtmpChunkStream::SendMessagePacket(std::shared_ptr<RtmpMuxMessageHeader> &m
 		return false;
 	}
 
-	auto  export_data = _export_chunk->ExportStreamData(message_header, data);
+	auto export_data = _export_chunk->ExportStreamData(message_header, data);
 
 	if (export_data == nullptr || export_data->data() == nullptr)
 	{
@@ -587,7 +587,7 @@ bool RtmpChunkStream::SendMessagePacket(std::shared_ptr<RtmpMuxMessageHeader> &m
 //====================================================================================================
 bool RtmpChunkStream::SendAmfCommand(std::shared_ptr<RtmpMuxMessageHeader> &message_header, AmfDocument &document)
 {
-	auto     body = std::make_shared<std::vector<uint8_t>>(2048);
+	auto body = std::make_shared<std::vector<uint8_t>>(2048);
 	uint32_t body_size = 0;
 
 	if (message_header == nullptr)
@@ -682,15 +682,13 @@ bool RtmpChunkStream::SendAmfConnectResult(uint32_t chunk_stream_id, double tran
 {
 	auto        message_header = std::make_shared<RtmpMuxMessageHeader>(chunk_stream_id, 0, RTMP_MSGID_AMF0_COMMAND_MESSAGE, _stream_id, 0);
 	AmfDocument	document;
-	AmfObject   *object = nullptr;
-	AmfArray    *array = nullptr;
-
+	
 	// _result 
 	document.AddProperty(RTMP_ACK_NAME_RESULT);
 	document.AddProperty(transaction_id);
 
 	// properties
-	object = new AmfObject;
+	auto object = std::make_shared<AmfObject>();
 	object->AddProperty("fmsVer", "FMS/3,5,2,654");
 	object->AddProperty("capabilities", 31.0);
 	object->AddProperty("mode", 1.0);
@@ -698,15 +696,16 @@ bool RtmpChunkStream::SendAmfConnectResult(uint32_t chunk_stream_id, double tran
 	document.AddProperty(object);
 
 	// information
-	object = new AmfObject;
+	object = std::make_shared<AmfObject>();
 	object->AddProperty("level", "status");
 	object->AddProperty("code", "NetConnection.Connect.Success");
 	object->AddProperty("description", "Connection succeeded.");
 	object->AddProperty("clientid", _client_id);
 	object->AddProperty("objectEncoding", object_encoding);
 
-	array = new AmfArray;
+	auto array = std::make_shared<AmfArray>();
 	array->AddProperty("version", "3,5,2,654");
+
 	object->AddProperty("data", array);
 
 	document.AddProperty(object);
@@ -721,13 +720,12 @@ bool RtmpChunkStream::SendAmfOnFCPublish(uint32_t chunk_stream_id, uint32_t stre
 {
 	auto message_header = std::make_shared<RtmpMuxMessageHeader>(chunk_stream_id, 0, RTMP_MSGID_AMF0_COMMAND_MESSAGE, _stream_id, 0);
 	AmfDocument	document;
-	AmfObject   *object = nullptr;
-
+	
 	document.AddProperty(RTMP_CMD_NAME_ONFCPUBLISH);
 	document.AddProperty(0.0);
 	document.AddProperty(AmfDataType::Null);
 
-	object = new AmfObject;
+	auto object = std::make_shared<AmfObject>();
 	object->AddProperty("level", "status");
 	object->AddProperty("code", "NetStream.Publish.Start");
 	object->AddProperty("description", "FCPublish");
@@ -765,13 +763,13 @@ bool RtmpChunkStream::SendAmfOnStatus(uint32_t chunk_stream_id, uint32_t stream_
 {
 	auto	    message_header = std::make_shared<RtmpMuxMessageHeader>(chunk_stream_id, 0, RTMP_MSGID_AMF0_COMMAND_MESSAGE, stream_id, 0);
 	AmfDocument	document;
-	AmfObject   *object = nullptr;
+	 
 
 	document.AddProperty(RTMP_CMD_NAME_ONSTATUS);
 	document.AddProperty(0.0);
 	document.AddProperty(AmfDataType::Null);
 
-	object = new AmfObject;
+	auto object = std::make_shared<AmfObject>();
 	object->AddProperty("level", level);
 	object->AddProperty("code", code);
 	object->AddProperty("description", description);
@@ -1000,8 +998,7 @@ bool RtmpChunkStream::ProcessAudioSequenceData(std::unique_ptr<std::vector<uint8
 	int sample_index = 0;
 	int samplerate = 0;
 	int channels = 0;
-
-	// 理쒖냼  湲몄씠 2byte
+ 
 	if (data->size() < 2)
 	{
 		LOG_WRITE(("Data Size Fail - size(%d)", data->size()));
@@ -1112,7 +1109,7 @@ bool RtmpChunkStream::OnAmfMetaData(std::shared_ptr<RtmpMuxMessageHeader> &messa
 	double		audio_samplerate	= 0.0;
 	double		audio_samplesize	= 0.0;
 	//double 	audio_samplerate	= 0.0; 
-	AmfObjectArray * object			= nullptr; 
+	AmfObjectArray * object = nullptr; 
 	int			index 				= 0;
 	std::string bitrate_string;
 	std::string device_type_string	= RTMP_UNKNOWN_DEVICE_TYPE_STRING; 
@@ -1120,9 +1117,9 @@ bool RtmpChunkStream::OnAmfMetaData(std::shared_ptr<RtmpMuxMessageHeader> &messa
 	EncoderType encoder_type		= EncoderType::Custom;
 		 
 	if(document.GetProperty(object_index)->GetType() == AmfDataType::Object)	
-		object = (AmfObjectArray *)(document.GetProperty(object_index)->GetObject());
+		object = (AmfObjectArray *)(document.GetProperty(object_index)->GetObject().get());
 	else 																
-		object = (AmfObjectArray *)(document.GetProperty(object_index)->GetArray());
+		object = (AmfObjectArray *)(document.GetProperty(object_index)->GetArray().get());
 	
 	// DeviceType
 	if ((index = object->FindName("videodevice")) >= 0 && object->GetType(index) == AmfDataType::String)	

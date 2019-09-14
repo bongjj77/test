@@ -91,8 +91,8 @@ public:
     explicit AmfProperty(double number);
     explicit AmfProperty(bool boolean);
     explicit AmfProperty(const char *string);    
-    explicit AmfProperty(AmfArray *array);            
-    explicit AmfProperty(AmfObject *object);    
+    explicit AmfProperty(std::shared_ptr<AmfArray> array);            
+    explicit AmfProperty(std::shared_ptr<AmfObject> object);    
 
 	~AmfProperty() override;
 
@@ -107,9 +107,9 @@ public:
     AmfDataType GetType() { return _amf_data_type; }
     double		GetNumber() { return _number; }
     bool		GetBoolean() { return _boolean; }
-    char *		GetString() { return _string; }
-    AmfArray *	GetArray() { return _array; }
-    AmfObject *	GetObject() { return _object; }
+    char *		GetString() { return _string->data(); }
+	std::shared_ptr<AmfArray> GetArray() { return _array; }
+	std::shared_ptr<AmfObject> GetObject() { return _object; }
 
 private:
     void Initialize();
@@ -118,9 +118,9 @@ private:
     AmfDataType _amf_data_type;
     double		_number;
     bool		_boolean;
-    char *		_string;
-    AmfArray *	_array;
-    AmfObject *	_object;
+	std::shared_ptr<std::vector<char>> _string;
+	std::shared_ptr<AmfArray> _array;
+	std::shared_ptr<AmfObject> _object;
 };
 
 //====================================================================================================
@@ -134,10 +134,17 @@ public:
     ~AmfObjectArray() override;
 
 public:
+
     struct PairProperty
 	{
-        char _name[128];
-        AmfProperty *_property;
+		PairProperty(const char * name)
+		{
+			_name = name;
+			_property = nullptr;
+		}
+
+        std::string _name;
+        std::shared_ptr<AmfProperty> _property;
     };  
 
 public:
@@ -152,26 +159,26 @@ public:
     bool AddProperty(const char *name, double number);
     bool AddProperty(const char *name, bool boolean);
     bool AddProperty(const char *name, const char *string);
-    bool AddProperty(const char *name, AmfArray *array);
-    bool AddProperty(const char *name, AmfObject *object);
+    bool AddProperty(const char *name, std::shared_ptr<AmfArray> array);
+    bool AddProperty(const char *name, std::shared_ptr<AmfObject> object);
     bool AddNullProperty(const char *name);
 
 public:
-    int			FindName(const char *name); // return  < 0 fail 
-    char *		GetName(int index);
+    int FindName(const char *name); // return  < 0 fail 
+    const char * GetName(int index);
 	AmfDataType GetType(int index);
-	double		GetNumber(int index);
-	bool		GetBoolean(int index);
-	char *		GetString(int index);
-	AmfArray *	GetArray(int index);
-	AmfObject *	GetObject(int index);
+	double GetNumber(int index);
+	bool GetBoolean(int index);
+	char * GetString(int index);
+	std::shared_ptr<AmfArray> GetArray(int index);
+	std::shared_ptr<AmfObject> GetObject(int index);
 
 private:
-    PairProperty *GetPair(int index);
+	std::shared_ptr<PairProperty> GetPair(int index);
 
 private:
     AmfDataType _amf_data_type;
-    std::vector<PairProperty *> _amf_property_pairs;
+    std::vector<std::shared_ptr<PairProperty>> _amf_property_pair_list;
 };
 
 
@@ -221,17 +228,19 @@ public:
     bool AddProperty(AmfDataType type);
     bool AddProperty(double number);
     bool AddProperty(bool boolean);
-    bool AddProperty(const char *string);     
-    bool AddProperty(AmfArray *array);         
-    bool AddProperty(AmfObject *object);       
+    bool AddProperty(const char * string);     
+    bool AddProperty(std::shared_ptr<AmfArray> array);         
+    bool AddProperty(std::shared_ptr<AmfObject> object);       
 
 public:
     int GetPropertyCount();
-    int GetPropertyIndex(char *name);        // return -1 fail
-    AmfProperty *GetProperty(int index);
+    int GetPropertyIndex(char * name);        // return -1 fail
+	std::shared_ptr<AmfProperty> GetProperty(int index);
 
 private:
-    std::vector<AmfProperty *> _amf_propertys;
+
+	std::vector<std::shared_ptr<AmfProperty>> _amf_property_list;
+
 };
  
 

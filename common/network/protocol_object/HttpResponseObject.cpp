@@ -57,9 +57,7 @@ HttpResponseObject::~HttpResponseObject()
 //====================================================================================================
 int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 {
-	std::string string_data;
-	char* data_buffer = nullptr;
-	std::string::size_type find_pos = 0;
+ 	std::string::size_type find_pos = 0;
 	std::string::size_type header_start_pos = 0;
 	std::string::size_type header_end_pos = 0;
 	std::string::size_type line_end_pos = 0;
@@ -80,25 +78,9 @@ int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 						_object_name, _index_key, _remote_ip_string, data_size));
 		return -1;
 	}
-
-	data_buffer = new char[data_size + 1];
-	if (data_buffer == nullptr)
-	{
-		LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - dataBuffer is nullptr - key(%d) ip(%s) size(%d)", 
-						_object_name, _index_key, _remote_ip_string, data_size));
-		return -1;
-	}
-
-	memcpy(data_buffer, data->data(), data_size);
-	data_buffer[data_size] = 0;
- 
-	string_data = data_buffer;
- 
-	if (data_buffer != nullptr)
-	{
-		delete[] data_buffer;
-		data_buffer = nullptr;
-	}
+  
+	std::string string_data(data->begin(), data->end());
+  
 
 	while ((header_end_pos = string_data.find(HTTP_HEADER_END_DELIMITER, header_end_pos)) != std::string::npos)
 	{
