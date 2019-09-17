@@ -26,15 +26,15 @@
 #define RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK       (0xc0)
 #define RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK   (0x3f)
 
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE0           (0x00)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE1           (0x40)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE2           (0x80)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE3           (0xc0)
+#define RTMP_CHUNK_TYPE_0           (0x00)
+#define RTMP_CHUNK_TYPE_1           (0x40)
+#define RTMP_CHUNK_TYPE_2           (0x80)
+#define RTMP_CHUNK_TYPE_3           (0xc0)
 
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE0_SIZE      (11)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE1_SIZE      (7)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE2_SIZE      (3)
-#define RTMP_CHUNK_BASIC_FORMAT_TYPE3_SIZE      (0)
+#define RTMP_CHUNK_TYPE_0_SIZE      (11)
+#define RTMP_CHUNK_TYPE_1_SIZE      (7)
+#define RTMP_CHUNK_TYPE_2_SIZE      (3)
+#define RTMP_CHUNK_TYPE_3_SIZE      (0)
 
 #define RTMP_EXTEND_TIMESTAMP                   (0x00ffffff)
 #define RTMP_EXTEND_TIMESTAMP_SIZE              (4)

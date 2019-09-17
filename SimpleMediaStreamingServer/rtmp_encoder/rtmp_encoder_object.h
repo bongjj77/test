@@ -50,4 +50,16 @@ private:
 	StreamKey 		_stream_key;
 	MediaInfo		_media_info;
 	time_t			_last_packet_time;
+
+	// Framerate check 
+	bool			_framerate_check;
+	uint32_t		_framerate_check_interval;
+	uint64_t		_framerate_check_tick;
+	uint32_t		_video_frame_count;
+	uint32_t		_audio_frame_count;
+
+
+	uint64_t		_last_audio_timestamp;
+
+
 };

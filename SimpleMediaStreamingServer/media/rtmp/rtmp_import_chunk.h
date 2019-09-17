@@ -19,7 +19,7 @@ public :
 	{
 		message_header 	= std::make_shared<RtmpMuxMessageHeader>();
         write_chunk_size= 0;
-        extend_type		= false;
+        is_extend_type		= false;
         data_size		= 0;
         buffer 			= std::make_shared<std::vector<uint8_t>>(1024*1024);
 	}
@@ -28,7 +28,7 @@ public :
     std::shared_ptr<RtmpMuxMessageHeader> message_header;
 	uint32_t	timestamp_delta;
 	int			write_chunk_size;
-	bool		extend_type;
+	bool		is_extend_type;
 	int 		data_size;
 	std::shared_ptr<std::vector<uint8_t>> buffer;
 };
@@ -61,14 +61,14 @@ public:
 
 public:
 	void Destroy();
-	int ImportStreamData(uint8_t *data, int data_size, bool & message_complete);
-	std::shared_ptr<ImportMessage>          GetMessage();
-	void SetChunkSize(int chunk_size){ _chunk_size = chunk_size;}
+	int ImportStreamData(uint8_t *data, int data_size, bool & is_message_complete);
+	std::shared_ptr<ImportMessage> GetMessage();
+	void SetChunkSize(int chunk_size) { _chunk_size = chunk_size; }
 private:
 	std::shared_ptr<ImportStream> GetStream(uint32_t chunk_stream_id);
 	std::shared_ptr<RtmpMuxMessageHeader> GetMessageHeader(std::shared_ptr<ImportStream> &stream, std::shared_ptr<RtmpChunkHeader> &chunk_header);
 	bool AppendChunk(std::shared_ptr<ImportStream> &stream, uint8_t *chunk, int header_size, int data_size);
-	int CompleteChunkMessage(std::shared_ptr<ImportStream> &stream, int chunk_size);
+	bool CompleteChunkMessage(std::shared_ptr<ImportStream> &stream);
 
 private:
 	std::map<uint32_t, std::shared_ptr<ImportStream>> _stream_map;

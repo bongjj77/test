@@ -205,14 +205,14 @@ bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 		result = CrossDomainRequest();
 	else
 	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - Page Tokenize Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] RecvRequest - Page Tokenize Fail - key(%d) ip(%s)", _object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		SendErrorResponse("Not Found");
 		return false;
 	}
 
 	if (result == false)
 	{
-		LOG_ERROR_WRITE(("[%s] RecvRequest - Page Process Fail - key(%d) ip(%s)", _object_name, _index_key, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] RecvRequest - Page Process Fail - key(%d) ip(%s)", _object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 	}
 
 	return result;
@@ -229,7 +229,7 @@ bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_
 		(_object_callback)->OnHttpClientPlaylistRequest(_index_key, _remote_ip, pars_info->stream_key, type, playlist))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - OnHttpClientPlaylistRequest Error - key(%d) ip(%s)",
-						_object_name, _index_key, _remote_ip_string.c_str()));
+						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 
 		SendErrorResponse("Not Found");
 		return false;
@@ -238,7 +238,7 @@ bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_
 	if (!SendPlaylist(pars_info->stream_key, playlist, pars_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - SendPlaylist Fail - key(%d) ip(%s)",
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 
 		return false;
 	}
@@ -257,7 +257,7 @@ bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_i
 		(_object_callback)->OnHttpClientSegmentRequest(_index_key, _remote_ip, pars_info->file, pars_info->stream_key, type, data))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - OnHttpClientRequest Error - key(%d) ip(%s)",
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 
 		SendErrorResponse("Not Found");
 		return false;
@@ -266,7 +266,7 @@ bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_i
 	if (!SendSegmentData(pars_info->stream_key, data, pars_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - SendSegmentData Fail - key(%d) ip(%s)",
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 
 		return false;
 	}
@@ -288,7 +288,7 @@ bool HttpClientObject::CrossDomainRequest()
 	if (SendContentResponse(HTTP_TEXT_XML_CONTENT_TYPE, cross_domain_xml) == false)
 	{
 		LOG_ERROR_WRITE(("[%s] RecvCrossDomainRequest - crossdomain.xml Data Send Fail - key(%d) ip(%s)",
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 
 		return false;
 	}
@@ -304,7 +304,7 @@ bool HttpClientObject::SendPlaylist(const StreamKey& streamkey, const std::strin
 	if (!SendContentResponse(content_type, playlist, 1))
 	{
 		LOG_ERROR_WRITE(("[%s] SendPlayListData - SendResponse Fail - key(%d) ip(%s)", 
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -319,7 +319,7 @@ bool HttpClientObject::SendSegmentData(const StreamKey& streamkey, const std::sh
 	if (!SendContentResponse(content_type, data, 30))
 	{
 		LOG_ERROR_WRITE(("[%s] SendSegmentData - SendContentResponse Fail - key(%d) ip(%s)", 
-						_object_name, _index_key, _remote_ip_string.c_str()));
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
 		return false;
 	}
 

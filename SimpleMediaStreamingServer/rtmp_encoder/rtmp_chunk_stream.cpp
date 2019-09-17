@@ -212,40 +212,38 @@ bool RtmpChunkStream::SendHandshake(const std::shared_ptr<const std::vector<uint
 //====================================================================================================
 int32_t RtmpChunkStream::ReceiveChunkPacket(const std::shared_ptr<const std::vector<uint8_t>> &data)
 {
-	int32_t process_size = 0;
-	int32_t	import_size = 0;
-	bool	message_complete = false;
-
-	while (process_size < data->size())
+	int32_t total_process_size = 0;
+	
+	while (total_process_size < data->size())
 	{
-		message_complete = false;
+		bool is_complete = false;
 
-		import_size = _import_chunk->ImportStreamData((uint8_t *)data->data() + process_size, data->size() - process_size, message_complete);
+		auto process_size = _import_chunk->ImportStreamData((uint8_t *)data->data() + total_process_size, data->size() - total_process_size, is_complete);
 
-		if (import_size == 0)
+		if (process_size == 0)
 		{
 			break;
 		}
-		else if (import_size < 0)
+		else if (process_size < 0)
 		{
 			LOG_WRITE(("ImportStream Fail"));
-			return import_size;
+			return process_size;
 		}
 
-		if (message_complete)
+		if (is_complete == true)
 		{
-			if (!ReceiveChunkMessage())
+			if (ReceiveChunkMessage() == false)
 			{
 				LOG_WRITE(("ReceiveChunkMessage Fail"));
 				return -1;
 			}
 		}
 
-		process_size += import_size;
+		total_process_size += process_size;
 	}
 
 	//Acknowledgement append
-	_acknowledgement_traffic += process_size;
+	_acknowledgement_traffic += total_process_size;
 
 	if (_acknowledgement_traffic > _acknowledgement_size)
 	{
@@ -255,7 +253,7 @@ int32_t RtmpChunkStream::ReceiveChunkPacket(const std::shared_ptr<const std::vec
 		_acknowledgement_traffic = 0;
 	}
 
-	return process_size;
+	return total_process_size;
 }
 
 //====================================================================================================
@@ -278,14 +276,14 @@ bool RtmpChunkStream::ReceiveChunkMessage()
 			return false;
 		}
 
-		bool bSuccess = true;
+		bool result = true;
 
 		//
 		switch (message->message_header->type_id)
 		{
-			case RTMP_MSGID_AUDIO_MESSAGE:				bSuccess = ReceiveAudioMessage(message);	break; 
-			case RTMP_MSGID_VIDEO_MESSAGE:				bSuccess = ReceiveVideoMessage(message);	break; 
-			case RTMP_MSGID_SET_CHUNK_SIZE:				bSuccess = ReceiveSetChunkSize(message);	break; 
+			case RTMP_MSGID_AUDIO_MESSAGE:				result = ReceiveAudioMessage(message);	break;
+			case RTMP_MSGID_VIDEO_MESSAGE:				result = ReceiveVideoMessage(message);	break;
+			case RTMP_MSGID_SET_CHUNK_SIZE:				result = ReceiveSetChunkSize(message);	break;
 			case RTMP_MSGID_AMF0_DATA_MESSAGE:			ReceiveAmfDataMessage(message);				break;
 			case RTMP_MSGID_AMF0_COMMAND_MESSAGE:		ReceiveAmfCommandMessage(message);			break;
 			case RTMP_MSGID_WINDOWACKNOWLEDGEMENT_SIZE:	ReceiveWindowAcknowledgementSize(message);	break;
@@ -296,7 +294,7 @@ bool RtmpChunkStream::ReceiveChunkMessage()
 			}
 		}
 
-		if (!bSuccess)
+		if (result == false)
 		{
 			return false;
 		}
@@ -795,7 +793,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 
 	std::shared_ptr<RtmpMuxMessageHeader>	header = message->message_header;
 	uint8_t									*body = message->body->data();
-											 
+	
 	if (!_media_info.video_streaming)
 	{
 		return true;
@@ -883,8 +881,10 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 
 	if(header->body_size <= RTMP_VIDEO_DATA_MIN_SIZE || header->body_size > MAX_MEDIA_PACKET_SIZE)
 	{
-		LOG_ERROR_WRITE(("RtmpChunkStream - RecvVideoMessage - Header Size Fail - size(%d)", header->body_size));
-		return false; 
+		LOG_WARNING_WRITE(("RtmpChunkStream - RecvVideoMessage - Header Size Fail - size(%d) %s", 
+			header->body_size, HexStringDump(header->body_size, body).c_str()));
+
+		return true; 
 	}
 		
 	body_data			= (uint8_t *)body;
@@ -1176,14 +1176,23 @@ bool RtmpChunkStream::OnAmfMetaData(std::shared_ptr<RtmpMuxMessageHeader> &messa
 		else if	(object->GetType(index) == AmfDataType::Number && object->GetNumber(index) == 2.0) 					audio_codec_type = CodecType::MP3; 	//MP3
 	}
 
-	if((index = object->FindName("audiodatarate")) >= 0 && object->GetType(index) 	== AmfDataType::Number)	audio_bitrate =  object->GetNumber(index);	// Audio Data Rate
-	if((index = object->FindName("audiobitrate")) >= 0  && object->GetType(index) 	== AmfDataType::Number)	audio_bitrate =  object->GetNumber(index); 	// Audio Data Rate
+	// audio bitrate
+	if (((index = object->FindName("audiodatarate")) >= 0 || (index = object->FindName("audiobitrate")) >= 0) && (object->GetType(index) == AmfDataType::Number))
+	{
+		audio_bitrate = object->GetNumber(index);	// Audio Data Rate
+	}
 	 
+	// audio channels 
+	if ((index = object->FindName("stereo")) >= 0 && object->GetType(index) == AmfDataType::Boolean)
+	{
+		audio_channels = (object->GetBoolean(index) == true ? 2 : 1);
+	}
+	
 	if((index = object->FindName("audiochannels")) >= 0 )
 	{
 		if		(object->GetType(index) == AmfDataType::Number)														audio_channels =  object->GetNumber(index); 	
 		else if	(object->GetType(index) == AmfDataType::String && strcmp("stereo", object->GetString(index)) == 0)	audio_channels	 	= 2;
-		else if	(object->GetType(index) == AmfDataType::String && strcmp("mono", object->GetString(index)) == 0)		audio_channels 		= 1;
+		else if	(object->GetType(index) == AmfDataType::String && strcmp("mono", object->GetString(index)) == 0)	audio_channels 		= 1;
 	}
 
 	// Audio samplerate

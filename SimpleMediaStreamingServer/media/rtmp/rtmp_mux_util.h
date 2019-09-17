@@ -70,12 +70,12 @@ public:
 	static int GetBasicHeaderSizeByChunkStreamID(uint32_t chunk_stream_id);
 
 	static int GetChunkHeaderSize(void * raw_data, int raw_data_size); // ret:길이, ret<=0:실패
-	static std::shared_ptr<RtmpChunkHeader> GetChunkHeader(void * raw_data, int raw_data_size,  int &chunk_header_size, bool &extend_type); // ret<=0:실패, ret>0:처리길이
-	static int GetChunkData(int chunk_size, void * raw_data, int raw_data_size, int chunk_data_size, void * chunk_data, bool extend_type); // ret=> 0:실패, 1:처리길이
+	static std::shared_ptr<RtmpChunkHeader> GetChunkHeader(void * raw_data, int raw_data_size,  int &chunk_header_size, bool &is_extend_type); // ret<=0:실패, ret>0:처리길이
+	static int GetChunkData(int chunk_size, void * raw_data, int raw_data_size, int chunk_data_size, void * chunk_data, bool is_extend_type); // ret=> 0:실패, 1:처리길이
 
 	static int GetChunkBasicHeaderRaw(uint8_t chunk_type, uint32_t chunk_stream_id, void * raw_data);
-	static int GetChunkHeaderRaw(std::shared_ptr<RtmpChunkHeader> &chunk_header, void *raw_data, bool extend_type);
-	static int GetChunkDataRawSize(int chunk_size, uint32_t chunk_stream_id, int chunk_data_size, bool extend_type);
-	static int GetChunkDataRaw(int chunk_size, uint32_t chunk_stream_id, std::shared_ptr<std::vector<uint8_t>> &chunk_data, void * raw_data, bool extend_type, uint32_t time);
+	static int GetChunkHeaderRaw(std::shared_ptr<RtmpChunkHeader> &chunk_header, void *raw_data, bool is_extend_type);
+	static int GetChunkDataRawSize(int chunk_size, uint32_t chunk_stream_id, int chunk_data_size, bool is_extend_type);
+	static int GetChunkDataRaw(int chunk_size, uint32_t chunk_stream_id, std::shared_ptr<std::vector<uint8_t>> &chunk_data, void * raw_data, bool is_extend_type, uint32_t time);
 };
 

@@ -109,5 +109,5 @@ private :
 	int			_chunk_stream_id; 
 	bool		_video_sequence_load;
 	bool		_audio_sequence_load;
-	bool		_frame_config_info_load; 
+	bool		_frame_config_info_load;
 };

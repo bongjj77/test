@@ -12,6 +12,13 @@
 RtmpEncoderObject::RtmpEncoderObject()
 {
 	_last_packet_time = time(nullptr);
+	_framerate_check = true;
+	_framerate_check_interval = 10;
+	_framerate_check_tick = GetCurrentTick();
+	_video_frame_count = 0;
+	_audio_frame_count = 0;
+	_last_audio_timestamp = 0;
+
 }
 
 //====================================================================================================
@@ -76,7 +83,7 @@ bool RtmpEncoderObject::OnChunkStreamSend(int data_size, char* data)
 
 	if (PostSend(send_data) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamSend - Post Sned Fail - ip(%s)", _object_name, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamSend - Post Sned Fail - ip(%s)", _object_name.c_str(), _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -91,7 +98,7 @@ bool RtmpEncoderObject::OnChunkStreamStart(StreamKey& stream_key)
 	// Callback 호占쏙옙	
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStart(_index_key, _remote_ip, stream_key) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamStart - OnRtmpProviderStart - ip(%s)", _object_name, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamStart - OnRtmpProviderStart - ip(%s)", _object_name.c_str(), _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -109,7 +116,7 @@ bool RtmpEncoderObject::OnChunkStreamReadyComplete(StreamKey& stream_key, MediaI
 	// Callback  	
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderReadyComplete(_index_key, _remote_ip, stream_key, media_info) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamReadyComplete - OnRtmpProviderReadyComplete - ip(%s)", _object_name, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamReadyComplete - OnRtmpProviderReadyComplete - ip(%s)", _object_name.c_str(), _remote_ip_string.c_str()));
 		return false;
 	}
 
@@ -130,8 +137,49 @@ bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr
 	// Callback  
 	if (std::static_pointer_cast<IRtmpEncoder>(_object_callback)->OnRtmpEncoderStreamData(_index_key, _remote_ip, stream_key, frame) == false)
 	{
-		LOG_ERROR_WRITE(("[%s] OnChunkStreamData - OnRtmpProviderStreamData - ip(%s)", _object_name, _remote_ip_string.c_str()));
+		LOG_ERROR_WRITE(("[%s] OnChunkStreamData - OnRtmpProviderStreamData - ip(%s)", _object_name.c_str(), _remote_ip_string.c_str()));
 		return false;
+	}
+
+	// audio time stamp check
+	/*
+	if (frame->type == FrameType::AudioFrame)
+	{
+		if (_last_audio_timestamp == 0)
+			_last_audio_timestamp = frame->timestamp;
+
+
+		if (_last_audio_timestamp > frame->timestamp)
+		{
+			return true;
+		}
+
+		_last_audio_timestamp = frame->timestamp;
+
+	}
+	*/
+
+	if (_framerate_check == true)
+	{
+		auto current_tick = GetCurrentTick();
+
+		if (_framerate_check_tick == 0)
+			_framerate_check_tick = current_tick;
+
+		if (frame->type == FrameType::AudioFrame) _audio_frame_count++;
+		else _video_frame_count++;
+
+		if ((GetCurrentTick() - _framerate_check_tick) >= (_framerate_check_interval * 1000))
+		{
+			LOG_DEBUG_WRITE(("[%s] Framerate - key(%d) video(%.3f) audio(%.3f)", 
+				_object_name.c_str(), _index_key, 
+				(double)_video_frame_count / _framerate_check_interval,
+				(double)_audio_frame_count/ _framerate_check_interval));
+			
+			_audio_frame_count = 0;
+			_video_frame_count = 0;
+			_framerate_check_tick = current_tick;
+		}
 	}
 
 	return true;
@@ -169,7 +217,7 @@ bool RtmpEncoderObject::KeepAliveCheck()
 		{
 			if (_log_lock == false)
 			{
-				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%d) ip(%s) Gap(%d)", _object_name, _index_key, _remote_ip_string.c_str(), time_gap));
+				LOG_INFO_WRITE(("[%s] KeepAlive TimeOver Remove - key(%d) ip(%s) Gap(%d)", _object_name.c_str(), _index_key, _remote_ip_string.c_str(), time_gap));
 			}
 
 			if (_network_callback != nullptr)

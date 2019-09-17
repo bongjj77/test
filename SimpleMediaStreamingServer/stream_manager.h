@@ -106,14 +106,20 @@ public:
 		{
 			auto copy_frame = std::make_shared<FrameInfo>(frame);
 
-			hls_packetizer->AppendVideoFrame(copy_frame);
-			// dash_packetizer->AppendVideoFrame(frame);
+			if(hls_packetizer != nullptr)
+				hls_packetizer->AppendVideoFrame(copy_frame);
+			
+			// if(dash_packetizer != nullptr)
+			//	dash_packetizer->AppendVideoFrame(frame);
 		}
 		else
 		{
 			auto copy_frame = std::make_shared<FrameInfo>(frame);
 
-			hls_packetizer->AppendAudioFrame(copy_frame);
+			if (hls_packetizer != nullptr)
+				hls_packetizer->AppendAudioFrame(copy_frame);
+			
+			// if(dash_packetizer != nullptr)
 			// dash_packetizer->AppendAudioFrame(frame);
 		}
 		

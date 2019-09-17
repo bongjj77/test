@@ -302,8 +302,10 @@ bool MainObject::OnRtmpEncoderReadyComplete(int index_key, uint32_t ip, StreamKe
 //====================================================================================================
 bool MainObject::OnRtmpEncoderStreamData(int index_key, uint32_t ip, StreamKey& stream_key, std::shared_ptr<FrameInfo>& frame)
 {
-	//LOG_INFO_WRITE(("Rtmp Encoder Stream Data - stream(%s/%s) tpye(%c) timestamp(%lld)",
-	//				stream_key.first.c_str(), stream_key.second.c_str(), frame->type, frame->timestamp));
+	//LOG_DEBUG_WRITE(("Rtmp Encoder Data - stream(%s/%s) tpye(%c) size(%d) timestamp(%lld)",
+	//				stream_key.first.c_str(), stream_key.second.c_str(), frame->type, frame->data->size(), frame->timestamp));
+
+	 
 
 	if (!_stream_manager->AppendStreamData(stream_key, frame))
 	{

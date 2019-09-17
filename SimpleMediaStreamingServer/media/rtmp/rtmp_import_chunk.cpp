@@ -61,46 +61,50 @@ std::shared_ptr<RtmpMuxMessageHeader> RtmpImportChunk::GetMessageHeader(std::sha
 
     switch (chunk_header->basic_header.format_type)
     {
-        case RTMP_CHUNK_BASIC_FORMAT_TYPE0:
+        case RTMP_CHUNK_TYPE_0:
         {
             message_header->chunk_stream_id = chunk_header->basic_header.chunk_stream_id;
-            message_header->timestamp = chunk_header->type_0.timestamp;
-            message_header->body_size = chunk_header->type_0.body_size;
-            message_header->type_id = chunk_header->type_0.type_id;
-            message_header->stream_id = chunk_header->type_0.stream_id;
+            message_header->timestamp		= chunk_header->type_0.timestamp;
+            message_header->body_size		= chunk_header->type_0.body_size;
+            message_header->type_id			= chunk_header->type_0.type_id;
+            message_header->stream_id		= chunk_header->type_0.stream_id;
+
+		    break;
+        }
+        case RTMP_CHUNK_TYPE_1:
+        {
+            message_header->chunk_stream_id = chunk_header->basic_header.chunk_stream_id;
+            message_header->timestamp		= stream->message_header->timestamp + chunk_header->type_1.timestamp_delta;
+            message_header->body_size		= chunk_header->type_1.body_size;
+            message_header->type_id			= chunk_header->type_1.type_id;
+            message_header->stream_id		= stream->message_header->stream_id;        //
+
             break;
         }
-        case RTMP_CHUNK_BASIC_FORMAT_TYPE1:
+        case RTMP_CHUNK_TYPE_2:
         {
             message_header->chunk_stream_id = chunk_header->basic_header.chunk_stream_id;
-            message_header->timestamp = stream->message_header->timestamp + chunk_header->type_1.timestamp_delta;
-            message_header->body_size = chunk_header->type_1.body_size;
-            message_header->type_id = chunk_header->type_1.type_id;
-            message_header->stream_id = stream->message_header->stream_id;        //
+            message_header->timestamp		= stream->message_header->timestamp + chunk_header->type_2.timestamp_delta;
+            message_header->body_size		= stream->message_header->body_size;
+            message_header->type_id			= stream->message_header->type_id;
+            message_header->stream_id		= stream->message_header->stream_id;
+
             break;
         }
-        case RTMP_CHUNK_BASIC_FORMAT_TYPE2:
+        case RTMP_CHUNK_TYPE_3:
         {
             message_header->chunk_stream_id = chunk_header->basic_header.chunk_stream_id;
-            message_header->timestamp = stream->message_header->timestamp + chunk_header->type_2.timestamp_delta;
-            message_header->body_size = stream->message_header->body_size;
-            message_header->type_id = stream->message_header->type_id;
-            message_header->stream_id = stream->message_header->stream_id;
-            break;
-        }
-        case RTMP_CHUNK_BASIC_FORMAT_TYPE3:
-        {
-            message_header->chunk_stream_id = chunk_header->basic_header.chunk_stream_id;
-            message_header->timestamp = stream->message_header->timestamp + stream->timestamp_delta;
-            message_header->body_size = stream->message_header->body_size;
-            message_header->type_id = stream->message_header->type_id;
-            message_header->stream_id = stream->message_header->stream_id;
+            message_header->timestamp		= stream->message_header->timestamp + stream->timestamp_delta;
+            message_header->body_size		= stream->message_header->body_size;
+            message_header->type_id			= stream->message_header->type_id;
+            message_header->stream_id		= stream->message_header->stream_id;
+
             break;
         }
         default :
             break;
     }
-
+	
     return message_header;
 }
 
@@ -118,6 +122,7 @@ RtmpImportChunk::AppendChunk(std::shared_ptr<ImportStream> &stream, uint8_t *chu
         return false;
     }
  
+	// memory incress
     if ((static_cast<int>(stream->buffer->size()) - stream->data_size) < append_size)
     {
         stream->buffer->resize(
@@ -126,59 +131,14 @@ RtmpImportChunk::AppendChunk(std::shared_ptr<ImportStream> &stream, uint8_t *chu
     }
 	 
     memcpy(stream->buffer->data() + stream->data_size, chunk, (size_t) append_size);
+
     stream->data_size += append_size;
     stream->write_chunk_size += data_size;
 
     return true;
 }
 
-//====================================================================================================
-// CompleteChunkMessage
-// - data copy
-//====================================================================================================
-int RtmpImportChunk::CompleteChunkMessage(std::shared_ptr<ImportStream> &stream, int chunk_size)
-{
-    int chunk_header_size = 0;
-    int chunk_data_raw_size = 0;
-    bool extend_type = false;
- 
-    auto chunk_header = GetChunkHeader(stream->buffer->data(), stream->data_size, chunk_header_size, extend_type);
- 
-    auto message_header = GetMessageHeader(stream, chunk_header);
- 
-    chunk_data_raw_size = GetChunkDataRawSize(chunk_size, message_header->chunk_stream_id, message_header->body_size,
-                                              extend_type);
 
-    // Chunk Stream is not complete skip
-    if (stream->data_size < chunk_header_size + chunk_data_raw_size)
-    {
-        LOG_ERROR_WRITE(("Buffer(%d) RawData(%d)", stream->data_size, chunk_header_size + chunk_data_raw_size));
-        return 0;
-    }
- 
-    if (message_header->body_size == 0)
-    {
-        stream->data_size = 0;
-        stream->write_chunk_size = 0;
-        return 0;
-    }
-	 
-    auto message = std::make_shared<ImportMessage>(message_header);
-	 
-    if (GetChunkData(chunk_size, stream->buffer->data() + chunk_header_size, chunk_data_raw_size,
-                     message_header->body_size, message->body->data(), extend_type) == 0)
-    {
-		LOG_ERROR_WRITE(("GetChunkData - Header(%d) RawData(%d)", chunk_header_size, chunk_data_raw_size));
-        return 0;
-    }
-	 
-    stream->data_size = 0;
-    stream->write_chunk_size = 0;
- 
-    _import_message_queue.push_back(message);
-
-    return message_header->body_size;
-}
 
 //====================================================================================================
 // ImportStream
@@ -188,14 +148,14 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 {
     int chunk_header_size = 0;
     int rest_chunk_size = 0;
-    bool extend_type = false;
+    bool is_extend_type = false;
 
     if (data_size <= 0 || data == nullptr)
     {
         return 0;
     }
  
-    auto chunk_header = GetChunkHeader(data, data_size, chunk_header_size, extend_type);
+    auto chunk_header = GetChunkHeader(data, data_size, chunk_header_size, is_extend_type);
 
     if (chunk_header_size <= 0)
     {
@@ -205,11 +165,11 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
     auto stream = GetStream(chunk_header->basic_header.chunk_stream_id);
 
     // Type3 ExtendHeader check
-    if (chunk_header->basic_header.format_type == RTMP_CHUNK_BASIC_FORMAT_TYPE3)
+    if (chunk_header->basic_header.format_type == RTMP_CHUNK_TYPE_3)
     {
-        extend_type = stream->extend_type;
+        is_extend_type = stream->is_extend_type;
 
-        if (extend_type)
+        if (is_extend_type)
         {
             chunk_header_size += RTMP_EXTEND_TIMESTAMP_SIZE;
 
@@ -222,7 +182,7 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
     }
 
     // ExtendHeader setting
-    stream->extend_type = extend_type;
+    stream->is_extend_type = is_extend_type;
 
     // Message Header 얻기
     auto message_header = GetMessageHeader(stream, chunk_header);
@@ -231,27 +191,26 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 
     if (rest_chunk_size <= 0)
     {
-        LOG_ERROR_WRITE(("Rest Chunk Size Fail - Header(%d) Data(%d) Chunk(%d)", 
-					chunk_header_size, rest_chunk_size, _chunk_size));
+        LOG_ERROR_WRITE(("Rest Chunk Size Fail - Header(%d) Data(%d) Chunk(%d)", chunk_header_size, rest_chunk_size, _chunk_size));
         return -1;
     }
 	 
+	// chunk append check(type3)
     if (_chunk_size < rest_chunk_size)
     {
         if (data_size < chunk_header_size + _chunk_size)
         {
-            return 0;
+		    return 0;
         }
  
         if (!AppendChunk(stream, data, chunk_header_size, _chunk_size))
         {
-            LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
-						chunk_header_size, rest_chunk_size, _chunk_size));
+            LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", chunk_header_size, rest_chunk_size, _chunk_size));
             return -1;
         }
 
         // Import stream info update
-        message_header->timestamp -= stream->timestamp_delta;
+        message_header->timestamp = stream->message_header->timestamp;
         stream->message_header = message_header;
         message_complete = false;
 
@@ -265,19 +224,79 @@ int RtmpImportChunk::ImportStreamData(uint8_t *data, int data_size, bool &messag
 	 
     if (!AppendChunk(stream, data, chunk_header_size, rest_chunk_size))
     {
-        LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", 
-					chunk_header_size, rest_chunk_size, _chunk_size));
+        LOG_ERROR_WRITE(("AppendChunk Fail - Header(%d) Data(%d) Chunk(%d)", chunk_header_size, rest_chunk_size, _chunk_size));
         return -1;
     }
  
-    CompleteChunkMessage(stream, _chunk_size);
-	 
-    stream->timestamp_delta = message_header->timestamp - stream->message_header->timestamp;
-    stream->message_header = message_header;
+	if (CompleteChunkMessage(stream) == false)
+	{
+		LOG_ERROR_WRITE(("CompleteChunkMessage Fail"));
+		return -1;
+	}
+	
     message_complete = true;
-
+	
     return chunk_header_size + rest_chunk_size;
 
+}
+
+//====================================================================================================
+// CompleteChunkMessage
+// - data copy
+//====================================================================================================
+bool RtmpImportChunk::CompleteChunkMessage(std::shared_ptr<ImportStream> &stream)
+{
+	int chunk_header_size = 0;
+	bool is_extend_type = false;
+
+	auto chunk_header = GetChunkHeader(stream->buffer->data(), stream->data_size, chunk_header_size, is_extend_type);
+	auto message_header = GetMessageHeader(stream, chunk_header);
+	auto chunk_data_size = GetChunkDataRawSize(_chunk_size, message_header->chunk_stream_id, message_header->body_size, is_extend_type);
+
+	if (stream->message_header->chunk_stream_id == 4)
+	{
+		int i = 0;
+		i++;
+
+	}
+
+	// Chunk Stream is not complete skip
+	if (stream->data_size < chunk_header_size + chunk_data_size)
+	{
+		LOG_ERROR_WRITE(("Buffer(%d) RawData(%d)", stream->data_size, chunk_header_size + chunk_data_size));
+		return false;
+	}
+
+	if (message_header->body_size == 0)
+	{
+		stream->data_size = 0;
+		stream->write_chunk_size = 0;
+		stream->timestamp_delta = message_header->timestamp - stream->message_header->timestamp;
+		stream->message_header = message_header;
+		return true;
+	}
+
+	auto message = std::make_shared<ImportMessage>(message_header);
+
+	if (GetChunkData(_chunk_size,
+		stream->buffer->data() + chunk_header_size,
+		chunk_data_size,
+		message_header->body_size,
+		message->body->data(),
+		is_extend_type) == 0)
+	{
+		LOG_ERROR_WRITE(("GetChunkData - Header(%d) RawData(%d)", chunk_header_size, chunk_data_size));
+		return false;
+	}
+
+	stream->data_size = 0;
+	stream->write_chunk_size = 0;
+	stream->timestamp_delta = message_header->timestamp - stream->message_header->timestamp;
+	stream->message_header = message_header;
+
+	_import_message_queue.push_back(message);
+
+	return true;
 }
 
 //====================================================================================================
