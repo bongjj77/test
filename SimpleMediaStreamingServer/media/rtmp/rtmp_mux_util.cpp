@@ -87,6 +87,46 @@ int RtmpMuxUtil::WriteInt32LE(void * output, int value)
 	return sizeof(int);
 }
 
+bool RtmpMuxUtil::WriteInt8(std::shared_ptr<std::vector<uint8_t>> &output, uint8_t value)
+{
+	output->push_back(value);
+	return true;
+}
+
+bool RtmpMuxUtil::WriteInt16(std::shared_ptr<std::vector<uint8_t>> &output, int16_t value)
+{
+	
+	output->push_back((uint8_t)(value >> 8));
+	output->push_back((uint8_t)(value & 0xff));
+	return true;
+}
+
+bool RtmpMuxUtil::WriteInt24(std::shared_ptr<std::vector<uint8_t>> &output, int value)
+{
+	output->push_back((uint8_t)(value >> 16));
+	output->push_back((uint8_t)(value >> 8));
+	output->push_back((uint8_t)(value & 0xff));
+	
+	return true;
+}
+
+bool RtmpMuxUtil::WriteInt32(std::shared_ptr<std::vector<uint8_t>> &output, int value)
+{
+
+	output->push_back((uint8_t)(value >> 24));
+	output->push_back((uint8_t)(value >> 16));
+	output->push_back((uint8_t)(value >> 8));
+	output->push_back((uint8_t)(value & 0xff));
+
+	return true;
+}
+
+bool RtmpMuxUtil::WriteInt32LE(std::shared_ptr<std::vector<uint8_t>> &output, int value)
+{
+	output->insert(output->end(), &value, &value + sizeof(int));
+	return true;
+}
+
 
 //====================================================================================================
 // GetBasicHeaderSizeByRawData
@@ -133,16 +173,14 @@ int RtmpMuxUtil::GetChunkHeaderSize(void * raw_data, int raw_data_size)
 	int		    message_header_size	= 0;
 	int		    header_size			= 0;
 	auto *	    data_pos 		= (uint8_t*)raw_data;
-	uint8_t	    format_type;
-	uint32_t	chunk_stream_id;
- 
+	
 	if(raw_data == nullptr || raw_data_size == 0) 
 	{ 
 		return 0; 
 	}
  
-	format_type		= (uint8_t)(data_pos[0] & RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK);
-	chunk_stream_id	= (uint32_t)(data_pos[0] & RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK);
+	auto format = (RtmpChunkFormat)(data_pos[0] & RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK);
+	auto chunk_stream_id	= (uint32_t)(data_pos[0] & RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK);
 
 	// basic_header length 
 	if ( chunk_stream_id == 0 )			basic_header_size = 2;
@@ -150,12 +188,12 @@ int RtmpMuxUtil::GetChunkHeaderSize(void * raw_data, int raw_data_size)
 	else 								basic_header_size = 1;
 		
 	// msg header length
-	switch(format_type)
+	switch(format)
 	{
-		case RTMP_CHUNK_TYPE_0:	message_header_size = RTMP_CHUNK_TYPE_0_SIZE;	break;
-		case RTMP_CHUNK_TYPE_1:	message_header_size = RTMP_CHUNK_TYPE_1_SIZE;	break;
-		case RTMP_CHUNK_TYPE_2:	message_header_size = RTMP_CHUNK_TYPE_2_SIZE;	break;
-		case RTMP_CHUNK_TYPE_3:	message_header_size = RTMP_CHUNK_TYPE_3_SIZE;	break;
+		case RtmpChunkFormat::Type_0:	message_header_size = RTMP_CHUNK_TYPE_0_SIZE;	break;
+		case RtmpChunkFormat::Type_1:	message_header_size = RTMP_CHUNK_TYPE_1_SIZE;	break;
+		case RtmpChunkFormat::Type_2:	message_header_size = RTMP_CHUNK_TYPE_2_SIZE;	break;
+		case RtmpChunkFormat::Type_3:	message_header_size = RTMP_CHUNK_TYPE_3_SIZE;	break;
 		default : 							return -1;
 	}
 
@@ -167,9 +205,9 @@ int RtmpMuxUtil::GetChunkHeaderSize(void * raw_data, int raw_data_size)
 	}	
 
 	//Extended Timestamp 확인(Type3는 확인 못함 - 이전 정보를 기반으로 이후에 확인) 
-	if( format_type == RTMP_CHUNK_TYPE_0 || format_type == RTMP_CHUNK_TYPE_1 || format_type == RTMP_CHUNK_TYPE_2)
+	if(format == RtmpChunkFormat::Type_0 || format == RtmpChunkFormat::Type_1 || format == RtmpChunkFormat::Type_2)
 	{
-		if( ReadInt24(data_pos + basic_header_size) == RTMP_EXTEND_TIMESTAMP )
+		if( ReadInt24(data_pos + basic_header_size) == RTMP_EXTENDED_FORMAT )
 		{ 
 			header_size += RTMP_EXTEND_TIMESTAMP_SIZE; 
  
@@ -195,313 +233,201 @@ std::shared_ptr<RtmpChunkHeader> RtmpMuxUtil::GetChunkHeader(void * raw_data,
 															int &chunk_header_size, 
 															bool &is_extend_type)
 {
-	int			basic_header_size = 0;
-	auto *		data_pos = (uint8_t*)raw_data;
-	uint8_t	    format_type = 0;
-	uint32_t	chunk_stream_id = 0;
-
+	auto * data_pos = (uint8_t*)raw_data;
+	
 	chunk_header_size = 0;
 	is_extend_type = false;
 
-	if( raw_data == nullptr || raw_data_size == 0)
+	if (raw_data == nullptr || raw_data_size == 0)
 	{
 		return nullptr;
 	}
-	 
-	basic_header_size	= GetBasicHeaderSizeByRawData(data_pos[0]);
-    chunk_header_size	= GetChunkHeaderSize(raw_data, raw_data_size);
 
-	if(chunk_header_size <= 0)
+	auto basic_header_size = GetBasicHeaderSizeByRawData(data_pos[0]);
+	chunk_header_size = GetChunkHeaderSize(raw_data, raw_data_size);
+
+	if (chunk_header_size <= 0)
 	{
 		return nullptr;
 	}
 
 	auto chunk_header = std::make_shared<RtmpChunkHeader>();
-	 
-	format_type = (uint8_t)(data_pos[0] & RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK);
-	 
-	chunk_stream_id = (uint32_t)(data_pos[0] & RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK);
-	
-	if		( chunk_stream_id == 0 ) 	chunk_stream_id = (uint32_t)(64 + data_pos[1]);
-	else if( chunk_stream_id == 1 )	chunk_stream_id = (uint32_t)(64 + data_pos[1] + data_pos[2]*256);
 
-	chunk_header->basic_header.format_type 		= format_type;
-	chunk_header->basic_header.chunk_stream_id 	= chunk_stream_id;
+	RtmpChunkFormat format = (RtmpChunkFormat)(data_pos[0] & RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK);
 
-	data_pos += basic_header_size; 
-	 
-	switch(format_type)
+	auto chunk_stream_id = (uint32_t)(data_pos[0] & RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK);
+
+	if (chunk_stream_id == 0) 	chunk_stream_id = (uint32_t)(64 + data_pos[1]);
+	else if (chunk_stream_id == 1)	chunk_stream_id = (uint32_t)(64 + data_pos[1] + data_pos[2] * 256);
+
+	chunk_header->basic_header.format_type = format;
+	chunk_header->basic_header.chunk_stream_id = chunk_stream_id;
+
+	data_pos += basic_header_size;
+
+	switch (format)
 	{
-		case RTMP_CHUNK_TYPE_0:
+	case RtmpChunkFormat::Type_0:
+	{
+		chunk_header->type_0.timestamp = ReadInt24(data_pos);
+		data_pos += 3;
+
+		chunk_header->type_0.body_size = ReadInt24(data_pos);
+		data_pos += 3;
+
+		chunk_header->type_0.type_id = data_pos[0];
+		data_pos += 1;
+
+		chunk_header->type_0.stream_id = (uint32_t)ReadInt32LE(data_pos);
+		data_pos += 4;
+
+		//Externed Timestamp check 
+		if (chunk_header->type_0.timestamp == RTMP_EXTENDED_FORMAT)
 		{
-			chunk_header->type_0.timestamp = ReadInt24(data_pos);
-			data_pos += 3;
-
-			chunk_header->type_0.body_size = ReadInt24(data_pos);
-			data_pos += 3;
-
-			chunk_header->type_0.type_id = data_pos[0];
-			data_pos += 1;
-
-			chunk_header->type_0.stream_id = (uint32_t)ReadInt32LE(data_pos);
-			data_pos += 4;
-
-			//Externed Timestamp check 
-			if (chunk_header->type_0.timestamp == RTMP_EXTEND_TIMESTAMP)
-			{
-				chunk_header->type_0.timestamp = ReadInt32(data_pos);
-				is_extend_type = true;
-			}
-			break;
+			chunk_header->type_0.timestamp = ReadInt32(data_pos);
+			is_extend_type = true;
 		}
-		case RTMP_CHUNK_TYPE_1:
+		break;
+	}
+	case RtmpChunkFormat::Type_1:
+	{
+		chunk_header->type_1.timestamp_delta = ReadInt24(data_pos);
+		data_pos += 3;
+
+		chunk_header->type_1.body_size = ReadInt24(data_pos);
+		data_pos += 3;
+
+		chunk_header->type_1.type_id = data_pos[0];
+		data_pos += 1;
+
+		// Externed Timestamp ceck
+		if (chunk_header->type_1.timestamp_delta == RTMP_EXTENDED_FORMAT)
 		{
-			chunk_header->type_1.timestamp_delta = ReadInt24(data_pos);
-			data_pos += 3;
-
-			chunk_header->type_1.body_size = ReadInt24(data_pos);
-			data_pos += 3;
-
-			chunk_header->type_1.type_id = data_pos[0];
-			data_pos += 1;
-
-			// Externed Timestamp ceck
-			if (chunk_header->type_1.timestamp_delta == RTMP_EXTEND_TIMESTAMP)
-			{
-				chunk_header->type_1.timestamp_delta = ReadInt32(data_pos);
-				is_extend_type = true;
-			}
-
-			break;
+			chunk_header->type_1.timestamp_delta = ReadInt32(data_pos);
+			is_extend_type = true;
 		}
-		case RTMP_CHUNK_TYPE_2:
+
+		break;
+	}
+	case RtmpChunkFormat::Type_2:
+	{
+		chunk_header->type_2.timestamp_delta = ReadInt24(data_pos);
+		data_pos += 3;
+
+		// Externed Timestamp check
+		if (chunk_header->type_2.timestamp_delta == RTMP_EXTENDED_FORMAT)
 		{
-			chunk_header->type_2.timestamp_delta = ReadInt24(data_pos);
-			data_pos += 3;
+			chunk_header->type_2.timestamp_delta = ReadInt32(data_pos);
+			is_extend_type = true;
+		}
 
-			// Externed Timestamp check
-			if (chunk_header->type_2.timestamp_delta == RTMP_EXTEND_TIMESTAMP)
-			{
-				chunk_header->type_2.timestamp_delta = ReadInt32(data_pos);
-				is_extend_type = true;
-			}
-
-			break;
-		}
-		case RTMP_CHUNK_TYPE_3 : 
-		{
-			break;
-		}
-		default : 
-		{
-			break;
-		}
+		break;
+	}
+	case RtmpChunkFormat::Type_3:
+	{
+		break;
+	}
+	default:
+	{
+		break;
+	}
 	}
 
 	return chunk_header;
 }
 
 //====================================================================================================
-// GetChunkData
-// RawData 에서 ChunkData 획득 
-// - RawData : [Block] + [Type3 Header] + [Block] + [Type3 Header] + [Block] ..... 구조 
+// MakeChunkBasicHeader
 //====================================================================================================
-int RtmpMuxUtil::GetChunkData(int chunk_size, void * raw_data, int raw_data_size, int chunk_data_size, void * chunk_data, bool is_extend_type)
+std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkBasicHeader(RtmpChunkFormat chunk_format, uint32_t chunk_stream_id)
 {
-	auto *	data_pos = (uint8_t*)raw_data;
-	auto * chunk_data_pos = (uint8_t*)chunk_data;
-	int		block_count = 0;
-	int		need_data_size = 0;
-	int		read_data_size = 0;
-	int		type3_header_size = 1;
-		
-	if(is_extend_type)
-	{
-		type3_header_size += RTMP_EXTEND_TIMESTAMP_SIZE; 
-	}
+	auto basic_header = std::make_shared<std::vector<uint8_t>>(); 
  
-	if(	chunk_size == 0 || raw_data == nullptr || raw_data_size == 0 || chunk_data_size == 0 || chunk_data == nullptr )
-	{
-		return 0; 
-	}
-	
-	read_data_size 	= 0;
-	block_count 	= ((chunk_data_size-1)/chunk_size);
-	block_count++; 
-	need_data_size 	= chunk_data_size + (block_count-1)*type3_header_size;
- 
-	if(raw_data_size < need_data_size)
-	{ 
-		return 0; 
-	}
-	
-	for(int nIndex=0 ; nIndex < block_count; nIndex++)
-	{
-		int size = 0; 
-		
-		//  type3 header
-		if( nIndex > 0 )
-		{
-			// type3 check
-			if(GetBasicHeaderSizeByRawData(*data_pos) != 1)
-			{ 
-				return 0; 
-			}
-
-			//Type3 offset
-			read_data_size	+= type3_header_size;
-			data_pos		+= type3_header_size; 
-		}
- 
-		size = (need_data_size - read_data_size) > chunk_size ? chunk_size : (need_data_size - read_data_size);
-		 
-		memcpy(chunk_data_pos, data_pos, (size_t)size);
- 
-		chunk_data_pos 	+= size;
-		data_pos	+= size; 	
-		read_data_size 	+= size;
-	}
-
-	return read_data_size;
-}
-
-//====================================================================================================
-// GetChunkBasicHeaderRaw
-//====================================================================================================
-int RtmpMuxUtil::GetChunkBasicHeaderRaw(uint8_t chunk_type, uint32_t chunk_stream_id, void * raw_data)
-{
-
-	auto * data_pos 		= (uint8_t*)raw_data;
-	int basic_header_size	= 0;
- 
-	if(raw_data == nullptr) 
+	if(basic_header == nullptr)
 	{ 
 		return 0; 
 	}
  
 	if(chunk_stream_id >= (64+256))
 	{
-		basic_header_size 	= 3;
-		data_pos[0] 	= 1;			
+		basic_header->push_back(1);
 		chunk_stream_id  	-= 64;
-		data_pos[1] 	= (uint8_t)(chunk_stream_id&0xff);
+		basic_header->push_back((uint8_t)(chunk_stream_id&0xff) );
 		chunk_stream_id 	>>= 8;
-		data_pos[2] 	= (uint8_t)(chunk_stream_id&0xff);
+		basic_header->push_back((uint8_t)(chunk_stream_id&0xff));
 	}
 	else if(chunk_stream_id >= 64)
 	{
-		basic_header_size 	= 2;
-		data_pos[0] 	= 0;		
+		basic_header->push_back(0);
 		chunk_stream_id  	-= 64;
-		data_pos[1] 	= (uint8_t)(chunk_stream_id&0xff);
+		basic_header->push_back((uint8_t)(chunk_stream_id & 0xff));
 	}
 	else
 	{
-		basic_header_size 	= 1;
-		data_pos[0] 	= (uint8_t)(chunk_stream_id&0x3f);
+		basic_header->push_back((uint8_t)(chunk_stream_id & 0x3f));
 	}
  
-	data_pos[0] |= chunk_type & 0xc0;
+	(*basic_header)[0] |= (uint8_t)chunk_format & 0xc0;
 
-	return basic_header_size;
+	return basic_header;
 }
 
 //====================================================================================================
-// GetChunkHeaderRaw
+// MakeChunkRewHeader
 // - Chunk header create
 // - basic_header + message_header
 //====================================================================================================
-int RtmpMuxUtil::GetChunkHeaderRaw(std::shared_ptr<RtmpChunkHeader> &chunk_header, void *raw_data, bool is_extend_type)
+std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRewHeader(std::shared_ptr<RtmpChunkHeader> &chunk_header, bool is_extend_type)
 {
-	auto *data_pos 		= (uint8_t*)raw_data;
-	int basic_header_size	= 0;
-	int message_header_size	= 0;
- 
-	if( chunk_header == nullptr || raw_data == nullptr )
-	{ 
-		return 0; 
+	if (chunk_header == nullptr)
+	{
+		return 0;
 	}
-	 
-	basic_header_size = GetChunkBasicHeaderRaw(chunk_header->basic_header.format_type, chunk_header->basic_header.chunk_stream_id, raw_data);
 
-	data_pos += basic_header_size; 
-	 
+	auto basic_header = MakeChunkBasicHeader(chunk_header->basic_header.format_type, chunk_header->basic_header.chunk_stream_id);
+	auto raw_header = std::make_shared<std::vector<uint8_t>>(basic_header->begin(), basic_header->end());
+ 	 
 	switch(chunk_header->basic_header.format_type)
 	{
-		case RTMP_CHUNK_TYPE_0:
+		case RtmpChunkFormat::Type_0:
 		{
-			message_header_size = RTMP_CHUNK_TYPE_0_SIZE;
+			if(!is_extend_type)	WriteInt24(raw_header, chunk_header->type_0.timestamp);
+			else				WriteInt24(raw_header, RTMP_EXTENDED_FORMAT);
+		
+			WriteInt24(raw_header, chunk_header->type_0.body_size);
+			raw_header->push_back(chunk_header->type_0.type_id);
+			WriteInt32LE(raw_header, chunk_header->type_0.stream_id);
 			
-			//timestamp 
-			if(!is_extend_type)	WriteInt24(data_pos, chunk_header->type_0.timestamp);
-			else				WriteInt24(data_pos, RTMP_EXTEND_TIMESTAMP);
-			data_pos += 3; 
-
-			//length 
-			WriteInt24(data_pos, chunk_header->type_0.body_size);
-			data_pos += 3; 
-			
-			//typeid
-			*(data_pos) = chunk_header->type_0.type_id;
-			data_pos += 1; 
-			
-			//streamid
-			WriteInt32LE(data_pos, chunk_header->type_0.stream_id);
-			data_pos += 4; 
-
 			//extended timestamp
 			if(is_extend_type)
-			{
-				message_header_size += RTMP_EXTEND_TIMESTAMP_SIZE; 
-				WriteInt32(data_pos, chunk_header->type_0.timestamp);
-			}
+				WriteInt32(raw_header, chunk_header->type_0.timestamp);
 			
 			break;
 		}
-		case RTMP_CHUNK_TYPE_1:
+		case RtmpChunkFormat::Type_1:
 		{
-			message_header_size = RTMP_CHUNK_TYPE_1_SIZE;
+			if(!is_extend_type)	WriteInt24(raw_header, chunk_header->type_1.timestamp_delta);
+			else				WriteInt24(raw_header, RTMP_EXTENDED_FORMAT);
+	
+			WriteInt24(raw_header, chunk_header->type_1.body_size);
+			raw_header->push_back(chunk_header->type_1.type_id);
 			
-			//timestamp 
-			if(!is_extend_type)	WriteInt24(data_pos, chunk_header->type_1.timestamp_delta);
-			else				WriteInt24(data_pos, RTMP_EXTEND_TIMESTAMP);
-			data_pos += 3; 
-
-			// length
-			WriteInt24(data_pos, chunk_header->type_1.body_size);
-			data_pos += 3; 
-			
-			// streamid
-			*(data_pos) = chunk_header->type_1.type_id;
-			data_pos += 1; 
-
 			// extended timestamp
 			if(is_extend_type)
-			{
-				message_header_size += RTMP_EXTEND_TIMESTAMP_SIZE; 
-				WriteInt32(data_pos, chunk_header->type_1.timestamp_delta);
-			}
+				WriteInt32(raw_header, chunk_header->type_1.timestamp_delta);
 			
 			break;
 		}
-		case RTMP_CHUNK_TYPE_2:
+		case RtmpChunkFormat::Type_2:
 		{
-			message_header_size = RTMP_CHUNK_TYPE_2_SIZE;
-			
-			//timestamp
 			if(!is_extend_type)
 			{
-				
-				WriteInt24(data_pos, chunk_header->type_2.timestamp_delta);
+				WriteInt24(raw_header, chunk_header->type_2.timestamp_delta);
 			}
 			else
 			{
-				message_header_size += RTMP_EXTEND_TIMESTAMP_SIZE;
-				WriteInt24(data_pos, RTMP_EXTEND_TIMESTAMP);										
-				data_pos += 3; 
-				
-				WriteInt32(data_pos, chunk_header->type_2.timestamp_delta);
-				
+				WriteInt24(raw_header, RTMP_EXTENDED_FORMAT);
+				WriteInt32(raw_header, chunk_header->type_2.timestamp_delta);
 			}
 			
 			break;
@@ -509,7 +435,7 @@ int RtmpMuxUtil::GetChunkHeaderRaw(std::shared_ptr<RtmpChunkHeader> &chunk_heade
 		default : break;
 	}
 
-	return (basic_header_size + message_header_size);
+	return raw_header;
 }
 
 //====================================================================================================
@@ -540,58 +466,52 @@ int RtmpMuxUtil::GetChunkDataRawSize(int chunk_size, uint32_t chunk_stream_id, i
 }
 
 //====================================================================================================
-// GetChunkDataRaw 
+// MakeChunkRawData 
 // - RawData :     [Block] + [Type3 Header] + [Block] + [Type3 Header] + [Block] ..... 구조 
 //====================================================================================================
-int RtmpMuxUtil::GetChunkDataRaw(int chunk_size, uint32_t chunk_stream_id, std::shared_ptr<std::vector<uint8_t>> &chunk_data, void * raw_data, bool is_extend_type, uint32_t time)
+std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRawData(int chunk_size,
+																	uint32_t chunk_stream_id, 
+																	std::shared_ptr<std::vector<uint8_t>> &chunk_data, 
+																	bool is_extend_type, 
+																	uint32_t time)
 {
-	auto    *data_pos		= (uint8_t*)raw_data;
-	uint8_t	type3_header[RTMP_CHUNK_BASIC_HEADER_SIZE_MAX] = {0,};
-	int		type3_header_size 	= 0;
 	int		read_data_size		= 0;
 	int		block_count 		= 0; 
-	int		raw_data_size		= 0; 
-	 
-	if(chunk_size == 0 || chunk_data->empty()  || raw_data == nullptr )
+		 
+	if(chunk_size == 0 || chunk_data->empty())
 	{ 
-		return 0; 
+		return nullptr; 
 	}
  
-	block_count		= (chunk_data->size() - 1)/chunk_size;
+	block_count = (chunk_data->size() - 1)/chunk_size;
 	block_count++; 
 	 
-	type3_header_size = GetChunkBasicHeaderRaw(RTMP_CHUNK_TYPE_3, chunk_stream_id, type3_header);
- 
+	auto basic_header = MakeChunkBasicHeader(RtmpChunkFormat::Type_3, chunk_stream_id);
+	auto chunk_raw_data = std::make_shared<std::vector<uint8_t>>();
+
 	for(int nIndex = 0 ; nIndex  < block_count ; nIndex++)
 	{
 		int size = 0;
 	 
 		if( nIndex > 0 )
 		{
-			memcpy(data_pos, type3_header, (size_t)type3_header_size);
-			data_pos 	+= type3_header_size;
-			raw_data_size 	+= type3_header_size;
-				
+			chunk_raw_data->insert(chunk_raw_data->end(), basic_header->begin(), basic_header->end());
+	
 			//Timestamp Extended Header
 			if(is_extend_type)
 			{
-				WriteInt32(data_pos, time);
-				data_pos		+= RTMP_EXTEND_TIMESTAMP_SIZE;
-				raw_data_size	+= RTMP_EXTEND_TIMESTAMP_SIZE;
+				WriteInt32(chunk_raw_data, time);
 			}
 		}
  
         size = (static_cast<int>(chunk_data->size()) - read_data_size) > chunk_size ?
-                chunk_size :
-	            (static_cast<int>(chunk_data->size()) - read_data_size);
+                chunk_size : (static_cast<int>(chunk_data->size()) - read_data_size);
  
-		memcpy(data_pos, chunk_data->data() + read_data_size, (size_t)size);
- 
-		read_data_size	+= size;
-		data_pos	+= size;
-		raw_data_size	+= size;
+		chunk_raw_data->insert(chunk_raw_data->end(), chunk_data->data() + read_data_size, chunk_data->data() + read_data_size + size);
+
+		read_data_size	+= size;		
 	}
 
-	return raw_data_size;
+	return chunk_raw_data;
 }
 

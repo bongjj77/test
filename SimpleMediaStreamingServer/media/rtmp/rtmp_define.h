@@ -26,17 +26,21 @@
 #define RTMP_CHUNK_BASIC_FORMAT_TYPE_MASK       (0xc0)
 #define RTMP_CHUNK_BASIC_CHUNK_STREAM_ID_MASK   (0x3f)
 
-#define RTMP_CHUNK_TYPE_0           (0x00)
-#define RTMP_CHUNK_TYPE_1           (0x40)
-#define RTMP_CHUNK_TYPE_2           (0x80)
-#define RTMP_CHUNK_TYPE_3           (0xc0)
+enum class RtmpChunkFormat : uint8_t
+{
+	Type_0 = (0x00),
+	Type_1 = (0x40),
+	Type_2 = (0x80),
+	Type_3 = (0xc0),
+	Unknown = (0xff),
+};
 
 #define RTMP_CHUNK_TYPE_0_SIZE      (11)
 #define RTMP_CHUNK_TYPE_1_SIZE      (7)
 #define RTMP_CHUNK_TYPE_2_SIZE      (3)
 #define RTMP_CHUNK_TYPE_3_SIZE      (0)
 
-#define RTMP_EXTEND_TIMESTAMP                   (0x00ffffff)
+#define RTMP_EXTENDED_FORMAT                   (0x00ffffff)
 #define RTMP_EXTEND_TIMESTAMP_SIZE              (4)
 
 // CHUNK STREAM ID
@@ -150,7 +154,7 @@ struct RtmpChunkHeader
 public:
 	RtmpChunkHeader() 
 	{
-		basic_header.format_type = 0;
+		basic_header.format_type = RtmpChunkFormat::Unknown;
 		basic_header.chunk_stream_id = 0;
 
 		type_0.timestamp = 0;
@@ -161,7 +165,7 @@ public:
 
 	void Init() 
 	{
-		basic_header.format_type = 0;
+		basic_header.format_type = RtmpChunkFormat::Unknown;
 		basic_header.chunk_stream_id = 0;
 
 		type_0.timestamp = 0;
@@ -173,8 +177,8 @@ public:
 public:
 	struct 
 	{
-		uint8_t		format_type;
-		uint32_t	chunk_stream_id; // 0,1,2 are reserved
+		RtmpChunkFormat format_type;
+		uint32_t chunk_stream_id; // 0,1,2 are reserved
 	} basic_header;
 
 	union 

@@ -31,7 +31,8 @@
 
 #include <random>
 #include <algorithm>
-
+#include <sstream>
+#include <iomanip>
 
 LogWriter g_log_writer("Q");
 
@@ -824,4 +825,28 @@ uint64_t ConvertTimescale(uint64_t time, uint32_t from_timescale, uint32_t to_ti
 	double ratio = (double)to_timescale / (double)from_timescale;
 
 	return ((uint64_t)((double)time * ratio));
+}
+
+
+//====================================================================================================
+// ConvertTimescale 
+// - from_timescale => to_timescale
+//====================================================================================================
+std::string HexStringDump(int data_size, const uint8_t * data)
+{
+	std::stringstream dump_stream;
+
+	dump_stream << "\n ---------- dump ---------- \n";
+
+	for (int index = 0; index < data_size; ++index)
+	{
+		if (index % 16 == 0)
+			dump_stream << '\n';
+
+		dump_stream << "0x" << std::setfill('0') << std::setw(2) << std::hex << (int)data[index] << ' ';
+	}
+	
+	dump_stream << '\n';
+
+	return dump_stream.str();
 }

@@ -881,8 +881,8 @@ bool RtmpChunkStream::ReceiveVideoMessage(std::shared_ptr<ImportMessage> &messag
 
 	if(header->body_size <= RTMP_VIDEO_DATA_MIN_SIZE || header->body_size > MAX_MEDIA_PACKET_SIZE)
 	{
-		LOG_WARNING_WRITE(("RtmpChunkStream - RecvVideoMessage - Header Size Fail - size(%d) %s", 
-			header->body_size, HexStringDump(header->body_size, body).c_str()));
+		//LOG_WARNING_WRITE(("RtmpChunkStream - RecvVideoMessage - Header Size Fail - size(%d) %s", 
+		//	header->body_size, HexStringDump(header->body_size, body).c_str()));
 
 		return true; 
 	}

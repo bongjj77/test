@@ -61,5 +61,6 @@ extern int			GetLocalAddress(char * pAddress);
 extern std::string	GetLocalHostName();
 extern std::string	RandomString(uint32_t size);
 extern std::string	RandomNumberString(uint32_t size);
-extern uint32_t Gcd(uint32_t n1, uint32_t n2);
-extern uint64_t ConvertTimescale(uint64_t time, uint32_t from_timescale, uint32_t to_timescale);
+extern uint32_t		Gcd(uint32_t n1, uint32_t n2);
+extern uint64_t		ConvertTimescale(uint64_t time, uint32_t from_timescale, uint32_t to_timescale);
+extern std::string	HexStringDump(int data_size, const uint8_t * data);

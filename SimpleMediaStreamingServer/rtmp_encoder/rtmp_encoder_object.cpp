@@ -171,10 +171,10 @@ bool RtmpEncoderObject::OnChunkStreamData(StreamKey& stream_key, std::shared_ptr
 
 		if ((GetCurrentTick() - _framerate_check_tick) >= (_framerate_check_interval * 1000))
 		{
-			LOG_DEBUG_WRITE(("[%s] Framerate - key(%d) video(%.3f) audio(%.3f)", 
-				_object_name.c_str(), _index_key, 
-				(double)_video_frame_count / _framerate_check_interval,
-				(double)_audio_frame_count/ _framerate_check_interval));
+			LOG_DEBUG_WRITE(("[%s] Framerate - key(%d) video(%.1f) audio(%.1f)", 
+							_object_name.c_str(), _index_key, 
+							(double)_video_frame_count / _framerate_check_interval,
+							(double)_audio_frame_count/ _framerate_check_interval));
 			
 			_audio_frame_count = 0;
 			_video_frame_count = 0;

@@ -17,19 +17,19 @@ struct ImportStream
 public :
 	ImportStream()
 	{
-		message_header 	= std::make_shared<RtmpMuxMessageHeader>();
-        write_chunk_size= 0;
-        is_extend_type		= false;
-        data_size		= 0;
-        buffer 			= std::make_shared<std::vector<uint8_t>>(1024*1024);
+		message_header = std::make_shared<RtmpMuxMessageHeader>();
+		is_extend_type = false;
+		write_buffer_size = 0;
+		write_chunk_data_size = 0;
+		buffer = std::make_shared<std::vector<uint8_t>>(1024 * 1024);
 	}
 
 public :
-    std::shared_ptr<RtmpMuxMessageHeader> message_header;
+	std::shared_ptr<RtmpMuxMessageHeader> message_header;
 	uint32_t	timestamp_delta;
-	int			write_chunk_size;
 	bool		is_extend_type;
-	int 		data_size;
+	int			write_chunk_data_size;
+	int 		write_buffer_size;
 	std::shared_ptr<std::vector<uint8_t>> buffer;
 };
 
@@ -39,14 +39,14 @@ public :
 struct ImportMessage
 {
 public :
-	ImportMessage(std::shared_ptr<RtmpMuxMessageHeader>	&header)
+	ImportMessage(std::shared_ptr<RtmpMuxMessageHeader>	&header_, std::shared_ptr<std::vector<uint8_t>> body_)
 	{
-        message_header  = header;
-        body            = std::make_shared<std::vector<uint8_t>>(message_header->body_size);
+		message_header = header_;
+		body = body_;
 	}
 
 public :
-    std::shared_ptr<RtmpMuxMessageHeader>	message_header;
+	std::shared_ptr<RtmpMuxMessageHeader>	message_header;
 	std::shared_ptr<std::vector<uint8_t>> 	body;
 };
 
@@ -68,7 +68,7 @@ private:
 	std::shared_ptr<ImportStream> GetStream(uint32_t chunk_stream_id);
 	std::shared_ptr<RtmpMuxMessageHeader> GetMessageHeader(std::shared_ptr<ImportStream> &stream, std::shared_ptr<RtmpChunkHeader> &chunk_header);
 	bool AppendChunk(std::shared_ptr<ImportStream> &stream, uint8_t *chunk, int header_size, int data_size);
-	bool CompleteChunkMessage(std::shared_ptr<ImportStream> &stream);
+	bool CompletedChunkMessage(std::shared_ptr<ImportStream> &stream);
 
 private:
 	std::map<uint32_t, std::shared_ptr<ImportStream>> _stream_map;
