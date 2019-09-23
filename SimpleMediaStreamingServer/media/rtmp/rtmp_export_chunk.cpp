@@ -134,7 +134,7 @@ std::shared_ptr<std::vector<uint8_t>> RtmpExportChunk::ExportStreamData(std::sha
 	else if (chunk_header->basic_header.format_type == RtmpChunkFormat::Type_1)	type3_time = chunk_header->type_1.timestamp_delta;
 	else if (chunk_header->basic_header.format_type == RtmpChunkFormat::Type_2)	type3_time = chunk_header->type_2.timestamp_delta;
 
-	auto chunk_raw_header = MakeChunkRewHeader(chunk_header, is_extend_type);
+	auto chunk_raw_header = MakeChunkRawHeader(chunk_header, is_extend_type);
 
 	auto chunk_raw_data = MakeChunkRawData(_chunk_size, message_header->chunk_stream_id, data, is_extend_type, type3_time);
 	

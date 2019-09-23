@@ -373,15 +373,15 @@ std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkBasicHeader(RtmpChun
 }
 
 //====================================================================================================
-// MakeChunkRewHeader
+// MakeChunkRawHeader
 // - Chunk header create
 // - basic_header + message_header
 //====================================================================================================
-std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRewHeader(std::shared_ptr<RtmpChunkHeader> &chunk_header, bool is_extend_type)
+std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRawHeader(std::shared_ptr<RtmpChunkHeader> &chunk_header, bool is_extend_type)
 {
 	if (chunk_header == nullptr)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	auto basic_header = MakeChunkBasicHeader(chunk_header->basic_header.format_type, chunk_header->basic_header.chunk_stream_id);
@@ -475,25 +475,22 @@ std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRawData(int chunk_si
 																	bool is_extend_type, 
 																	uint32_t time)
 {
-	int		read_data_size		= 0;
-	int		block_count 		= 0; 
-		 
+	int read_data_size = 0;
+	 
 	if(chunk_size == 0 || chunk_data->empty())
 	{ 
 		return nullptr; 
 	}
  
-	block_count = (chunk_data->size() - 1)/chunk_size;
+	auto block_count = (chunk_data->size() - 1)/chunk_size;
 	block_count++; 
 	 
 	auto basic_header = MakeChunkBasicHeader(RtmpChunkFormat::Type_3, chunk_stream_id);
 	auto chunk_raw_data = std::make_shared<std::vector<uint8_t>>();
 
-	for(int nIndex = 0 ; nIndex  < block_count ; nIndex++)
+	for(int index = 0 ; index < block_count ; index++)
 	{
-		int size = 0;
-	 
-		if( nIndex > 0 )
+		if(index > 0 )
 		{
 			chunk_raw_data->insert(chunk_raw_data->end(), basic_header->begin(), basic_header->end());
 	
@@ -504,7 +501,7 @@ std::shared_ptr<std::vector<uint8_t>> RtmpMuxUtil::MakeChunkRawData(int chunk_si
 			}
 		}
  
-        size = (static_cast<int>(chunk_data->size()) - read_data_size) > chunk_size ?
+        auto size = (static_cast<int>(chunk_data->size()) - read_data_size) > chunk_size ?
                 chunk_size : (static_cast<int>(chunk_data->size()) - read_data_size);
  
 		chunk_raw_data->insert(chunk_raw_data->end(), chunk_data->data() + read_data_size, chunk_data->data() + read_data_size + size);

@@ -79,7 +79,7 @@ public:
 	static std::shared_ptr<RtmpChunkHeader> GetChunkHeader(void * raw_data, int raw_data_size,  int &chunk_header_size, bool &is_extend_type); // ret<=0:실패, ret>0:처리길이
 
 	static std::shared_ptr<std::vector<uint8_t>> MakeChunkBasicHeader(RtmpChunkFormat chunk_format, uint32_t chunk_stream_id);
-	static std::shared_ptr<std::vector<uint8_t>> MakeChunkRewHeader(std::shared_ptr<RtmpChunkHeader> &chunk_header, bool is_extend_type);
+	static std::shared_ptr<std::vector<uint8_t>> MakeChunkRawHeader(std::shared_ptr<RtmpChunkHeader> &chunk_header, bool is_extend_type);
 	static int GetChunkDataRawSize(int chunk_size, uint32_t chunk_stream_id, int chunk_data_size, bool is_extend_type);
 	static std::shared_ptr<std::vector<uint8_t>> MakeChunkRawData(int chunk_size, 
 																uint32_t chunk_stream_id, 
