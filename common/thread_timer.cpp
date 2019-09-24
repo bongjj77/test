@@ -52,7 +52,8 @@ void ThreadTimer::Destroy( )
 	if (_is_timer_thread_stop == false)
 	{
 		_is_timer_thread_stop = true;
-		_timer_thread.join();
+		if (_timer_thread.joinable())
+			_timer_thread.join();
 	}
 
 	std::lock_guard<std::recursive_mutex> timer_map_lock(_timer_map_mutex);
