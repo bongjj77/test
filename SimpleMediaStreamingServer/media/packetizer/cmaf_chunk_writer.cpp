@@ -22,7 +22,7 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-CmafChunkWriter::CmafChunkWriter(M4sMediaType media_type,
+CmafChunkWriter::CmafChunkWriter(Mp4MediaType media_type,
 											 uint32_t sequence_number,
 											 uint32_t track_id,
 											 bool http_chunked_transfer_support)
@@ -115,7 +115,7 @@ int CmafChunkWriter::MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_st
 
 	uint32_t data_offset = data_stream->size() + 8;
 
-	uint32_t position = (_media_type == M4sMediaType::Video) ? data_stream->size() - 16 - 4 : data_stream->size() - 8 - 4;
+	uint32_t position = (_media_type == Mp4MediaType::Video) ? data_stream->size() - 16 - 4 : data_stream->size() - 8 - 4;
 
 	if (position < 0)
 	{
@@ -207,12 +207,12 @@ int CmafChunkWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_st
 	auto data = std::make_shared<std::vector<uint8_t>>();
 	uint32_t flag = 0;
 
-	if (M4sMediaType::Video == _media_type)
+	if (Mp4MediaType::Video == _media_type)
 	{
 		flag = TRUN_FLAG_DATA_OFFSET_PRESENT | TRUN_FLAG_SAMPLE_DURATION_PRESENT | TRUN_FLAG_SAMPLE_SIZE_PRESENT |
 		        TRUN_FLAG_SAMPLE_FLAGS_PRESENT | TRUN_FLAG_SAMPLE_COMPOSITION_TIME_OFFSET_PRESENT;
 	}
-	else if(M4sMediaType::Audio == _media_type)
+	else if(Mp4MediaType::Audio == _media_type)
 	{
 		flag = TRUN_FLAG_DATA_OFFSET_PRESENT | TRUN_FLAG_SAMPLE_DURATION_PRESENT | TRUN_FLAG_SAMPLE_SIZE_PRESENT;
 	}
@@ -222,13 +222,13 @@ int CmafChunkWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_st
 
     WriteUint32(sample_data->duration, data); // duration
 
-    if (_media_type == M4sMediaType::Video)
+    if (_media_type == Mp4MediaType::Video)
     {
         WriteUint32(sample_data->data->size() + 4, data);	// size + sample
         WriteUint32(sample_data->flag, data);;					// flag
         WriteUint32(sample_data->composition_time_offset, data);	// cts
     }
-    else if (_media_type == M4sMediaType::Audio)
+    else if (_media_type == Mp4MediaType::Audio)
     {
         WriteUint32(sample_data->data->size(), data);				// sample
     }
@@ -242,6 +242,6 @@ int CmafChunkWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_st
 int CmafChunkWriter::MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stream,
 										const std::shared_ptr<std::vector<uint8_t>> &frame)
 {
-	return BoxDataWrite("mdat", frame, data_stream, _media_type == M4sMediaType::Video ? true : false);
+	return BoxDataWrite("mdat", frame, data_stream, _media_type == Mp4MediaType::Video ? true : false);
 
 }

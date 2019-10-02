@@ -12,10 +12,10 @@
 #include "..//media_define.h"
 #include "common/common_header.h"
 
-#define M4S_BOX_HEADER_SIZE  (8)        // size(4) + type(4)
-#define M4S_BOX_EXT_HEADER_SIZE (12)    // size(4) + type(4) + version(1) + flag(3)
+#define MP4_BOX_HEADER_SIZE  (8)        // size(4) + type(4)
+#define MP4_BOX_EXT_HEADER_SIZE (12)    // size(4) + type(4) + version(1) + flag(3)
 
-enum class M4sMediaType
+enum class Mp4MediaType
 {
 	Video,
 	Audio,
@@ -67,7 +67,7 @@ public:
 class Mp4Writer
 {
 public:
-	Mp4Writer(M4sMediaType media_type);
+	Mp4Writer(Mp4MediaType media_type);
 	virtual ~Mp4Writer() = default;
 
 protected :
@@ -99,5 +99,5 @@ protected :
 
 
 protected :
-	M4sMediaType _media_type;
+	Mp4MediaType _media_type;
 };

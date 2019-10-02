@@ -40,7 +40,7 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-M4sInitWriter::M4sInitWriter(M4sMediaType media_type,
+M4sInitWriter::M4sInitWriter(Mp4MediaType media_type,
 							uint32_t duration,
 							uint32_t timescale,
 							uint32_t track_id,
@@ -77,12 +77,12 @@ M4sInitWriter::M4sInitWriter(M4sMediaType media_type,
 
 	_language = "und";
 
-	if (media_type == M4sMediaType::Video)
+	if (media_type == Mp4MediaType::Video)
 	{
 		_handler_type = "vide";
 		_compressor_name = "video_handler";
 	}
-	else if (media_type == M4sMediaType::Audio)
+	else if (media_type == Mp4MediaType::Audio)
 	{
 		_handler_type = "soun";
 		_compressor_name = "audio_handler";
@@ -213,7 +213,7 @@ int M4sInitWriter::TkhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 	WriteInit(0, 2, data);					// Reserve(2Byte)
 	WriteData(metrix, data);				// Matrix
 
-	if(_media_type == M4sMediaType::Video)
+	if(_media_type == Mp4MediaType::Video)
 	{
 		WriteUint32(_video_width << 16, data);  // Width
 		WriteUint32(_video_height << 16, data); // Height
@@ -250,12 +250,12 @@ int M4sInitWriter::MdhdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 
 	WriteUint32(0, data);               // Create Time
 	WriteUint32(0, data);               // Modification Time
-	if (_media_type == M4sMediaType::Video)
+	if (_media_type == Mp4MediaType::Video)
 	{
 		WriteUint32(_timescale, data);      // Timescale
 		WriteUint32(_duration, data);       // Duration
 	}
-	else if(_media_type == M4sMediaType::Audio)
+	else if(_media_type == Mp4MediaType::Audio)
 	{
 		WriteUint32(_audio_sample_rate, data);  // Timescale
 		WriteUint32(_duration, data);					// Duration
@@ -291,8 +291,8 @@ int M4sInitWriter::MinfBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 {
 	auto data = std::make_shared<std::vector<uint8_t>>();
 
-	if(_media_type == M4sMediaType::Video)     	VmhdBoxWrite(data);
-	else if(_media_type == M4sMediaType::Audio)	SmhdBoxWrite(data);
+	if(_media_type == Mp4MediaType::Video)     	VmhdBoxWrite(data);
+	else if(_media_type == Mp4MediaType::Audio)	SmhdBoxWrite(data);
 
 	DinfBoxWrite(data); 
 	StblBoxWrite(data);
@@ -387,8 +387,8 @@ int M4sInitWriter::StsdBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 
 	WriteUint32(1, data); // Child Count
 
-	if(_media_type == M4sMediaType::Video)	Avc1BoxWrite(data);
-	if(_media_type == M4sMediaType::Audio)	Mp4aBoxWrite(data);
+	if(_media_type == Mp4MediaType::Video)	Avc1BoxWrite(data);
+	if(_media_type == Mp4MediaType::Audio)	Mp4aBoxWrite(data);
 
 	return BoxDataWrite("stsd", 0, 0, data, data_stream);
 }

@@ -8,7 +8,7 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-Mp4Writer::Mp4Writer(M4sMediaType media_type)
+Mp4Writer::Mp4Writer(Mp4MediaType media_type)
 {
 	_media_type = media_type;
 }
@@ -120,7 +120,7 @@ int Mp4Writer::BoxDataWrite(std::string type,
 							const std::shared_ptr<std::vector<uint8_t>> &data,
 							std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
-	uint32_t box_size = (data != nullptr) ? M4S_BOX_HEADER_SIZE + data->size() : M4S_BOX_HEADER_SIZE;
+	uint32_t box_size = (data != nullptr) ? MP4_BOX_HEADER_SIZE + data->size() : MP4_BOX_HEADER_SIZE;
 
 	WriteUint32(box_size, data_stream); // box size write
 	WriteText(type, data_stream);	    // type write
@@ -142,7 +142,7 @@ int Mp4Writer::BoxDataWrite(std::string type,
 							const std::shared_ptr<std::vector<uint8_t>> &data,
 							std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
-	uint32_t box_size = (data != nullptr) ? M4S_BOX_EXT_HEADER_SIZE + data->size() : M4S_BOX_EXT_HEADER_SIZE;
+	uint32_t box_size = (data != nullptr) ? MP4_BOX_EXT_HEADER_SIZE + data->size() : MP4_BOX_EXT_HEADER_SIZE;
 
 	WriteUint32(box_size, data_stream);    // box size write
 	WriteText(type, data_stream);          // type write
@@ -165,7 +165,7 @@ int Mp4Writer::BoxDataWrite(const std::string type,
 							std::shared_ptr<std::vector<uint8_t>>& data_stream,
 							bool data_size_write/* = false*/)
 {
-	uint32_t box_size = (data != nullptr) ? M4S_BOX_HEADER_SIZE + data->size() : M4S_BOX_HEADER_SIZE;
+	uint32_t box_size = (data != nullptr) ? MP4_BOX_HEADER_SIZE + data->size() : MP4_BOX_HEADER_SIZE;
 
 	// supported mdat box(data copy decrease)
 	if (data_size_write && data != nullptr)

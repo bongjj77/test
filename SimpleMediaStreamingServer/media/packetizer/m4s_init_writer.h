@@ -13,7 +13,7 @@
 class M4sInitWriter : public Mp4Writer
 {
 public:
-	M4sInitWriter(M4sMediaType media_type,
+	M4sInitWriter(Mp4MediaType media_type,
 				  uint32_t duration,
 				  uint32_t timescale,
 				  uint32_t track_id,

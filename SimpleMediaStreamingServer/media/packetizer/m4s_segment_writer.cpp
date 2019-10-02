@@ -20,7 +20,7 @@
 //====================================================================================================
 // Constructor
 //====================================================================================================
-M4sSegmentWriter::M4sSegmentWriter(M4sMediaType media_type,
+M4sSegmentWriter::M4sSegmentWriter(Mp4MediaType media_type,
 									uint32_t sequence_number,
 									uint32_t track_id,
 									uint64_t start_timestamp) :
@@ -50,7 +50,7 @@ const std::shared_ptr<std::vector<uint8_t>> M4sSegmentWriter::AppendSamples(cons
 	{
 		total_sample_size += sample_data->data->size();
 
-		if (_media_type == M4sMediaType::Video)
+		if (_media_type == Mp4MediaType::Video)
 		{
 			total_sample_size += sizeof(uint32_t);
 		}
@@ -80,7 +80,7 @@ int M4sSegmentWriter::MoofBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 
 	uint32_t data_offset = data_stream->size() + 8;
 
-	uint32_t position = (_media_type == M4sMediaType::Video) ? data_stream->size() - sample_data_list.size() * 16 - 4:
+	uint32_t position = (_media_type == Mp4MediaType::Video) ? data_stream->size() - sample_data_list.size() * 16 - 4:
 					data_stream->size() - sample_data_list.size() * 8 - 4;
 
 	if(position < 0)
@@ -172,12 +172,12 @@ int M4sSegmentWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 	auto data = std::make_shared<std::vector<uint8_t>>();
 	uint32_t flag = 0;
 
-	if (M4sMediaType::Video == _media_type)
+	if (Mp4MediaType::Video == _media_type)
 	{
 		flag = TRUN_FLAG_DATA_OFFSET_PRESENT | TRUN_FLAG_SAMPLE_DURATION_PRESENT | TRUN_FLAG_SAMPLE_SIZE_PRESENT |
 		        TRUN_FLAG_SAMPLE_FLAGS_PRESENT | TRUN_FLAG_SAMPLE_COMPOSITION_TIME_OFFSET_PRESENT;
 	}
-	else if(M4sMediaType::Audio == _media_type)
+	else if(Mp4MediaType::Audio == _media_type)
 	{
 		flag = TRUN_FLAG_DATA_OFFSET_PRESENT | TRUN_FLAG_SAMPLE_DURATION_PRESENT | TRUN_FLAG_SAMPLE_SIZE_PRESENT;
 	}
@@ -189,13 +189,13 @@ int M4sSegmentWriter::TrunBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 	{
 		WriteUint32(sample_data->duration, data);					// duration
 
-		if (_media_type == M4sMediaType::Video)
+		if (_media_type == Mp4MediaType::Video)
 		{
 			WriteUint32(sample_data->data->size() + 4, data);			// size + sample
 			WriteUint32(sample_data->flag, data);;						// flag
 			WriteUint32(sample_data->composition_time_offset, data);	// compoistion timeoffset 
 		}
-		else if (_media_type == M4sMediaType::Audio)
+		else if (_media_type == Mp4MediaType::Audio)
 		{
 			WriteUint32(sample_data->data->size(), data);				// sample
 		}
@@ -211,13 +211,13 @@ int M4sSegmentWriter::MdatBoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_s
 									const std::vector<std::shared_ptr<SampleData>> &sample_data_list,
 									uint32_t total_sample_size)
 {
-	WriteUint32(M4S_BOX_HEADER_SIZE + total_sample_size, data_stream); 	// box size write
+	WriteUint32(MP4_BOX_HEADER_SIZE + total_sample_size, data_stream); 	// box size write
 	WriteText("mdat", data_stream);			// type write
 
 	for (auto &sample_data : sample_data_list)
 	{
 		// only video)
-		if (_media_type == M4sMediaType::Video)
+		if (_media_type == Mp4MediaType::Video)
 		{
 			WriteUint32(sample_data->data->size(), data_stream);
 		}

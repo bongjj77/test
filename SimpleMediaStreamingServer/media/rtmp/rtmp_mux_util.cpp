@@ -7,47 +7,45 @@
 
 uint8_t RtmpMuxUtil::ReadInt8(void * data)
 {
-	uint8_t return_value;
+	auto result = ((uint8_t*)data)[0];
 
-	return_value = ((uint8_t*)data)[0];
-
-	return return_value;
+	return result;
 }
 
 uint16_t RtmpMuxUtil::ReadInt16(void * data)
 {
-	uint16_t return_value;
+	uint16_t result;
 
-	return_value = (((uint8_t*)data)[0] << 8) | ((uint8_t*)data)[1];
+	result = (((uint8_t*)data)[0] << 8) | ((uint8_t*)data)[1];
 
-	return return_value;
+	return result;
 }
 
 uint32_t RtmpMuxUtil::ReadInt24(void * data)
 {
-	uint32_t return_value;
+	uint32_t result;
 
-	return_value = (((uint8_t*)data)[0] << 16) | (((uint8_t*)data)[1] << 8) | ((uint8_t*)data)[2];
+	result = (((uint8_t*)data)[0] << 16) | (((uint8_t*)data)[1] << 8) | ((uint8_t*)data)[2];
 
-	return return_value;
+	return result;
 }
 
 uint32_t RtmpMuxUtil::ReadInt32(void * data)
 {
-	uint32_t return_value;
+	uint32_t result;
 
-	return_value = (((uint8_t*)data)[0] << 24) | (((uint8_t*)data)[1] << 16) | (((uint8_t*)data)[2] << 8) | ((uint8_t*)data)[3];
+	result = (((uint8_t*)data)[0] << 24) | (((uint8_t*)data)[1] << 16) | (((uint8_t*)data)[2] << 8) | ((uint8_t*)data)[3];
 
-	return return_value;
+	return result;
 }
 
 int RtmpMuxUtil::ReadInt32LE(void * data)
 {
-	int return_value;
+	int result;
 
-	memcpy(&return_value, data, sizeof(int));
+	memcpy(&result, data, sizeof(int));
 
-	return return_value;
+	return result;
 }
 
 int RtmpMuxUtil::WriteInt8(void * output, uint8_t value)

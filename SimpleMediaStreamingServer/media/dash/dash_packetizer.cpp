@@ -93,7 +93,7 @@ bool DashPacketizer::VideoInit(const std::shared_ptr<std::vector<uint8_t>>& fram
 {
 	
 	// Video init m4s Create
-	auto writer = std::make_unique<M4sInitWriter>(M4sMediaType::Video,
+	auto writer = std::make_unique<M4sInitWriter>(Mp4MediaType::Video,
 												_segment_duration * _media_info.video_timescale,
 												_media_info.video_timescale,
 												VIDEO_TRACK_ID,
@@ -130,7 +130,7 @@ bool DashPacketizer::AudioInit()
 	std::shared_ptr<std::vector<uint8_t>> temp = nullptr;
 
 	// Audio init m4s 생성(메모리)
-	auto writer = std::make_unique<M4sInitWriter>(M4sMediaType::Audio,
+	auto writer = std::make_unique<M4sInitWriter>(Mp4MediaType::Audio,
 												_segment_duration * _media_info.audio_timescale,
 												_media_info.audio_timescale,
 												AUDIO_TRACK_ID,
@@ -279,7 +279,7 @@ bool DashPacketizer::VideoSegmentWrite(uint64_t max_timestamp)
 	_video_frame_list.clear();
 
 	// Fragment write
-	auto fragment_writer = std::make_unique<M4sSegmentWriter>(M4sMediaType::Video,
+	auto fragment_writer = std::make_unique<M4sSegmentWriter>(Mp4MediaType::Video,
 															_video_sequence_number,
 															VIDEO_TRACK_ID,
 															start_timestamp);
@@ -335,7 +335,7 @@ bool DashPacketizer::AudioSegmentWrite(uint64_t max_timestamp)
 	}
 
 	// Fragment write
-	auto fragment_writer = std::make_unique<M4sSegmentWriter>(M4sMediaType::Audio,
+	auto fragment_writer = std::make_unique<M4sSegmentWriter>(Mp4MediaType::Audio,
 															_audio_sequence_number,
 															AUDIO_TRACK_ID,
 															start_timestamp);

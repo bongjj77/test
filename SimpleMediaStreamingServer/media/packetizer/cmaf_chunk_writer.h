@@ -13,7 +13,7 @@
 class CmafChunkWriter : public Mp4Writer
 {
 public:
-	CmafChunkWriter(M4sMediaType media_type,
+	CmafChunkWriter(Mp4MediaType media_type,
 					uint32_t sequence_number,
 					uint32_t track_id,
 					bool http_chunked_transfer_support);
