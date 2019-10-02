@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "m4s_writer.h"
+#include "mp4_writer.h"
 
 //====================================================================================================
 // M4sSegmentWriter
 //====================================================================================================
-class M4sSegmentWriter : public M4sWriter
+class M4sSegmentWriter : public Mp4Writer
 {
 public:
 	M4sSegmentWriter(M4sMediaType media_type, uint32_t sequence_number, uint32_t track_id, uint64_t start_timestamp);

@@ -62,13 +62,13 @@ public:
 };
 
 //====================================================================================================
-// M4sWriter
+// Mp4Writer
 //====================================================================================================
-class M4sWriter
+class Mp4Writer
 {
 public:
-	M4sWriter(M4sMediaType media_type);
-	virtual ~M4sWriter() = default;
+	Mp4Writer(M4sMediaType media_type);
+	virtual ~Mp4Writer() = default;
 
 protected :
 

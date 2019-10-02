@@ -24,7 +24,7 @@ M4sSegmentWriter::M4sSegmentWriter(M4sMediaType media_type,
 									uint32_t sequence_number,
 									uint32_t track_id,
 									uint64_t start_timestamp) :
-									M4sWriter(media_type)
+									Mp4Writer(media_type)
 {
   	_sequence_number    = sequence_number;
 	_track_id			= track_id;

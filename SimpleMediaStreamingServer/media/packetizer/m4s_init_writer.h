@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "m4s_writer.h"
+#include "mp4_writer.h"
 
 //====================================================================================================
-// M4sWriter
+// Mp4Writer
 //====================================================================================================
-class M4sInitWriter : public M4sWriter
+class M4sInitWriter : public Mp4Writer
 {
 public:
 	M4sInitWriter(M4sMediaType media_type,

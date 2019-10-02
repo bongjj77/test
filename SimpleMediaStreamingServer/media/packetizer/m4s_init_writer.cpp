@@ -50,7 +50,7 @@ M4sInitWriter::M4sInitWriter(M4sMediaType media_type,
 							std::shared_ptr<std::vector<uint8_t>> &avc_pps,
 							uint16_t audio_channels,
 							uint16_t audio_sample_size,
-							uint16_t audio_sample_rate) : M4sWriter(media_type)
+							uint16_t audio_sample_rate) : Mp4Writer(media_type)
 {
    	_duration			= duration;
 	_timescale			= timescale;

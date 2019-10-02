@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "m4s_writer.h"
+#include "mp4_writer.h"
 
 //====================================================================================================
 // CmafChunkWriter
 //====================================================================================================
-class CmafChunkWriter : public M4sWriter
+class CmafChunkWriter : public Mp4Writer
 {
 public:
 	CmafChunkWriter(M4sMediaType media_type,

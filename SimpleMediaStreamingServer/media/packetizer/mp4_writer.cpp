@@ -3,12 +3,12 @@
 //  Email : bongjj77@gmail.com
 //====================================================================================================
 
-#include "m4s_writer.h"
+#include "mp4_writer.h"
 
 //====================================================================================================
 // Constructor
 //====================================================================================================
-M4sWriter::M4sWriter(M4sMediaType media_type)
+Mp4Writer::Mp4Writer(M4sMediaType media_type)
 {
 	_media_type = media_type;
 }
@@ -16,7 +16,7 @@ M4sWriter::M4sWriter(M4sMediaType media_type)
 //====================================================================================================
 // Data Write(std::shared_ptr<std::vector<uint8_t>>)
 //====================================================================================================
-bool M4sWriter::WriteData(const std::shared_ptr<std::vector<uint8_t>> &data, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteData(const std::shared_ptr<std::vector<uint8_t>> &data, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->insert(data_stream->end(), data->begin(), data->end());
 	return true;
@@ -25,7 +25,7 @@ bool M4sWriter::WriteData(const std::shared_ptr<std::vector<uint8_t>> &data, std
 //====================================================================================================
 // Data Write(std::vector<uint8_t>)
 //====================================================================================================
-bool M4sWriter::WriteData(const std::vector<uint8_t> &data, std::shared_ptr<std::vector<uint8_t>>& data_stream)
+bool Mp4Writer::WriteData(const std::vector<uint8_t> &data, std::shared_ptr<std::vector<uint8_t>>& data_stream)
 {
 	data_stream->insert(data_stream->end(), data.begin(), data.end());
 	return true;
@@ -34,7 +34,7 @@ bool M4sWriter::WriteData(const std::vector<uint8_t> &data, std::shared_ptr<std:
 //====================================================================================================
 // write init
 //====================================================================================================
-bool M4sWriter::WriteInit(uint8_t value, int init_size, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteInit(uint8_t value, int init_size, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	for (int index = 0; index < init_size; index++)
 	{
@@ -47,7 +47,7 @@ bool M4sWriter::WriteInit(uint8_t value, int init_size, std::shared_ptr<std::vec
 //====================================================================================================
 // Text write
 //====================================================================================================
-bool M4sWriter::WriteText(std::string value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteText(std::string value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->insert(data_stream->end(), value.begin(), value.end());
 	return true;
@@ -56,7 +56,7 @@ bool M4sWriter::WriteText(std::string value, std::shared_ptr<std::vector<uint8_t
 //====================================================================================================
 // 64bit write
 //====================================================================================================
-bool M4sWriter::WriteUint64(uint64_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteUint64(uint64_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->push_back((uint8_t)(value >> 56 & 0xFF));
 	data_stream->push_back((uint8_t)(value >> 48 & 0xFF));
@@ -73,7 +73,7 @@ bool M4sWriter::WriteUint64(uint64_t value, std::shared_ptr<std::vector<uint8_t>
 //====================================================================================================
 // 32bit write
 //====================================================================================================
-bool M4sWriter::WriteUint32(uint32_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteUint32(uint32_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->push_back((uint8_t)(value >> 24 & 0xFF));
 	data_stream->push_back((uint8_t)(value >> 16 & 0xFF));
@@ -86,7 +86,7 @@ bool M4sWriter::WriteUint32(uint32_t value, std::shared_ptr<std::vector<uint8_t>
 //====================================================================================================
 // 24bit write
 //====================================================================================================
-bool M4sWriter::WriteUint24(uint32_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteUint24(uint32_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->push_back((uint8_t)(value >> 16 & 0xFF));
 	data_stream->push_back((uint8_t)(value >> 8 & 0xFF));
@@ -97,7 +97,7 @@ bool M4sWriter::WriteUint24(uint32_t value, std::shared_ptr<std::vector<uint8_t>
 //====================================================================================================
 // 16bit write 
 //====================================================================================================
-bool M4sWriter::WriteUint16(uint16_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteUint16(uint16_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->push_back((uint8_t)(value >> 8 & 0xFF));
 	data_stream->push_back((uint8_t)(value & 0xFF));
@@ -107,7 +107,7 @@ bool M4sWriter::WriteUint16(uint16_t value, std::shared_ptr<std::vector<uint8_t>
 //====================================================================================================
 // 8bit write
 //====================================================================================================
-bool M4sWriter::WriteUint8(uint8_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
+bool Mp4Writer::WriteUint8(uint8_t value, std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
 	data_stream->push_back(value);
 	return true;
@@ -116,7 +116,7 @@ bool M4sWriter::WriteUint8(uint8_t value, std::shared_ptr<std::vector<uint8_t>> 
 //====================================================================================================
 // Box data
 //====================================================================================================
-int M4sWriter::BoxDataWrite(std::string type,
+int Mp4Writer::BoxDataWrite(std::string type,
 							const std::shared_ptr<std::vector<uint8_t>> &data,
 							std::shared_ptr<std::vector<uint8_t>> &data_stream)
 {
@@ -136,7 +136,7 @@ int M4sWriter::BoxDataWrite(std::string type,
 //====================================================================================================
 // Box data
 //====================================================================================================
-int M4sWriter::BoxDataWrite(std::string type,
+int Mp4Writer::BoxDataWrite(std::string type,
 							uint8_t version,
 							uint32_t flags,
 							const std::shared_ptr<std::vector<uint8_t>> &data,
@@ -160,7 +160,7 @@ int M4sWriter::BoxDataWrite(std::string type,
 //====================================================================================================
 // Box data
 //====================================================================================================
-int M4sWriter::BoxDataWrite(const std::string type,
+int Mp4Writer::BoxDataWrite(const std::string type,
 							const std::shared_ptr<std::vector<uint8_t>>& data,
 							std::shared_ptr<std::vector<uint8_t>>& data_stream,
 							bool data_size_write/* = false*/)

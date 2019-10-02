@@ -26,7 +26,7 @@ CmafChunkWriter::CmafChunkWriter(M4sMediaType media_type,
 											 uint32_t sequence_number,
 											 uint32_t track_id,
 											 bool http_chunked_transfer_support)
-												: M4sWriter(media_type)
+												: Mp4Writer(media_type)
 {
   	_sequence_number = sequence_number;
 	_track_id = track_id;

@@ -88,13 +88,13 @@
     <ClCompile Include="media\packetizer\m4s_segment_writer.cpp">
       <Filter>media\packetizer</Filter>
     </ClCompile>
-    <ClCompile Include="media\packetizer\m4s_writer.cpp">
-      <Filter>media\packetizer</Filter>
-    </ClCompile>
     <ClCompile Include="media\packetizer\packetizer.cpp">
       <Filter>media\packetizer</Filter>
     </ClCompile>
     <ClCompile Include="media\packetizer\ts_writer.cpp">
+      <Filter>media\packetizer</Filter>
+    </ClCompile>
+    <ClCompile Include="media\packetizer\mp4_writer.cpp">
       <Filter>media\packetizer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -239,13 +239,13 @@
     <ClInclude Include="media\packetizer\m4s_segment_writer.h">
       <Filter>media\packetizer</Filter>
     </ClInclude>
-    <ClInclude Include="media\packetizer\m4s_writer.h">
-      <Filter>media\packetizer</Filter>
-    </ClInclude>
     <ClInclude Include="media\packetizer\packetizer.h">
       <Filter>media\packetizer</Filter>
     </ClInclude>
     <ClInclude Include="media\packetizer\ts_writer.h">
+      <Filter>media\packetizer</Filter>
+    </ClInclude>
+    <ClInclude Include="media\packetizer\mp4_writer.h">
       <Filter>media\packetizer</Filter>
     </ClInclude>
   </ItemGroup>
