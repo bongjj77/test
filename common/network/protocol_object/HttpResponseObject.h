@@ -5,6 +5,7 @@
 
 #pragma once
 #include "../engine/tcp_network_object.h"
+#include <map>
 
 #define HTTP_ERROR_BAD_REQUEST 				(400)
 #define HTTP_ERROR_NOT_FOUND				(404)
@@ -45,12 +46,19 @@ public:
 	void SetCookie(std::string name, std::string value, std::string domain, std::string path);
 
 protected:
+	bool HttpFieldParse(const std::string &http_header);
+	bool RequestLineParse(const std::string &line);
+	bool CorsParse(std::string origin_url);
+
 	virtual int RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data);
-	virtual bool RecvRequest(std::string& request_url, std::string& agent) = 0;//agent값은 _agent_parsing == true에서 정상값 
+	virtual bool RecvRequest(std::string& request_url, const std::map<std::string, std::string> &http_field_list) = 0;
 
 protected:
 	bool		_is_complete;
 	std::string _http_version;
+	std::string _request_page;
+	std::map<std::string, std::string> _http_field_list;
+
 	bool		_is_cors_use;
 	std::string	_cors_origin_url;
 	std::string	_cors_origin_full_url;

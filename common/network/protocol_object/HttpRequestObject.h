@@ -20,9 +20,11 @@ public:
 	bool SendPostMethodRequest(char* request_url, const char* data, const char* host);
 
 protected:
+	bool HttpFieldParse(const std::string &http_header);
 	virtual int RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data);
 	virtual void RecvContent(std::string& content) = 0;
 
 private:
 	bool _is_complete;
+	std::map<std::string, std::string> _http_field_list;
 };

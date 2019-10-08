@@ -12,7 +12,7 @@
 #define HTTP_VERSION_1_0					("HTTP/1.0")
 #define HTTP_VERSION_1_1					("HTTP/1.1")
 #define HTTP_VERSION_MAX_SIZE				(50)
-
+#define HTTP_HEADER_LINE_DELIMITER   		("\r\n")
 #define HTTP_HEADER_END_DELIMITER   		("\r\n\r\n")
 
 //====================================================================================================
@@ -53,162 +53,151 @@ HttpResponseObject::~HttpResponseObject()
 }
 
 //====================================================================================================
-//  패킷 수신 
+// http field parse
+//====================================================================================================
+bool HttpResponseObject::HttpFieldParse(const std::string &http_header)
+{
+	std::vector<std::string> tokens;
+	Tokenize(http_header, tokens, HTTP_HEADER_LINE_DELIMITER);
+
+	if (tokens.size() < 1)
+	{
+		LOG_ERROR_WRITE(("[%s] RecvHandler - http header tokenize fail - key(%d) ip(%s) size(%d)",
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), http_header.size()));
+		return false;
+	}
+
+	if (RequestLineParse(tokens[0]) == false)
+	{
+		LOG_ERROR_WRITE(("[%s] RecvHandler - http request line error - key(%d) ip(%s)",
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
+		return false;
+	}
+
+	tokens.erase(tokens.begin());
+
+	// header field parse
+	_http_field_list.clear();
+
+	for (const std::string &field_line : tokens)
+	{
+		auto colon_pos = field_line.find(':');
+		if (colon_pos != std::string::npos)
+		{
+			_http_field_list[field_line.substr(0, colon_pos)] = field_line.substr(colon_pos + 2);
+		}
+	}
+
+	return true;
+}
+
+//====================================================================================================
+// http line pars 
+// - [GET/POST] [Page] HTTP/[version]
+//====================================================================================================
+bool HttpResponseObject::RequestLineParse(const std::string &line)
+{
+	std::vector<std::string> tokens;
+
+	Tokenize(line, tokens, std::string(" "));
+
+	// 최소 토큰 개수 확인( [GET/POST] [Page] HTTP/[version]) 
+	if (tokens.size() < HTTP_VERSION_INDEX + 1)
+	{
+		return false;
+	}
+
+	// 버전 정보 저장 
+	_http_version = tokens[HTTP_VERSION_INDEX];
+
+	if (_http_version.size() > HTTP_VERSION_MAX_SIZE)
+	{
+		return false;
+	}
+
+	_request_page = tokens[HTTP_REQUEST_PAGE_INDEX];
+
+	return true;
+}
+
+//====================================================================================================
+// cors parse
+//====================================================================================================
+bool HttpResponseObject::CorsParse(std::string origin_url)
+{
+	if (origin_url.empty() == true)
+	{
+		return false;
+	}
+
+	ReplaceString(origin_url, " ", ""); // 공백 제거
+	_cors_origin_full_url = origin_url;
+
+	ReplaceString(origin_url, "http://", ""); // http:// 제거 
+	ReplaceString(origin_url, "https://", ""); // https:// 제거 
+
+	std::string find_text = "|" + origin_url + "|";
+
+	if (_cors_origin_list.find(find_text.c_str()) != std::string::npos)
+	{
+		EnableCors(origin_url); // CORS 활성화
+	}
+
+	return true;
+
+}
+
+//====================================================================================================
+// recv packet
 //====================================================================================================
 int HttpResponseObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 {
- 	std::string::size_type find_pos = 0;
-	std::string::size_type header_start_pos = 0;
-	std::string::size_type header_end_pos = 0;
-	std::string::size_type line_end_pos = 0;
-	std::string strHeader;
-	std::string page_line;
-	int read_size = 0;
-	std::vector<std::string> tokens;
-	bool completed_close = false;
-	std::string agent;
-
-	int data_size = data->size(); 
-
-	//파라메터 검증 
-	if (data == nullptr || data_size <= 0 || data_size > HTTP_REQUEST_DATA_MAX_SIZE)
+ 	// data check
+	if (data == nullptr || data->size() <= 0 || data->size() > HTTP_REQUEST_DATA_MAX_SIZE)
 	{
 		SendErrorResponse("Bad Request");
-		LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - param Fail - key(%d) ip(%s) size(%d)", 
-			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), data_size));
+
+		LOG_ERROR_WRITE(("[%s] RecvHandler - data size fail - key(%d) ip(%s) size(%d)", 
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), data->size()));
+		return -1;
+	}
+
+	std::string http_data(data->begin(), data->end());
+
+	auto header_end_pos = http_data.find(HTTP_HEADER_END_DELIMITER);
+	if (header_end_pos == std::string::npos)
+	{
+		return 0;
+	}
+
+	header_end_pos += strlen(HTTP_HEADER_END_DELIMITER);
+
+	auto http_header = http_data.substr(0, header_end_pos - 1);
+
+	// http field parse
+	if (HttpFieldParse(http_header) == false)
+	{
 		return -1;
 	}
   
-	std::string string_data(data->begin(), data->end());
-  
-
-	while ((header_end_pos = string_data.find(HTTP_HEADER_END_DELIMITER, header_end_pos)) != std::string::npos)
+	// cors parse
+	if (_cors_origin_list.empty() == false && _http_field_list.find("Origin") != _http_field_list.end())
 	{
-		header_end_pos += strlen(HTTP_HEADER_END_DELIMITER);
-
-		read_size = (int)header_end_pos;
-
-		//Page Line Parsing 
-		strHeader = string_data.substr(header_start_pos, header_end_pos - header_start_pos - 1);
-
-		if (strHeader.empty() == true)
-		{
-			break;
-		}
-
-		//LOG_WRITE(("Http Header : \n%s", strHeader.c_str()));
-
-		line_end_pos = strHeader.find('\r');
-		if (line_end_pos == 0 || line_end_pos == std::string::npos)
-		{
-			break;
-		}
-
-		page_line = strHeader.substr(0, line_end_pos);
-		if (page_line.empty() == true)
-		{
-			break;
-		}
-
-		//토큰 파싱 
-		tokens.clear();
-
-		Tokenize(page_line, tokens, std::string(" "));
-
-		//최소 토큰 개수 확인( GET/[Page]/HTTP) 
-		if (tokens.size() < 3)
-		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - HTTP Header Error - key(%d) ip(%s)", 
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
-			return -1;
-		}
-
-		//버전 정보 저장 
-		_http_version = tokens[HTTP_VERSION_INDEX];
-
-		if (_http_version.size() > HTTP_VERSION_MAX_SIZE)
-		{
-			LOG_ERROR_WRITE(("[%s] HttpResponseObject::RecvHandler - Version Parsing Error - key(%d) ip(%s) Size(%d:%d)",
-				_object_name.c_str(), _index_key, _remote_ip_string.c_str(), _http_version.size(), HTTP_VERSION_MAX_SIZE));
-
-			return -1;
-		}
-
-		//Agent 파싱
-		if (_agent_parsing == true)
-		{
-			std::string::size_type agent_line_start_pos = strHeader.find("User-Agent: ");
-
-			if (agent_line_start_pos != std::string::npos)
-			{
-				std::size_t agent_line_end_pos = strHeader.find("\r\n", agent_line_start_pos);
-
-				if (agent_line_end_pos != std::string::npos)
-				{
-					agent_line_start_pos += strlen("User-Agent: ");
-
-					if (agent_line_end_pos > agent_line_start_pos)
-					{
-						agent = strHeader.substr(agent_line_start_pos, agent_line_end_pos - agent_line_start_pos);
-					}
-				}
-			}
-		}
-
-		// CORS Origin 파싱
-		if (_cors_origin_list.empty() == false)
-		{
-			std::string::size_type origin_start_pos = strHeader.find("Origin:");
-
-			if (origin_start_pos != std::string::npos)
-			{
-				std::size_t origin_end_pos = strHeader.find("\r\n", origin_start_pos);
-
-				if (origin_end_pos != std::string::npos)
-				{
-					origin_start_pos += strlen("Origin:");
-
-					if (origin_end_pos > origin_start_pos)
-					{
-						std::string origin_url = strHeader.substr(origin_start_pos, origin_end_pos - origin_start_pos);
-
-						ReplaceString(origin_url, " ", ""); // 공백 제거
-						_cors_origin_full_url = origin_url;
-
-						ReplaceString(origin_url, "http://", ""); // http:// 제거 
-						ReplaceString(origin_url, "https://", ""); // https:// 제거 
-						
-						std::string find_text = "|" + origin_url + "|";
-
-						if (_cors_origin_list.find(find_text.c_str()) != std::string::npos)
-						{
-							EnableCors(origin_url); // CORS 활성화
-						}
-					}
-				}
-			}
-		}
-
-
-		//Content 처리 
-		RecvRequest(tokens[HTTP_REQUEST_PAGE_INDEX], agent);
-
-
-		//HTTP1.0 확인 - 처리이후에 서버단에서 연결 종료  
-		if (_http_version.find(HTTP_VERSION_1_0) != std::string::npos)
-		{
-			completed_close = true;
-		}
-
-
-		header_start_pos = header_end_pos;
-
+		CorsParse(_http_field_list["Origin"]);
 	}
 
-	_is_complete = (read_size == data_size) ? true : false;
-	_is_send_completed_close = completed_close;
+	// process
+	RecvRequest(_request_page, _http_field_list);
 
-	return read_size;
+	// http 1.0 socket close
+	if (_http_version.find(HTTP_VERSION_1_0) != std::string::npos)
+	{
+		_is_send_completed_close = true;
+	}
+
+	_is_complete = true;
+	 
+	return data->size();
 }
 
 //====================================================================================================
@@ -221,7 +210,8 @@ bool HttpResponseObject::SendErrorResponse(std::string error)
  
 	std::string date_time = GetHttpHeaderDateTime().c_str();
  
-	http_body << "<html>\n"
+	http_body 
+		<< "<html>\n"
 		<< "<head>\n"
 		<< "<title>error</title>\n"
 		<< "</head>\n"
@@ -230,7 +220,8 @@ bool HttpResponseObject::SendErrorResponse(std::string error)
 		<< "</body>\n"
 		<< "</html>";
 
-	http_data << _http_version << " 400 Bad Request\r\n"
+	http_data 
+		<< _http_version << " 400 Bad Request\r\n"
 		<< "Server: http server\r\n"
 		<< "Content-Type: text/html\r\n"
 		<< "Content-Length: " << http_body.str().size() << "\r\n\r\n"
@@ -268,7 +259,8 @@ bool HttpResponseObject::SendContentResponse(const std::string& content_type, co
 
 	// HTTP 헤더 설정 
 	 
-	http_header << _http_version << " 200 OK\r\n"
+	http_header 
+		<< _http_version << " 200 OK\r\n"
 		<< "Server: http server\r\n"
 		<< "Content-Type: " << content_type << "\r\n"
 		<< "Date: " << date_time << "\r\n"

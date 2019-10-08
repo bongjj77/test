@@ -65,9 +65,9 @@ protected:
 
 	std::shared_ptr<UrlParsInfo> UrlPars(const std::string& url);
 	
-	virtual bool RecvRequest(std::string& request_url, std::string& agent);
-	bool PlaylistRequest(const std::shared_ptr<UrlParsInfo> & pars_info, PlaylistType type);
-	bool SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_info, SegmentType type);
+	virtual bool RecvRequest(std::string& request_url, const std::map<std::string, std::string> &http_field_list);
+	bool PlaylistRequest(const std::shared_ptr<UrlParsInfo> & parse_info, PlaylistType type);
+	bool SegmentRequest(const std::shared_ptr<UrlParsInfo>& parse_info, SegmentType type);
 	bool CrossDomainRequest();
 
 private:

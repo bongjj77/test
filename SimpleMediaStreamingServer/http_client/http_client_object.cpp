@@ -111,7 +111,7 @@ std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
 	std::string path;
 	std::string param;
 	std::vector<std::string> tokens;
-	auto pars_info = std::make_shared<UrlParsInfo>(); 
+	auto parse_info = std::make_shared<UrlParsInfo>(); 
 
 	// path?param
 	tokens.clear();
@@ -129,9 +129,9 @@ std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
 	if (tokens.size() < 3)
 		return nullptr;
 
-	pars_info->stream_key.first = tokens[tokens.size() - 3]; // app
-	pars_info->stream_key.second = tokens[tokens.size() - 2]; // stream
-	pars_info->file = tokens[tokens.size() - 1];
+	parse_info->stream_key.first = tokens[tokens.size() - 3]; // app
+	parse_info->stream_key.second = tokens[tokens.size() - 2]; // stream
+	parse_info->file = tokens[tokens.size() - 1];
  
 	// ext
 	tokens.clear();
@@ -140,32 +140,33 @@ std::shared_ptr<UrlParsInfo> HttpClientObject::UrlPars(const std::string & url)
 	if (tokens.size() != 2)
 		return nullptr;
 
-	pars_info->ext = tokens[1];
+	parse_info->ext = tokens[1];
  
-	if (pars_info->ext.compare(HLS_PLAYLIST_EXT) == 0)			pars_info->content_type = HTTP_M3U8_CONTENT_TYPE;
-	else if (pars_info->ext.compare(DASH_PLAYLIST_EXT) == 0)	pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
-	else if (pars_info->ext.compare(HLS_SEGMENT_EXT) == 0)		pars_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
-	else if (pars_info->ext.compare(DASH_SEGMENT_EXT) == 0)
+	if (parse_info->ext.compare(HLS_PLAYLIST_EXT) == 0)			parse_info->content_type = HTTP_M3U8_CONTENT_TYPE;
+	else if (parse_info->ext.compare(DASH_PLAYLIST_EXT) == 0)	parse_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else if (parse_info->ext.compare(HLS_SEGMENT_EXT) == 0)		parse_info->content_type = HTTP_VIDE_MPEG_TS_CONTENT_TYPE;
+	else if (parse_info->ext.compare(DASH_SEGMENT_EXT) == 0)
 	{
-		if (pars_info->file.find("audio") >= 0)					pars_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
-		else													pars_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
+		if (parse_info->file.find("audio") >= 0)					parse_info->content_type = HTTP_AUDIO_MP4_CONTENT_TYPE;
+		else													parse_info->content_type = HTTP_VIDEO_MP4_CONTENT_TYPE;
 	}
-	else if (pars_info->ext.compare("xml") == 0)				pars_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
-	else														pars_info->content_type = HTTP_TEXT_HTML_CONTENT_TYPE;
+	else if (parse_info->ext.compare("xml") == 0)				parse_info->content_type = HTTP_TEXT_XML_CONTENT_TYPE;
+	else														parse_info->content_type = HTTP_TEXT_HTML_CONTENT_TYPE;
 
-	return pars_info;
+	return parse_info;
 }
 
 
 //====================================================================================================
 // RecvRequest
 //====================================================================================================
-bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
+bool HttpClientObject::RecvRequest(std::string& request_url, const std::map<std::string, std::string> &http_field_list)
 {
 	bool result = false;
 	
 	_last_packet_time = time(nullptr);
 
+	/*
 	// Agent Check
 	if (AgentCheck(agent) == false)
 	{
@@ -176,10 +177,11 @@ bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 
 		return false;
 	}
+	*/
 
-	auto pars_info = UrlPars(request_url);
+	auto parse_info = UrlPars(request_url);
  
-	if (pars_info == nullptr)
+	if (parse_info == nullptr)
 	{
 		LOG_ERROR_WRITE(("[%s] RecvRequest - UrlPars fail - key(%d) ip(%s) url(%s)",
 						_object_name, _index_key, _remote_ip_string.c_str()));
@@ -189,19 +191,19 @@ bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 		return false;
 	}
 	 
-	if (stricmp(pars_info->file.c_str(), HLS_PLAYLIST_FILE_NAME) == 0)
-		result = PlaylistRequest(pars_info, PlaylistType::M3u8);
+	if (stricmp(parse_info->file.c_str(), HLS_PLAYLIST_FILE_NAME) == 0)
+		result = PlaylistRequest(parse_info, PlaylistType::M3u8);
 
-	else if (stricmp(pars_info->file.c_str(), DASH_PLAYLIST_FILE_NAME) == 0)
-		result = PlaylistRequest(pars_info, PlaylistType::Mpd);
+	else if (stricmp(parse_info->file.c_str(), DASH_PLAYLIST_FILE_NAME) == 0)
+		result = PlaylistRequest(parse_info, PlaylistType::Mpd);
 
-	else if (stricmp(pars_info->ext.c_str(), HLS_SEGMENT_EXT) == 0)
-		result = SegmentRequest(pars_info, SegmentType::Ts);
+	else if (stricmp(parse_info->ext.c_str(), HLS_SEGMENT_EXT) == 0)
+		result = SegmentRequest(parse_info, SegmentType::Ts);
 
-	else if (stricmp(pars_info->ext.c_str(), DASH_SEGMENT_EXT) == 0)
-		result = SegmentRequest(pars_info, SegmentType::M4s);
+	else if (stricmp(parse_info->ext.c_str(), DASH_SEGMENT_EXT) == 0)
+		result = SegmentRequest(parse_info, SegmentType::M4s);
 
-	else if (stricmp(pars_info->file.c_str(), "crossdomain.xml") == 0)
+	else if (stricmp(parse_info->file.c_str(), "crossdomain.xml") == 0)
 		result = CrossDomainRequest();
 	else
 	{
@@ -221,12 +223,12 @@ bool HttpClientObject::RecvRequest(std::string& request_url, std::string& agent)
 //====================================================================================================
 // PlaylistRequest
 //====================================================================================================
-bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_info, PlaylistType type)
+bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& parse_info, PlaylistType type)
 {
 	std::string playlist;
 			
 	if (!std::static_pointer_cast<IHttpClient>
-		(_object_callback)->OnHttpClientPlaylistRequest(_index_key, _remote_ip, pars_info->stream_key, type, playlist))
+		(_object_callback)->OnHttpClientPlaylistRequest(_index_key, _remote_ip, parse_info->stream_key, type, playlist))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - OnHttpClientPlaylistRequest Error - key(%d) ip(%s)",
 						_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
@@ -235,7 +237,7 @@ bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_
 		return false;
 	}
 
-	if (!SendPlaylist(pars_info->stream_key, playlist, pars_info->content_type))
+	if (!SendPlaylist(parse_info->stream_key, playlist, parse_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvPlaylistRequest - SendPlaylist Fail - key(%d) ip(%s)",
 			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
@@ -249,12 +251,12 @@ bool HttpClientObject::PlaylistRequest(const std::shared_ptr<UrlParsInfo>& pars_
 //====================================================================================================
 // SegmentRequest
 //====================================================================================================
-bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_info, SegmentType type)
+bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& parse_info, SegmentType type)
 {
 	std::shared_ptr<std::vector<uint8_t>> data = nullptr;
 
 	if (!std::static_pointer_cast<IHttpClient>
-		(_object_callback)->OnHttpClientSegmentRequest(_index_key, _remote_ip, pars_info->file, pars_info->stream_key, type, data))
+		(_object_callback)->OnHttpClientSegmentRequest(_index_key, _remote_ip, parse_info->file, parse_info->stream_key, type, data))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - OnHttpClientRequest Error - key(%d) ip(%s)",
 			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));
@@ -263,7 +265,7 @@ bool HttpClientObject::SegmentRequest(const std::shared_ptr<UrlParsInfo>& pars_i
 		return false;
 	}
 	 
-	if (!SendSegmentData(pars_info->stream_key, data, pars_info->content_type))
+	if (!SendSegmentData(parse_info->stream_key, data, parse_info->content_type))
 	{
 		LOG_ERROR_WRITE(("[%s] RecvSegmentRequest - SendSegmentData Fail - key(%d) ip(%s)",
 			_object_name.c_str(), _index_key, _remote_ip_string.c_str()));

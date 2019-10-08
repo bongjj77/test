@@ -53,74 +53,84 @@ HttpRequestObject::~HttpRequestObject()
 }
 
 //====================================================================================================
+// http field parse
+//====================================================================================================
+bool HttpRequestObject::HttpFieldParse(const std::string &http_header)
+{
+	std::vector<std::string> tokens;
+	Tokenize(http_header, tokens, HTTP_LINE_END);
+
+	if (tokens.size() < 1)
+	{
+		LOG_ERROR_WRITE(("[%s] RecvHandler - http header tokenize fail - key(%d) ip(%s) size(%d)",
+			_object_name.c_str(), _index_key, _remote_ip_string.c_str(), http_header.size()));
+		return false;
+	}
+
+	// header field parse
+	_http_field_list.clear();
+
+	for (const std::string &field_line : tokens)
+	{
+		auto colon_pos = field_line.find(':');
+		if (colon_pos != std::string::npos)
+		{
+			_http_field_list[field_line.substr(0, colon_pos)] = field_line.substr(colon_pos + 2);
+		}
+	}
+
+	return true;
+}
+
+
+//====================================================================================================
 //  패킷 수신 
 //====================================================================================================
 int HttpRequestObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 {
-	char* pLineEnd = nullptr;
-	char* pContentLengthField = nullptr;
-	char* pContentLength = nullptr;
-	char szContentSize[20] = { 0, };
-	char* pContent = nullptr;
 	int header_size = 0;
-	int nContentSize = 0;
-	std::string content;
+	int content_size = 0; 
+
+	std::string content_data;
 
 	int data_size = data->size(); 
-
 
 	if (data == nullptr || data->size() == 0)
 	{
 		return 0;
 	}
 
-	//헤더 수신 확인  확인	
-	pContent = strnstr((const char *)data->data(), HTTP_HEADER_END_DELIMITER, data_size);
-	if (pContent == nullptr)
+	// header size check
+	auto content_pos = strnstr((const char *)data->data(), HTTP_HEADER_END_DELIMITER, data_size);
+
+	if (content_pos == nullptr)
 	{
-		return 0; //데이터 추가 수신 
+		return 0; 
+	}
+	content_pos += strlen(HTTP_HEADER_END_DELIMITER);
+	header_size = content_pos - (const char*)data->data();
+
+	std::string http_header((char *)data->data(), (char *)content_pos +1);
+	
+	// http field parse
+	if (HttpFieldParse(http_header) == false)
+	{
+		return -1;
 	}
 
-	pContent += strlen(HTTP_HEADER_END_DELIMITER);
-	header_size = pContent - (const char*)data->data();
-
-	// Content-Length 필드 확인  
-	pContentLengthField = strnstr((const char*)data->data(), HTTP_HEADER_CONTENT_LENGTH_FIELD, header_size);
-
-	if (pContentLengthField != nullptr)
+	// Content-Length check
+	if (_http_field_list.find(HTTP_HEADER_CONTENT_LENGTH_FIELD) != _http_field_list.end())
 	{
-		// 필드 라인 끝 확인 
-		pLineEnd = strstr(pContentLengthField, HTTP_LINE_END);
-		if (pLineEnd == nullptr)
-		{
-			return 0;
-		}
+		content_size = atoi(_http_field_list[HTTP_HEADER_CONTENT_LENGTH_FIELD].c_str());
 
-		pContentLength = strnstr(pContentLengthField, HTTP_HEADER_FIELD_SEPERATOR, pLineEnd - pContentLengthField);
-
-		if (pContentLength == nullptr)
-		{
-			return 0;
-		}
-
-		pContentLength += strlen(HTTP_HEADER_FIELD_SEPERATOR);
-
-		if ((pLineEnd - pContentLength) <= 0 || (pLineEnd - pContentLength) > 20)
-		{
-			return 0;
-		}
-
-		strncpy(szContentSize, pContentLength, pLineEnd - pContentLength);
-		nContentSize = atoi(szContentSize);
-
-		//전체 데이터 수신 확인 
-		if (data_size < header_size + nContentSize)
+		// data size check
+		if (data_size < header_size + content_size)
 		{
 			return 0;
 		}
 
 		//데이터 설정 
-		content.assign(pContent, nContentSize);
+		content_data.assign(content_pos, content_size);
 	}
 	//Content - Length 없는 페이지(Content에  Chunk-size 값 주의)
 	// - 구조	
@@ -143,75 +153,73 @@ int HttpRequestObject::RecvHandler(std::shared_ptr<std::vector<uint8_t>>& data)
 			return 0;
 		}
 
-		nContentSize = data_size - header_size;
+		content_size = data_size - header_size;
 
 		//Chunk-Size 처리
-		char* pChunkSizeStart = nullptr;
-		char* pChunkSizeEnd = nullptr;
-		std::string strChunkSize;
-		int 		nChunkSize = 0;
-		char* pCurrentPos = pContent - HTTP_LINE_END_SIZE; // [CRLF]한칸 전으로 이동	
-		char* pDataEnd = (char *)data->data() + data_size;
+		std::string chunk_size_string;
+		int			chunk_size = 0;
+		char*		current_pos = content_pos - HTTP_LINE_END_SIZE; // [CRLF]한칸 전으로 이동	
+		char*		data_end_pos = (char *)data->data() + data_size;
 
 		// /r/n[16진수 크기]/r/n
-		while (pCurrentPos < pDataEnd)
+		while (current_pos < data_end_pos)
 		{
-			pChunkSizeStart = pCurrentPos;
-			pChunkSizeEnd = nullptr;
+			auto chunk_size_start = current_pos;
+			char * chunk_size_end = nullptr;
 
 			//Chunk-Size 시작 위치 
-			if (pChunkSizeStart[0] != '\r' && pChunkSizeStart[1] != '\n')
+			if (chunk_size_start[0] != '\r' && chunk_size_start[1] != '\n')
 			{
 				return -1;
 			}
-			pChunkSizeStart += HTTP_LINE_END_SIZE;
+			chunk_size_start += HTTP_LINE_END_SIZE;
 
 			//Chunk-Size  종료 위치 
-			int nMaxSize = (pDataEnd - pCurrentPos);
-			for (int nIndex = 0; nIndex < nMaxSize; nIndex++)
+			int max_size = (data_end_pos - current_pos);
+			for (int nIndex = 0; nIndex < max_size; nIndex++)
 			{
-				if (nIndex + 1 < nMaxSize && pChunkSizeStart[nIndex] == '\r' && pChunkSizeStart[nIndex + 1] == '\n')
+				if (nIndex + 1 < max_size && chunk_size_start[nIndex] == '\r' && chunk_size_start[nIndex + 1] == '\n')
 				{
-					pChunkSizeEnd = pChunkSizeStart + nIndex;
+					chunk_size_end = chunk_size_start + nIndex;
 					break;
 				}
 			}
 
-			if (pChunkSizeEnd == nullptr)
+			if (chunk_size_end == nullptr)
 			{
 				return -1;
 			}
 
 			//Chunk-Size 문자 설정 
-			strChunkSize.assign(pChunkSizeStart, pChunkSizeEnd - pChunkSizeStart);
+			chunk_size_string.assign(chunk_size_start, chunk_size_end - chunk_size_start);
 
 			//16진수 Chunk-Size 
-			nChunkSize = strtol(strChunkSize.c_str(), nullptr, 16);
+			chunk_size = strtol(chunk_size_string.c_str(), nullptr, 16);
 
-			if (pCurrentPos + nChunkSize > pDataEnd)
+			if (current_pos + chunk_size > data_end_pos)
 			{
 				return -1;
 			}
 
 			//Content 복사 
-			content.append(pChunkSizeEnd + HTTP_LINE_END_SIZE, nChunkSize);
+			content_data.append(chunk_size_end + HTTP_LINE_END_SIZE, chunk_size);
 
 			// 0 - Chunk End 
-			if (nChunkSize == 0)
+			if (chunk_size == 0)
 			{
 				break;
 			}
 
-			pCurrentPos = pChunkSizeEnd + HTTP_LINE_END_SIZE + nChunkSize;
+			current_pos = chunk_size_end + HTTP_LINE_END_SIZE + chunk_size;
 		}
 	}
 
 	//Content 처리 
-	RecvContent(content);
+	RecvContent(content_data);
 
 	_is_complete = true;
 
-	return header_size + nContentSize;
+	return header_size + content_size;
 }
 
 //====================================================================================================
