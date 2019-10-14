@@ -189,11 +189,13 @@ bool HlsPacketizer::SegmentWrite(uint64_t start_timestamp, uint64_t duration)
 	for (auto& frame : _frame_list)
 	{
 		// TS(PES) Write
-		ts_writer->WriteSample(frame->type != FrameType::AudioFrame,
-							frame->type == FrameType::AudioFrame || frame->type == FrameType::VideoKeyFrame,
-							frame->timestamp,
-							frame->cts,
-							frame->data);
+		ts_writer->WriteSample(	false, 
+								frame->type != FrameType::AudioFrame,
+								frame->type == FrameType::AudioFrame || frame->type == FrameType::VideoKeyFrame,
+								frame->timescale,
+								frame->timestamp,
+								frame->cts,
+								frame->data);
 
 		if (_first_audio_time_stamp == 0 && frame->type == FrameType::AudioFrame)
 		{

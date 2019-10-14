@@ -25,7 +25,7 @@
 #define TS_PAT_SIZE							(13)
 #define TS_CRC_SIZE							(4)
 
-static uint8_t const HLS_STUFFING_BYTES[TS_PACKET_SIZE] =
+static uint8_t const g_hls_stuffing_bytes[TS_PACKET_SIZE] =
 {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -53,7 +53,7 @@ static uint8_t const HLS_STUFFING_BYTES[TS_PACKET_SIZE] =
 	0xFF, 0xFF, 0xFF, 0xFF
 };
 
-static uint32_t const HLS_CRC_TABLE[256] =
+static uint32_t const g_hls_crc_table[256] =
 {
 	0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
 	0x1a864db2, 0x1e475005, 0x2608edb8, 0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61,
@@ -99,8 +99,8 @@ static uint32_t const HLS_CRC_TABLE[256] =
 	0x933eb0bb, 0x97ffad0c, 0xafb010b1, 0xab710d06, 0xa6322bdf, 0xa2f33668,
 	0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
-#define H264_AUD_SIZE (6)
-static const uint8_t g_aud[H264_AUD_SIZE] = { 0x00 ,0x00 ,0x00 ,0x01 ,0x09 ,0xe0 };
+
+
 
 //====================================================================================================
 // Make CRC
@@ -111,7 +111,7 @@ uint32_t TsWriter::MakeCrc(const uint8_t* data, uint32_t data_size)
 
 	for (uint32_t nIndex = 0; nIndex < data_size; nIndex++)
 	{
-		crc = (crc << 8) ^ HLS_CRC_TABLE[((crc >> 24) ^ *data++) & 0xFF];
+		crc = (crc << 8) ^ g_hls_crc_table[((crc >> 24) ^ *data++) & 0xFF];
 	}
 
 	return crc;
@@ -123,6 +123,7 @@ uint32_t TsWriter::MakeCrc(const uint8_t* data, uint32_t data_size)
 TsWriter::TsWriter(bool video_enable, bool audio_enable)
 {
 	_data_stream = std::make_shared<std::vector<uint8_t>>();
+	_data_stream->reserve(TS_PACKET_SIZE * 2); // pat/pmt default
 
 	_audio_continuity_count = 0;
 	_video_continuity_count = 0;
@@ -130,9 +131,44 @@ TsWriter::TsWriter(bool video_enable, bool audio_enable)
 	_video_enable = video_enable;
 	_audio_enable = audio_enable;
 
-	WritePAT();
-	WritePMT();
+	_pat_data = MakePat();
+	WriteDataStream(_pat_data->size(), _pat_data->data());
+
+
+	_pmt_data = MakePmt();
+	WriteDataStream(_pmt_data->size(), _pmt_data->data());
+
+	uint8_t aud[] = {0x00, 0x00, 0x00, 0x01, 0x09, 0xe0 };
+	_access_unit_delimiter = std::make_shared<std::vector<uint8_t>>(aud, aud + sizeof(aud));
 }
+
+//====================================================================================================
+// Clear
+// - reuse
+//====================================================================================================
+void TsWriter::Clear( )
+{
+	_data_stream->resize(_pat_data->size() + _pmt_data->size());
+
+	_audio_continuity_count = 0;
+	_video_continuity_count = 0;
+
+}
+
+//====================================================================================================
+// GetInitBuffer (user buffer support)
+// - insert pat/pmt 
+//====================================================================================================
+std::shared_ptr<std::vector<uint8_t>> TsWriter::GetInitBuffer()
+{
+	if (_data_stream == nullptr || _pat_data == nullptr || _pmt_data == nullptr)
+	{
+		return nullptr;
+	}
+
+	return std::make_shared<std::vector<uint8_t>>(_data_stream->begin(), _data_stream->begin() + (_pat_data->size() + _pmt_data->size()));
+}
+
 
 //====================================================================================================
 // Append stream data
@@ -149,17 +185,25 @@ bool TsWriter::WriteDataStream(const std::shared_ptr<std::vector<uint8_t>> & dat
 	return true;
 }
 
+bool TsWriter::WriteDataStream(const std::unique_ptr<std::vector<uint8_t>> & data)
+{
+	_data_stream->insert(_data_stream->end(), data->begin(), data->end());
+	return true;
+}
+
+
 //====================================================================================================
 // PAT(Program Association Table) write
 // - 프로그램의 번호와 Program Map Table을 담고 있는 패킷의 Packet Identifier(PID) 간의 연결 관계를 담고 있다.
 //====================================================================================================
-bool TsWriter::WritePAT()
+std::unique_ptr<std::vector<uint8_t>> TsWriter::MakePat()
 {
 	uint32_t payload_size = TS_PACKET_PAYLOAD_SIZE;
 	uint32_t crc = 0;
 
 	// TS Header 설정
-	MakeTsHeader(0, 0, true, payload_size, false, 0, false);
+	auto data = MakeTsHeader(0, 0, true, payload_size, false, 0, false);
+	 
 
 	//PAT Header 설정(13Byte)
 	BitWriter pat_bit(TS_PAT_SIZE);
@@ -179,26 +223,27 @@ bool TsWriter::WritePAT()
 	pat_bit.Write(3, 7);  					// reserved
 	pat_bit.Write(13, TS_DEFAULT_PMT_PID);	// program_map_PID
 
-	WriteDataStream(pat_bit.GetData());
+	data->insert(data->end(), pat_bit.GetData()->begin(), pat_bit.GetData()->end());
 
 	crc = MakeCrc(pat_bit.GetData()->data() + 1, pat_bit.GetData()->size() - 1); // table_id~program_map_PID
 
 	//CRC(4Byte)
 	BitWriter crc_bit(TS_CRC_SIZE);
 	crc_bit.Write(32, crc);
-	WriteDataStream(crc_bit.GetData());
 
+	data->insert(data->end(), crc_bit.GetData()->begin(), crc_bit.GetData()->end());
+	   
 	//Stuffing Bytes
-	WriteDataStream(TS_PACKET_PAYLOAD_SIZE - (TS_PAT_SIZE + TS_CRC_SIZE), HLS_STUFFING_BYTES);
-
-	return true;
+	data->insert(data->end(), g_hls_stuffing_bytes, g_hls_stuffing_bytes + (TS_PACKET_PAYLOAD_SIZE - (TS_PAT_SIZE + TS_CRC_SIZE)));
+	
+	return std::move(data);
 }
 
 //====================================================================================================
 // PMT(Program Map Table) write
 // -프로그램의 Elementary Stream을 담은 패킷에 대한 연결 정보를 담고 있다.
 //====================================================================================================
-bool TsWriter::WritePMT()
+std::unique_ptr<std::vector<uint8_t>> TsWriter::MakePmt()
 {
 	uint32_t payload_size = TS_PACKET_PAYLOAD_SIZE;
 	uint32_t section_size = 13;
@@ -206,8 +251,8 @@ bool TsWriter::WritePMT()
 	uint32_t crc = 0;
 
 	// TS Header 설정
-	MakeTsHeader(TS_DEFAULT_PMT_PID, 0, true, payload_size, false, 0, false);
-
+	auto data = MakeTsHeader(TS_DEFAULT_PMT_PID, 0, true, payload_size, false, 0, false);
+	 
 	if (_audio_enable)
 	{
 		section_size += 5;
@@ -257,19 +302,20 @@ bool TsWriter::WritePMT()
 		pmt_bit.Write(12, 0);                    			// ES_info_length
 	}
 
-	WriteDataStream(pmt_bit.GetData());
+	data->insert(data->end(), pmt_bit.GetData()->begin(), pmt_bit.GetData()->end());
 
 	crc = MakeCrc(pmt_bit.GetData()->data() + 1, (uint32_t)pmt_bit.GetData()->size() - 1); // table_id~end
 
 	//CRC(4Byte)
 	BitWriter crc_bit(TS_CRC_SIZE);
 	crc_bit.Write(32, crc);
-	WriteDataStream(crc_bit.GetData());
+
+	data->insert(data->end(), crc_bit.GetData()->begin(), crc_bit.GetData()->end());
 
 	//Stuffing Bytes
-	WriteDataStream(TS_PACKET_PAYLOAD_SIZE - (section_size + TS_CRC_SIZE), HLS_STUFFING_BYTES);
+	data->insert(data->end(), g_hls_stuffing_bytes, g_hls_stuffing_bytes + (TS_PACKET_PAYLOAD_SIZE - (section_size + TS_CRC_SIZE)));
 
-	return true;
+	return std::move(data);
 }
 
 //====================================================================================================
@@ -278,81 +324,78 @@ bool TsWriter::WritePMT()
 //    Header(9Byte) + PTS(5Byte) + [DTS(5Byte)] 
 // - TS 헤더 추가 
 //====================================================================================================
-bool TsWriter::WriteSample(bool is_video,
-						bool is_keyframe,
-						uint64_t timestamp,
-						uint64_t cts,
-						std::shared_ptr<std::vector<uint8_t>>& data)
+bool TsWriter::WriteSample(	bool is_video,
+							bool is_keyframe,
+							bool aud_insert,
+							uint32_t timescale,
+							uint64_t timestamp,
+							uint64_t cts,
+							std::shared_ptr<std::vector<uint8_t>>& data,
+							std::shared_ptr<std::vector<uint8_t>> user_buffer/* = nullptr*/) // user buffer support
 {
- 	uint32_t rest_data_size = 0;
-	uint32_t payload_size = 0;
-	const uint8_t* data_pos = nullptr;
-	bool first_payload = true;
+ 	
 
-	//Video(H264) - access unit delimiter(AUD) 정보 추가
-	if (is_video)
+	// timescale check
+	if (timescale != HLS_TIMESCALE)
 	{
-		data->insert(data->begin(), g_aud, g_aud + H264_AUD_SIZE);
+		timestamp = ConvertTimescale(timestamp, timescale, HLS_TIMESCALE),
+		cts = ConvertTimescale(cts, timescale, HLS_TIMESCALE);
 	}
 
-	data_pos = data->data();
+	//Video(H264) - access unit delimiter(AUD) 정보 추가
+	if (aud_insert == true && is_video == true)
+	{
+		data->insert(data->begin(), _access_unit_delimiter->begin(), _access_unit_delimiter->end());
+	}
+
+	uint8_t* data_pos = data->data();
 
 	// PES Header 생성 
 	auto pes_header = MakePesHeader(data->size(), is_video, timestamp, cts);
 
 	// TS Header + Payload 설정 
-	rest_data_size = pes_header->size() + data->size();
+	uint32_t rest_data_size = pes_header->size() + data->size();
 
 	// Buffer 공간 체크 
 	// (Payload 개수 + 2)*  TS_PACKET_SIZE
-
+	bool is_first_payload = true;
+	
 	while (rest_data_size > 0)
 	{
-		payload_size = rest_data_size;
+		auto payload_size =  rest_data_size > TS_PACKET_PAYLOAD_SIZE ? TS_PACKET_PAYLOAD_SIZE : rest_data_size;
 
-		if (payload_size > TS_PACKET_PAYLOAD_SIZE)
+		auto header = MakeTsHeader((is_video == true) ? TS_DEFAULT_VIDEO_PID : TS_DEFAULT_AUDIO_PID,
+								(is_video == true) ? _video_continuity_count++ : _audio_continuity_count++,
+								is_first_payload,
+								payload_size,
+								(is_video == true) ? is_first_payload : (is_first_payload == true ? (!_video_enable && _audio_enable) : false),
+								is_first_payload == true ? timestamp * 300 : 0,
+								is_keyframe);
+	
+		// ts header write
+		if (user_buffer == nullptr) WriteDataStream(std::move(header));
+		else user_buffer->insert(user_buffer->end(), header->begin(), header->end());
+
+		
+
+		// pes header write 
+		if (is_first_payload == true)
 		{
-			payload_size = TS_PACKET_PAYLOAD_SIZE;
-		}
+			if (user_buffer == nullptr) WriteDataStream(pes_header);
+			else user_buffer->insert(user_buffer->end(), pes_header->begin(), pes_header->end());
 
-		if (first_payload)
-		{
-			first_payload = false;
 
-			// TS Header 설정 
-			if (is_video)
-				MakeTsHeader(TS_DEFAULT_VIDEO_PID,
-							_video_continuity_count++,
-							true,
-							payload_size,
-							true,
-							timestamp * 300,
-							is_keyframe);
-			else
-				MakeTsHeader(TS_DEFAULT_AUDIO_PID,
-							_audio_continuity_count++,
-							true,
-							payload_size,
-							(!_video_enable && _audio_enable),
-							timestamp * 300,
-							is_keyframe);
-
-			// PES헤더 설정 
-			WriteDataStream(pes_header);
 			rest_data_size -= pes_header->size();
 			payload_size -= pes_header->size();
-		}
-		else
-		{
-			// TS Header 설정 
-			if (is_video)
-				MakeTsHeader(TS_DEFAULT_VIDEO_PID, _video_continuity_count++, false, payload_size, false, 0, is_keyframe);
-			else
-				MakeTsHeader(TS_DEFAULT_AUDIO_PID, _audio_continuity_count++, false, payload_size, false, 0, is_keyframe);
+
+			is_first_payload = false; 
 		}
 
 		// Data 설정
-		WriteDataStream(payload_size, data_pos);
+		if (user_buffer == nullptr) WriteDataStream(payload_size, data_pos);
+		else user_buffer->insert(user_buffer->end(), data_pos, data_pos + payload_size);
+
+
 		data_pos += payload_size;
 		rest_data_size -= payload_size;
 	};
@@ -369,101 +412,90 @@ bool TsWriter::WriteSample(bool is_video,
 //====================================================================================================
 std::shared_ptr<std::vector<uint8_t>> TsWriter::MakePesHeader(int data_size, bool is_video, uint64_t timestamp, uint64_t cts)
 {
-	uint32_t stream_id = 0;
-	uint32_t pes_packet_size = 0;
-	bool is_dts = false;
-	uint64_t pts = 0;
-	uint64_t dts = 0;
-	uint32_t pes_header_size = 0;
-	
-	// DTS
-	dts = timestamp;
-
 	// PTS
-	pts = timestamp + cts;
-
-	if (is_video)
-	{
-		stream_id = TS_DEFAULT_VIDEO_STREAM_ID;
-		is_dts = true;
-		pes_header_size = PES_HEADER_WIDTH_DTS_SIZE;
-		pes_packet_size = 0; //Video 0(초과) 으로 설정 Client 문제시 16bit 한도에서 분활 하여 패킷 정송 고려 
-
-	}
-	else
-	{
-		stream_id = TS_DEFAULT_AUDIO_STREAM_ID;
-		is_dts = false;
-		pes_header_size = PES_HEADER_SIZE;
-		pes_packet_size = data_size + pes_header_size - 6;
-	}
+	auto pts = timestamp + cts;
  
+	auto pes_header_size = (is_video == true) ? PES_HEADER_WIDTH_DTS_SIZE : PES_HEADER_SIZE;
+	
+	auto pes_packet_size = (is_video == true) ? 0 :(data_size + pes_header_size - 6); //Video 0(초과) 으로 설정 Client 문제시 16bit 한도에서 분활 하여 패킷 정송 고려 
+
 	//PES Header 설정 
 	BitWriter pes_bit(pes_header_size);
-	pes_bit.Write(24, 0x000001);    				// packet_start_code_prefix
-	pes_bit.Write(8, stream_id);   				// stream_id
-	pes_bit.Write(16, pes_packet_size); 			// PES_packet_length
+	pes_bit.Write(24, 0x000001);    			// packet_start_code_prefix
+	pes_bit.Write(8, (is_video == true) ? TS_DEFAULT_VIDEO_STREAM_ID : TS_DEFAULT_AUDIO_STREAM_ID);   				// stream_id
+	pes_bit.Write(16, pes_packet_size); 		// PES_packet_length
+	
+	/*
 	pes_bit.Write(2, 2);           				// '01'
-	pes_bit.Write(2, 0);            				// PES_scrambling_control
-	pes_bit.Write(1, 0);            				// PES_priority
-	pes_bit.Write(1, 1);            				// data_alignment_indicator
-	pes_bit.Write(1, 0);            				// copyright
-	pes_bit.Write(1, 0);            				// original_or_copy
-	pes_bit.Write(2, is_dts ? 3 : 2); 		// PTS_DTS_flags
-	pes_bit.Write(1, 0);            				// ESCR_flag
+	pes_bit.Write(2, 0);            			// PES_scrambling_control
+	pes_bit.Write(1, 0);            			// PES_priority
+	pes_bit.Write(1, 1);            			// data_alignment_indicator
+	pes_bit.Write(1, 0);            			// copyright
+	pes_bit.Write(1, 0);            			// original_or_copy
+	*/
+	pes_bit.Write(8, 0x84);// 1000 0100
+	
+	pes_bit.Write(2, is_video ? 3 : 2); 		// PTS_DTS_flags
+
+	/*
+	pes_bit.Write(1, 0);            			// ESCR_flag
 	pes_bit.Write(1, 0);           	 			// ES_rate_flag
-	pes_bit.Write(1, 0);            				// DSM_trick_mode_flag
-	pes_bit.Write(1, 0);            				// additional_copy_info_flag
-	pes_bit.Write(1, 0);            				// PES_CRC_flag
-	pes_bit.Write(1, 0);            				// PES_extension_flag
-	pes_bit.Write(8, pes_header_size - 9);			// PES_header_data_length
+	pes_bit.Write(1, 0);            			// DSM_trick_mode_flag
+	pes_bit.Write(1, 0);            			// additional_copy_info_flag
+	pes_bit.Write(1, 0);            			// PES_CRC_flag
+	pes_bit.Write(1, 0);            			// PES_extension_flag
+	*/
+	pes_bit.Write(6, 0);            			 
+	
+	pes_bit.Write(8, pes_header_size - 9);		// PES_header_data_length
 
-	//PTS  
-	pes_bit.Write(4, is_dts ? 3 : 2);		// '0010'(PTS) or '0011'(PTS+DTS)
-	pes_bit.Write(3, (uint32_t)(pts >> 30));  		// PTS[32..30]
+	//PTS
+	pes_bit.Write(4, is_video ? 3 : 2);			// '0010'(PTS) or '0011'(PTS+DTS)
+	pes_bit.Write(3, (uint32_t)(pts >> 30));  	// PTS[32..30]
 	pes_bit.Write(1, 1);                   	 	// marker_bit
-	pes_bit.Write(15, (uint32_t)(pts >> 15)); 		// PTS[29..15]
-	pes_bit.Write(1, 1);                    		// marker_bit
-	pes_bit.Write(15, (uint32_t)pts);       		// PTS[14..0]
-	pes_bit.Write(1, 1);                    		// market_bit
+	pes_bit.Write(15, (uint32_t)(pts >> 15)); 	// PTS[29..15]
+	pes_bit.Write(1, 1);                    	// marker_bit
+	pes_bit.Write(15, (uint32_t)pts);       	// PTS[14..0]
+	pes_bit.Write(1, 1);                    	// market_bit
 
-	//DTS	
-	if (is_dts)
+	//DTS(timestamp)	
+	if (is_video)
 	{
-		pes_bit.Write(4, 1);                    	// '0001'
-		pes_bit.Write(3, (uint32_t)(dts >> 30));  	// DTS[32..30]
-		pes_bit.Write(1, 1);                    	// marker_bit
-		pes_bit.Write(15, (uint32_t)(dts >> 15)); 	// DTS[29..15]
-		pes_bit.Write(1, 1);                    	// marker_bit
-		pes_bit.Write(15, (uint32_t)dts);      	// DTS[14..0]
-		pes_bit.Write(1, 1);                    	// market_bit
+		pes_bit.Write(4, 1);                    		// '0001'
+		pes_bit.Write(3, (uint32_t)(timestamp >> 30));  // DTS[32..30]
+		pes_bit.Write(1, 1);                    		// marker_bit
+		pes_bit.Write(15, (uint32_t)(timestamp >> 15)); // DTS[29..15]
+		pes_bit.Write(1, 1);                    		// marker_bit
+		pes_bit.Write(15, (uint32_t)timestamp);      	// DTS[14..0]
+		pes_bit.Write(1, 1);                    		// market_bit
 	} 
 
 	return pes_bit.GetData();
 }
 
 //====================================================================================================
-// Make TS header
+// Make TS header(4Byte + @(pcr + adaptation field)
 // - PCR : Program Clock Reference
 // - Adaptation field control : Playload의 위치가 확인 
 // - Continuity counter : 0~15 순환되며  각각 패킷에 부여 
 //====================================================================================================
-bool TsWriter::MakeTsHeader(int pid,
-							uint32_t continuity_count,
-							bool payload_start,
-							uint32_t& payload_size,
-							bool use_pcr,
-							uint64_t pcr,
-							bool is_keyframe)
+std::unique_ptr<std::vector<uint8_t>> TsWriter::MakeTsHeader(int pid,
+												uint32_t continuity_count,
+												bool payload_start,
+												uint32_t& payload_size,
+												bool use_pcr,
+												uint64_t pcr,
+												bool is_keyframe)
 {
-	uint8_t		header[TS_HEADER_SIZE] = { 0, };
-	uint8_t		adaptation_data[TS_PCR_ADAPTATION_SIZE] = { 0, };
-	uint32_t	adaptation_field_size = 0;
-	uint32_t	pcr_size = 0;
+	auto header = std::make_unique<std::vector<uint8_t>>(TS_HEADER_SIZE);
+	header->reserve(TS_PACKET_SIZE);
+ 
+	uint32_t adaptation_field_size = 0;
+	
 
-	header[0] = TS_SYNC_BYTE;
-	header[1] = (uint8_t)(((payload_start ? 1 : 0) << 6) | (pid >> 8));
-	header[2] = (uint8_t)(pid & 0xFF);
+	(*header)[0] = TS_SYNC_BYTE;
+	(*header)[1] = (uint8_t)(((payload_start ? 1 : 0) << 6) | (pid >> 8));
+	(*header)[2] = (uint8_t)(pid);
 
 	if (use_pcr)
 	{
@@ -477,7 +509,7 @@ bool TsWriter::MakeTsHeader(int pid,
 	}
 
 	// adjust the adaptation field to include stuffing if necessary
-	if (adaptation_field_size + payload_size < TS_PACKET_PAYLOAD_SIZE)
+	if (payload_size + adaptation_field_size < TS_PACKET_PAYLOAD_SIZE)
 	{
 		adaptation_field_size = TS_PACKET_PAYLOAD_SIZE - payload_size;
 	}
@@ -485,31 +517,21 @@ bool TsWriter::MakeTsHeader(int pid,
 	// no adaptation field
 	if (adaptation_field_size == 0)
 	{
-		header[3] = (uint8_t)(1 << 4 | (continuity_count & 0x0F));
-
-		//Segment 데이터 설정 
-		WriteDataStream(4, header);
-
-		return true;
-
+		(*header)[3] = (uint8_t)(1 << 4 | (continuity_count & 0x0F));
+		return std::move(header);
 	}
 
 	// adaptation field present
-	header[3] = (uint8_t)(3 << 4 | (continuity_count & 0x0F));
-
-	//Segment 데이터 설정 
-	WriteDataStream(4, header);
-
-
+	(*header)[3] = (uint8_t)(3 << 4 | (continuity_count & 0x0F));
+ 
 	if (adaptation_field_size == 1)
 	{
-		adaptation_data[0] = 0;
-
-		//Segment 데이터 설정 
-		WriteDataStream(1, adaptation_data);
-
-		return true;
+		header->push_back(0);
+		return std::move(header);
 	}
+
+	uint8_t		adaptation_data[TS_PCR_ADAPTATION_SIZE] = { 0, };
+	uint32_t	pcr_size = 0;
 
 	// two or more bytes (stuffing and/or PCR)
 	adaptation_data[0] = (uint8_t)(adaptation_field_size - 1);
@@ -520,8 +542,8 @@ bool TsWriter::MakeTsHeader(int pid,
 		adaptation_data[1] = (uint8_t)(adaptation_data[1] | 1 << 6);
 	}
 
-	//Segment 데이터 설정 
-	WriteDataStream(2, adaptation_data);
+	header->push_back(adaptation_data[0]);
+	header->push_back(adaptation_data[1]);
 
 	if (use_pcr)
 	{
@@ -534,9 +556,8 @@ bool TsWriter::MakeTsHeader(int pid,
 		pcr_bit.Write(6, 0x3F);
 		pcr_bit.Write(9, pcr_ext);
 
-		// append
-		WriteDataStream(pcr_bit.GetData());
-
+		header->insert(header->end(), pcr_bit.GetData()->begin(), pcr_bit.GetData()->end());
+		 
 		//PCR 사이즈 저장 
 		pcr_size = TS_PCR_ADAPTATION_SIZE;
 	}
@@ -544,9 +565,8 @@ bool TsWriter::MakeTsHeader(int pid,
 	//Stuffing Bytes 	
 	if (adaptation_field_size > 2)
 	{
-
-		WriteDataStream(adaptation_field_size - pcr_size - 2, HLS_STUFFING_BYTES);
+		header->insert(header->end(), g_hls_stuffing_bytes, g_hls_stuffing_bytes + (adaptation_field_size - pcr_size - 2));
 	}
 
-	return true;
+	return std::move(header);
 }
