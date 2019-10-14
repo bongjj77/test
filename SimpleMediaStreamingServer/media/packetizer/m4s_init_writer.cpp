@@ -404,8 +404,8 @@ int M4sInitWriter::Avc1BoxWrite(std::shared_ptr<std::vector<uint8_t>> &data_stre
 	WriteUint16(0, data);								// Pre Define
 	WriteUint16(0, data);								// Reserve(2Byte)
 	WriteInit(0, 12, data);								// Pre Define(12byte) 
-	WriteUint16((uint16_t)_video_width, data);					// Width
-	WriteUint16((uint16_t)_video_height, data);					// Height
+	WriteUint16((uint16_t)_video_width, data);			// Width
+	WriteUint16((uint16_t)_video_height, data);			// Height
 	WriteUint32(0x00480000, data);						// Horiz Resolution
 	WriteUint32(0x00480000, data);						// Vert Resolution
 	WriteUint32(0, data);								// Reserve(4Byte)
