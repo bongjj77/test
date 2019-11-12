@@ -168,40 +168,33 @@ int RtmpChunkStream::ReceiveHandshakePacket(const std::shared_ptr<const std::vec
 //====================================================================================================
 bool RtmpChunkStream::SendHandshake(const std::shared_ptr<const std::vector<uint8_t>> &data)
 {
-	uint8_t	s0 = 0;
-	uint8_t	s1[RTMP_HANDSHAKE_PACKET_SIZE] = { 0, };
-	uint8_t	s2[RTMP_HANDSHAKE_PACKET_SIZE] = { 0, };
-
-	// ?곗씠???ㅼ젙
-	s0 = RTMP_HANDSHAKE_VERSION;
-	RtmpHandshake::MakeS1(s1);
-	RtmpHandshake::MakeS2((uint8_t *)data->data() + sizeof(uint8_t), s2);
 	_handshake_state = RtmpHandshakeState::C1;
 
-	// s0 ?꾩넚
+	// s0
+	uint8_t	s0 = RTMP_HANDSHAKE_VERSION;
 	if (!SendData(sizeof(s0), &s0))
 	{
-		LOG_WRITE(("Handshake s0 Send Fail"));
+		LOG_ERROR_WRITE(("Handshake s0 Send Fail"));
 		return false;
 	}
 	_handshake_state = RtmpHandshakeState::S0;
 
 	// s1 
-	if (!SendData(sizeof(s1), s1))
+	auto s1 = RtmpHandshake::MakeS1();
+	if (!SendData(s1->size(), s1->data()))
 	{
-		LOG_WRITE(("Handshake s1 Send Fail"));
+		LOG_ERROR_WRITE(("Handshake s1 Send Fail"));
 		return false;
 	}
-
 	_handshake_state = RtmpHandshakeState::S1;
 
 	// s2
-	if (!SendData(sizeof(s2), s2))
+	auto s2 = RtmpHandshake::MakeS2((uint8_t *)data->data() + sizeof(uint8_t));
+	if (!SendData(s2->size(), s2->data()))
 	{
-		LOG_WRITE(("Handshake s2 Send Fail"));
+		LOG_ERROR_WRITE(("Handshake s2 Send Fail"));
 		return false;
 	}
-
 	_handshake_state = RtmpHandshakeState::S2;
 
 	return true;
@@ -226,7 +219,7 @@ int32_t RtmpChunkStream::ReceiveChunkPacket(const std::shared_ptr<const std::vec
 		}
 		else if (process_size < 0)
 		{
-			LOG_WRITE(("ImportStream Fail"));
+			LOG_ERROR_WRITE(("ImportStream Fail"));
 			return process_size;
 		}
 
@@ -234,7 +227,7 @@ int32_t RtmpChunkStream::ReceiveChunkPacket(const std::shared_ptr<const std::vec
 		{
 			if (ReceiveChunkMessage() == false)
 			{
-				LOG_WRITE(("ReceiveChunkMessage Fail"));
+				LOG_ERROR_WRITE(("ReceiveChunkMessage Fail"));
 				return -1;
 			}
 		}
@@ -272,7 +265,7 @@ bool RtmpChunkStream::ReceiveChunkMessage()
 
 		if (message->message_header->body_size > MAX_MEDIA_PACKET_SIZE)
 		{
-			LOG_WRITE(("Packet Size Fail - Size(%u:%u)", message->message_header->body_size, MAX_MEDIA_PACKET_SIZE));
+			LOG_ERROR_WRITE(("Packet Size Fail - Size(%u:%u)", message->message_header->body_size, MAX_MEDIA_PACKET_SIZE));
 			return false;
 		}
 
@@ -312,12 +305,12 @@ bool RtmpChunkStream::ReceiveSetChunkSize(std::shared_ptr<ImportMessage> & messa
 
 	if (chunk_size <= 0)
 	{
-		LOG_WRITE(("ChunkSize Fail - size(%d) ***", chunk_size));
+		LOG_ERROR_WRITE(("ChunkSize Fail - size(%d) ***", chunk_size));
 		return false;
 	}
 
 	_import_chunk->SetChunkSize(chunk_size);
-	LOG_WRITE(("Set Receive ChunkSize(%u)", chunk_size));
+	LOG_INFO_WRITE(("Set Receive ChunkSize(%u)", chunk_size));
 
 	return true;
 }
@@ -354,7 +347,7 @@ void RtmpChunkStream::ReceiveAmfCommandMessage(std::shared_ptr<ImportMessage> & 
 	// Message Name  
 	if (document.GetProperty(0) == nullptr || document.GetProperty(0)->GetType() != AmfDataType::String)
 	{
-		LOG_WRITE(("Message Name Fail"));
+		LOG_ERROR_WRITE(("Message Name Fail"));
 		return;
 	}
 	message_name = document.GetProperty(0)->GetString();
@@ -376,7 +369,7 @@ void RtmpChunkStream::ReceiveAmfCommandMessage(std::shared_ptr<ImportMessage> & 
 	else if (message_name.compare(RTMP_CMD_NAME_DELETESTREAM) == 0)	OnAmfDeleteStream(message->message_header, document, transaction_id);
 	else
 	{
-		LOG_WRITE(("Unknown Amf0CommandMessage - Message(%s:%.1f)", message_name.c_str(), transaction_id));
+		LOG_WARNING_WRITE(("Unknown Amf0CommandMessage - Message(%s:%.1f)", message_name.c_str(), transaction_id));
 		return;
 	}
 }
@@ -395,7 +388,7 @@ void RtmpChunkStream::ReceiveAmfDataMessage(std::shared_ptr<ImportMessage> & mes
 	decode_lehgth = document.Decode(message->body->data(), message->message_header->body_size);
 	if (decode_lehgth == 0)
 	{
-		LOG_WRITE(("Amf0DataMessage Document Length 0"));
+		LOG_WARNING_WRITE(("Amf0DataMessage Document Length 0"));
 		return;
 	}
 	 
@@ -415,7 +408,7 @@ void RtmpChunkStream::ReceiveAmfDataMessage(std::shared_ptr<ImportMessage> & mes
 	}
 	else
 	{
-		LOG_WRITE(("Unknown Amf0DataMessage - Message(%s)", message_name.c_str()));
+		LOG_WARNING_WRITE(("Unknown Amf0DataMessage - Message(%s)", message_name.c_str()));
 		return;
 	}
 }
@@ -447,25 +440,25 @@ void RtmpChunkStream::OnAmfConnect(std::shared_ptr<RtmpMuxMessageHeader> &messag
 
 	if (!SendWindowAcknowledgementSize())
 	{
-		LOG_WRITE(("SendWindowAcknowledgementSize Fail"));
+		LOG_ERROR_WRITE(("SendWindowAcknowledgementSize Fail"));
 		return;
 	}
 
 	if (!SendSetPeerBandwidth())
 	{
-		LOG_WRITE(("SendSetPeerBandwidth Fail"));
+		LOG_ERROR_WRITE(("SendSetPeerBandwidth Fail"));
 		return;
 	}
 
 	if (!SendStreamBegin())
 	{
-		LOG_WRITE(("SendStreamBegin Fail"));
+		LOG_ERROR_WRITE(("SendStreamBegin Fail"));
 		return;
 	}
 
 	if (!SendAmfConnectResult(message_header->chunk_stream_id, transaction_id, object_encoding))
 	{
-		LOG_WRITE(("SendAmfConnectResult Fail"));
+		LOG_ERROR_WRITE(("SendAmfConnectResult Fail"));
 		return;
 	}
 
@@ -478,7 +471,7 @@ void RtmpChunkStream::OnAmfCreateStream(std::shared_ptr<RtmpMuxMessageHeader> &m
 {
 	if (!SendAmfCreateStreamResult(message_header->chunk_stream_id, transaction_id))
 	{
-		LOG_WRITE(("SendAmfCreateStreamResult Fail"));
+		LOG_ERROR_WRITE(("SendAmfCreateStreamResult Fail"));
 		return;
 	}
 
@@ -491,13 +484,13 @@ void RtmpChunkStream::OnAmfFCPublish(std::shared_ptr<RtmpMuxMessageHeader> &mess
 {
 	if (_app_stream_name.empty() && document.GetProperty(3) != nullptr && document.GetProperty(3)->GetType() == AmfDataType::String)
 	{
-		if (!SendAmfOnFCPublish(message_header->chunk_stream_id, _stream_id, _client_id))
-		{
-			LOG_WRITE(("SendAmfOnFCPublish Fail"));
-			return;
-		}
 		_app_stream_name = document.GetProperty(3)->GetString();
 		_stream_key.second = _app_stream_name;
+	}
+
+	if (!SendAmfOnFCPublish(message_header->chunk_stream_id, _stream_id, _client_id))
+	{
+		LOG_WRITE(("SendAmfOnFCPublish Fail"));
 	}
 }
 
@@ -507,21 +500,19 @@ void RtmpChunkStream::OnAmfFCPublish(std::shared_ptr<RtmpMuxMessageHeader> &mess
 //====================================================================================================
 void RtmpChunkStream::OnAmfPublish(std::shared_ptr<RtmpMuxMessageHeader> &message_header, AmfDocument &document, double transaction_id)
 {
+	if (document.GetProperty(3) != nullptr &&  document.GetProperty(3)->GetType() == AmfDataType::String)
+	{
+		_app_stream_name = document.GetProperty(3)->GetString();
+		_stream_key.second = _app_stream_name;
+	}
+	
 	if (_app_stream_name.empty())
 	{
-		if (document.GetProperty(3) != nullptr &&  document.GetProperty(3)->GetType() == AmfDataType::String)
-		{
-			_app_stream_name = document.GetProperty(3)->GetString();
-			_stream_key.second = _app_stream_name;
-		}
-		else
-		{
-			LOG_WRITE(("OnPublish - Publish Name None"));
+		LOG_ERROR_WRITE(("OnPublish - Publish Name None"));
 
-			//Reject
-			SendAmfOnStatus(message_header->chunk_stream_id, _stream_id, (char *)"error", (char *)"NetStream.Publish.Rejected", (char *)"Authentication Failed.", _client_id);
-			return;
-		}
+		//Reject
+		SendAmfOnStatus(message_header->chunk_stream_id, _stream_id, (char *)"error", (char *)"NetStream.Publish.Rejected", (char *)"Authentication Failed.", _client_id);
+		return;
 	}
 
 	_chunk_stream_id = message_header->chunk_stream_id;
@@ -543,7 +534,7 @@ void RtmpChunkStream::OnAmfPublish(std::shared_ptr<RtmpMuxMessageHeader> &messag
  
 	if (!SendAmfOnStatus((uint32_t)_chunk_stream_id, _stream_id, (char *)"status", (char *)"NetStream.Publish.Start", (char *)"Publishing", _client_id))
 	{
-		LOG_WRITE(("SendAmfOnStatus Fail"));
+		LOG_ERROR_WRITE(("SendAmfOnStatus Fail"));
 		return;
 	}
 
@@ -555,7 +546,6 @@ void RtmpChunkStream::OnAmfPublish(std::shared_ptr<RtmpMuxMessageHeader> &messag
 void RtmpChunkStream::OnAmfDeleteStream(std::shared_ptr<RtmpMuxMessageHeader> &message_header, AmfDocument &document, double transaction_id)
 {
 	LOG_WRITE(("Delete Stream - app(%s) stream(%s)", _app_name.c_str(), _app_stream_name.c_str()));
-
 	//_delete_stream = true;
  	//_stream_interface->OnChunkStreamDelete(_remote, _app_name, _app_stream_name, _app_id, _app_stream_id);
 }
@@ -830,7 +820,7 @@ bool RtmpChunkStream::ReceiveAudioMessage(std::shared_ptr<ImportMessage> &messag
 			
 		channels  =  data[3]>>3 & 0x0f;
 			
-		LOG_WRITE(("*** INFO : RtmpChunkStream - RecvAudioMessage Sequence Parsing- SampleRate(%d) Channel(%d) ***", samplerate, channels));	
+		LOG_INFO_WRITE(("*** INFO : RtmpChunkStream - RecvAudioMessage Sequence Parsing- SampleRate(%d) Channel(%d) ***", samplerate, channels));	
 				
 		_media_info.audio_samplerate 	= samplerate;
 		_media_info.audio_sampleindex 	= sample_index;
@@ -1048,21 +1038,21 @@ bool RtmpChunkStream::ProcessVideoSequenceData(std::unique_ptr<std::vector<uint8
 
 	if (data->size() < RTMP_SPS_PPS_MIN_DATA_SIZE || data->at(0) != 0 || data->at(1) != 0)
 	{
-		LOG_WRITE(("Data Size Fail - size(%d)", data->size()));
+		LOG_ERROR_WRITE(("Data Size Fail - size(%d)", data->size()));
 		return false;
 	}
 
 	sps_size = RtmpMuxUtil::ReadInt16(data->data() + 9);
 	if (sps_size <= 0 || sps_size > (data->size() - 11))
 	{
-		LOG_WRITE(("SPS Size Fail - sps(%d)", sps_size));
+		LOG_ERROR_WRITE(("SPS Size Fail - sps(%d)", sps_size));
 		return false;
 	}
 
 	pps_size = RtmpMuxUtil::ReadInt16(data->data() + 12 + sps_size);
 	if (pps_size <= 0 || pps_size > (data->size() - 14 - sps_size))
 	{
-		LOG_WRITE(("PPS Size Fail - pps(%d:%d)", pps_size));
+		LOG_ERROR_WRITE(("PPS Size Fail - pps(%d:%d)", pps_size));
 		return false;
 	}
 

@@ -16,7 +16,7 @@
 #endif 
 
 //
-static const uint8_t g_GenuineFMSKey[] = // 36+32
+std::vector<uint8_t> RtmpHandshake::_fms_key_table = // 36+32
 {
 	0x47, 0x65, 0x6e, 0x75, 0x69, 0x6e, 0x65, 0x20, 0x41, 0x64, 0x6f, 0x62, 0x65, 0x20, 0x46, 0x6c,
 	0x61, 0x73, 0x68, 0x20, 0x4d, 0x65, 0x64, 0x69, 0x61, 0x20, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
@@ -26,7 +26,7 @@ static const uint8_t g_GenuineFMSKey[] = // 36+32
 	0x6e, 0xec, 0x5d, 0x2d, 0x29, 0x80, 0x6f, 0xab, 0x93, 0xb8, 0xe6, 0x36, 0xcf, 0xeb, 0x31, 0xae,
 }; // 68
 
-static const uint8_t g_GenuineFPKey[] =
+std::vector<uint8_t> RtmpHandshake::_fp_key_table =
 {
 	0x47, 0x65, 0x6E, 0x75, 0x69, 0x6E, 0x65, 0x20, 0x41, 0x64, 0x6F, 0x62, 0x65, 0x20, 0x46, 0x6C,
 	0x61, 0x73, 0x68, 0x20, 0x50, 0x6C, 0x61, 0x79, 0x65, 0x72, 0x20, 0x30, 0x30, 0x31, 0xF0, 0xEE,
@@ -57,7 +57,7 @@ bool RtmpHandshake::MakeC1(uint8_t * sig)
  
 	int offset = GetDigestOffset1(sig);
 	 
-	CalculateDigest(offset, sig, (uint8_t*)g_GenuineFMSKey, 36, sig+offset);
+	CalculateDigest(offset, sig, (uint8_t*)_fms_key_table.data(), 36, sig+offset);
 
 	return true;
 }
@@ -65,72 +65,70 @@ bool RtmpHandshake::MakeC1(uint8_t * sig)
 //====================================================================================================
 // Make S1
 //====================================================================================================
-bool RtmpHandshake::MakeS1(uint8_t *sig)
+std::shared_ptr<std::vector<uint8_t>> RtmpHandshake::MakeS1()
 { 
+	auto buffer = std::make_shared<std::vector<uint8_t>>(RTMP_HANDSHAKE_PACKET_SIZE);
+	uint8_t * data_pos = buffer->data();
+
 	std::mt19937 random_number;
  
-	if( !sig ) 
-	{ 
-		return false; 
-	}
-
-	memset(sig, 0, RTMP_HANDSHAKE_PACKET_SIZE);
-	*(uint32_t *)&sig[0] = htonl( (uint32_t )time(nullptr) );
-	*(uint32_t *)&sig[4] = 0x01020503; // 03 05 02 01
+	*(uint32_t *)&data_pos[0] = htonl( (uint32_t )time(nullptr) );
+	*(uint32_t *)&data_pos[4] = 0x01020503; // 03 05 02 01
 	
 	for(int index = 8; index < RTMP_HANDSHAKE_PACKET_SIZE; index++)
 	{ 
-		sig[index] = (uint8_t)(random_number() % 256);
+		data_pos[index] = (uint8_t)(random_number() % 256);
 	}
  
-	int offset = GetDigestOffset1(sig);
+	int offset = GetDigestOffset1(data_pos);
 	 
-	CalculateDigest(offset, sig, (uint8_t*)g_GenuineFMSKey, 36, sig+offset);
+	CalculateDigest(offset, data_pos, (uint8_t*)_fms_key_table.data(), 36, data_pos + offset);
 
-	return true;
+	return buffer;
 }
 
 //===============================================================================================
 // Make S2
 //===============================================================================================
-bool RtmpHandshake::MakeS2(uint8_t * client_sig, uint8_t * sig)
+std::shared_ptr<std::vector<uint8_t>> RtmpHandshake::MakeS2(uint8_t * client_data)
 {
+	auto buffer = std::make_shared<std::vector<uint8_t>>(RTMP_HANDSHAKE_PACKET_SIZE);
+	uint8_t * data_pos = buffer->data();
+
 	std::mt19937 random_number;
 	uint8_t	digest[SHA256_DIGEST_LENGTH];
  
-	if( !client_sig || !sig ) { return false; }
-
 	// version value 0 echo
-	if( *(uint32_t *)&client_sig[4] == 0 )
+	if( *(uint32_t *)&client_data[4] == 0 )
 	{
-		memcpy(sig, client_sig, RTMP_HANDSHAKE_PACKET_SIZE);
-		return true;
+		memcpy(data_pos, client_data, RTMP_HANDSHAKE_PACKET_SIZE);
+		return buffer;
 	}
 
 	// client digest offset 구하기
-	int offset = GetDigestOffset1(client_sig);
-	if( !VerifyDigest(offset, client_sig, (uint8_t*)g_GenuineFPKey, 30) )
+	int offset = GetDigestOffset1(client_data);
+	if( !VerifyDigest(offset, client_data, (uint8_t*)_fp_key_table.data(), 30) )
 	{
-		offset = GetDigestOffset2(client_sig);
-		if( !VerifyDigest(offset, client_sig, (uint8_t*)g_GenuineFPKey, 30) )
+		offset = GetDigestOffset2(client_data);
+		if( !VerifyDigest(offset, client_data, (uint8_t*)_fp_key_table.data(), 30) )
 		{
-			memcpy(sig, client_sig, RTMP_HANDSHAKE_PACKET_SIZE);
-			return true;
+			memcpy(data_pos, client_data, RTMP_HANDSHAKE_PACKET_SIZE);
+			return buffer;
 		}
 	}
 
 	// client digest 구하기
-	HmacSha256(client_sig+offset, SHA256_DIGEST_LENGTH, (uint8_t*)g_GenuineFMSKey, sizeof(g_GenuineFMSKey), digest);
+	HmacSha256(client_data + offset, SHA256_DIGEST_LENGTH, (uint8_t*)_fms_key_table.data(), _fms_key_table.size(), digest);
 
 	// s2 만들기
 	for(int index = 0; index < 1504; index++)
 	{ 
-		sig[index] = (uint8_t)(random_number() % 256);
+		data_pos[index] = (uint8_t)(random_number() % 256);
 	}
 
-	HmacSha256(sig, 1504, digest, SHA256_DIGEST_LENGTH, sig+1504);
+	HmacSha256(data_pos, 1504, digest, SHA256_DIGEST_LENGTH, data_pos + 1504);
 
-	return true;
+	return buffer;
 }
 
 //===============================================================================================
@@ -149,7 +147,7 @@ bool RtmpHandshake::MakeC2(uint8_t * client_sig, uint8_t * sig)
 	//memcpy(sig, client_sig, RTMP_HANDSHAKE_PACKET_SIZE);
 
     int offset = GetDigestOffset1(client_sig);
-    CalculateDigest(offset, client_sig, (uint8_t*)g_GenuineFMSKey, 36, svrDigest);
+    CalculateDigest(offset, client_sig, (uint8_t*)_fms_key_table.data(), 36, svrDigest);
 
     if (memcmp(client_sig+offset, svrDigest, SHA256_DIGEST_LENGTH)) 
 	{
