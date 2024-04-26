@@ -8,6 +8,7 @@
 #include <string.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 enum class AmfDataType : int32_t 
 {
