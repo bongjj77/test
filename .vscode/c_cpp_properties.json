@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "intelliSenseMode": "windows-msvc-x64",
+            "compilerPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\Hostx64\\x64\\cl.exe",
+            "cStandard": "c20",
+            "cppStandard": "c++20",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:\\local\\boost_1_85_0"
+            ]
+        }
+    ],
+    "version": 4
+}
